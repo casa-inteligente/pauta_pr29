@@ -26,7 +26,7 @@ public class Pauta_FX extends Application {
             
             @Override
             public void handle(ActionEvent event) {
-                System.out.println("Hello World!");
+                System.out.println("Foi clicado");
             }
         });
         
@@ -35,7 +35,7 @@ public class Pauta_FX extends Application {
         
         Scene scene = new Scene(root, 300, 250);
         
-        primaryStage.setTitle("Hello World!");
+        primaryStage.setTitle("Início");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
