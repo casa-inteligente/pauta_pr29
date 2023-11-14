@@ -10,7 +10,7 @@ criação de uma pauta virtual para o PR_29.
  - [ ]  Criar uma animação para proteção de tela com a pauta 🪟 :zzz:
 
 
- > [!NOTA]
+ > [!NOTE]
  > Todos podem adicionar na pauta;
  > Opção de alerta;
 
