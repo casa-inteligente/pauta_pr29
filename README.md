@@ -11,6 +11,6 @@ criação de uma pauta virtual para o PR_29.
 
 
  > [!NOTE]
- > Todos podem adicionar na pauta
- > Opção de alerta
+ > Todos podem adicionar na pauta;
+ > Opção de alerta;
 
