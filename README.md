@@ -15,5 +15,7 @@ criação de uma pauta virtual para o PR_29.
  > Opção de alerta;
 
 {% windows %}
-       fdgdf
+
+These instructions are pertinent to Windows users.
+
 {% endwindows %}
