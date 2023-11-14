@@ -12,6 +12,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Font;
 import java.awt.Color;
 import javax.swing.JTextField;
@@ -22,6 +24,8 @@ import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.awt.event.ActionEvent;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class tela_de_acesso extends JFrame {
 
@@ -84,13 +88,36 @@ public class tela_de_acesso extends JFrame {
 		
 		JButton btnEntrar = new JButton("Entrar");
 		btnEntrar.addActionListener(new ActionListener() {
+			
+			  /**
+		     * Realiza a confirmação de acesso do banco de dados sql
+		     * 
+		     */	
+			
 			public void actionPerformed(ActionEvent e) {
 				
 				try {
 					Connection con = conexao.faz_conexao();
 					
 					String sql = "select * from db_pautapr29.pauta where usuario=? and senha=?"; 
-					PreparedStatement stmt = con.preparedStatement(sql);
+					PreparedStatement stmt = (PreparedStatement) con.prepareStatement(sql);
+					 stmt.setString(1, tfUsuario.getText());
+					 stmt.setString(2,  new String(pfSenha.getPassword()));
+					 
+					 ResultSet rs = stmt.executeQuery();
+					 
+					 if(rs.next()) {
+						 
+						 Tela_cadastro exibir = new Tela_cadastro();
+						 exibir.setVisible(true);
+						 
+						 setVisible(false);
+						 						 
+					 }else {
+						 JOptionPane.showMessageDialog(null, "Esse usuário não existe");
+					 }
+					stmt.close();
+					con.close();
 					
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
