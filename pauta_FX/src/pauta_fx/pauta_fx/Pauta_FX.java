@@ -6,7 +6,6 @@ package pauta_fx;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
@@ -22,12 +21,8 @@ public class Pauta_FX extends Application {
     public void start(Stage primaryStage) {
         Button btn = new Button();
         btn.setText("Olá");
-        btn.setOnAction(new EventHandler<ActionEvent>() {
-            
-            @Override
-            public void handle(ActionEvent event) {
-                System.out.println("Foi clicado");
-            }
+        btn.setOnAction((ActionEvent event) -> {
+            System.out.println("Foi clicado");
         });
         
         StackPane root = new StackPane();
