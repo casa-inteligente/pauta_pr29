@@ -10,7 +10,7 @@ criação de uma pauta virtual para o PR_29.
  - [ ]  Criar uma animação para proteção de tela com a pauta 🪟 :zzz:
 
 ### Nome do banco de dados:  
-- [ ] db_pautapr29
+- [ ] db_pautapr29 </br>
       * Scripty em sql
 - [ ] inserir_db_pauta.sql
 
