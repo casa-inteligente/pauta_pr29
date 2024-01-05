@@ -22,7 +22,7 @@ public class Pauta_FX extends Application {
         Button btn = new Button();
         btn.setText("Olá");
         btn.setOnAction((ActionEvent event) -> {
-            System.out.println("Foi clicado");
+            System.out.println("Foi clicado de novo");
         });
         
         StackPane root = new StackPane();
