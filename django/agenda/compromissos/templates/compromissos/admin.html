@@ -1,0 +1,19 @@
+<!-- compromissos/templates/compromissos/admin.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Administração de Compromissos</title>
+</head>
+
+<body>
+    <h1>Administração de Compromissos</h1>
+    <ul>
+        {% for compromisso in compromissos %}
+        <li>{{ compromisso.titulo }} - {{ compromisso.data }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'logout' %}">Sair</a>
+</body>
+
+</html>

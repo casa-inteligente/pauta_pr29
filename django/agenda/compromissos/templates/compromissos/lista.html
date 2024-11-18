@@ -1,0 +1,18 @@
+<!-- compromissos/templates/compromissos/lista.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Compromissos Diários</title>
+</head>
+
+<body>
+    <h1>Compromissos Diários</h1>
+    <ul>
+        {% for compromisso in compromissos %}
+        <li>{{ compromisso.titulo }} - {{ compromisso.data }}</li>
+        {% endfor %}
+    </ul>
+</body>
+
+</html>
