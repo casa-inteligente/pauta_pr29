@@ -10,7 +10,8 @@
     <h1>Compromissos Diários</h1>
     <ul>
         {% for compromisso in compromissos %}
-        <li>{{ compromisso.titulo }} - {{ compromisso.data }}</li>
+        <li>{{ compromisso.data }} - {{ compromisso.horario }} - {{ compromisso.nome }} - {{ compromisso.situacao }}
+        </li>
         {% endfor %}
     </ul>
 </body>
