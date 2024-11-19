@@ -4,16 +4,59 @@
 
 <head>
     <title>Compromissos Diários</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'compromissos/css/styles.css' %}">
+    <script>
+        // Função para emitir bip
+        function bip() {
+            var audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+            audio.play();
+        }
+
+        // Função para verificar os horários dos compromissos
+        function verificarHorarios() {
+            const compromissos = document.querySelectorAll('.compromisso');
+            const now = new Date();
+
+            compromissos.forEach(compromisso => {
+                const compromissoData = new Date(compromisso.dataset.horario);
+                if (now.getFullYear() === compromissoData.getFullYear() &&
+                    now.getMonth() === compromissoData.getMonth() &&
+                    now.getDate() === compromissoData.getDate() &&
+                    now.getHours() === compromissoData.getHours() &&
+                    now.getMinutes() === compromissoData.getMinutes()) {
+                    bip();
+                }
+            });
+        }
+
+        // Verificar os horários a cada minuto
+        setInterval(verificarHorarios, 60000);
+    </script>
 </head>
 
 <body>
-    <h1>Compromissos Diários</h1>
-    <ul>
-        {% for compromisso in compromissos %}
-        <li>{{ compromisso.data }} - {{ compromisso.horario }} - {{ compromisso.nome }} - {{ compromisso.situacao }}
-        </li>
-        {% endfor %}
-    </ul>
+    <main>
+        <div class="Container">
+            <h1>Pauta de compromissos</h1>
+            <h2><a href="http://127.0.0.1:8000/admin" target="_blank" class="Botao">Adicionar na pauta</a></h2>
+        </div>
+    </main>
+
+    <section id="tabela_compromisso">
+        <div>
+            <ul>
+                {% for compromisso in compromissos %}
+                <li class="compromisso" data-horario="{{ compromisso.data }}T{{ compromisso.horario }}">
+                    <td>{{ compromisso.data|date:"d-m-Y" }} </td>
+                    <td>{{ compromisso.horario }}</td>
+                    <td>{{ compromisso.nome }}</td>
+                    <td>{{ compromisso.situacao }} </td>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
 </body>
 
 </html>

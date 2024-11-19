@@ -8,6 +8,11 @@ def listar_compromissos(request):
     compromissos = Compromisso.objects.all()
     return render(request, 'compromissos/lista.html', {'compromissos': compromissos})
 
+def pagina_inicial(request): 
+    compromissos = Compromisso.objects.all() 
+    return render(request, 'compromissos/lista.html', {'compromissos': compromissos})
+
+
 @login_required
 def admin_compromissos(request): 
     compromissos = Compromisso.objects.all() 
