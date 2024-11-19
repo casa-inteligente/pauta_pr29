@@ -3,14 +3,20 @@ from django.shortcuts import render
 from .models import Compromisso
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
+from django.utils import timezone 
+from datetime import timedelta
 
-def listar_compromissos(request):
-    compromissos = Compromisso.objects.all()
+def listar_compromissos(request): 
+    hoje = timezone.now().date()
+    amanha = hoje + timedelta(days=1) 
+    compromissos = Compromisso.objects.filter(data__gte=hoje, data__lte=amanha)
     return render(request, 'compromissos/lista.html', {'compromissos': compromissos})
 
-def pagina_inicial(request): 
-    compromissos = Compromisso.objects.all() 
-    return render(request, 'compromissos/lista.html', {'compromissos': compromissos})
+def pagina_inicial(request):
+     hoje = timezone.now().date()
+     amanha = hoje + timedelta(days=1)
+     compromissos = Compromisso.objects.filter(data__gte=hoje, data__lte=amanha) 
+     return render(request, 'compromissos/lista.html', {'compromissos': compromissos})
 
 
 @login_required

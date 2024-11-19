@@ -21,12 +21,14 @@ body {
 .Botao {
     text-decoration: none;
     color: #000;
-    margin-top: 20px;
+    margin: 10px;
+    margin-top: 80px;
     background-color: blanchedalmond;
     padding: 10px 40px;
     border: 2px solid #000;
     border-radius: 15px;
 }
+
 
 html {
     scroll-behavior: smooth;
@@ -40,6 +42,29 @@ body {
     padding: 20px;
 }
 
+/* Roda pé */
+
+address {
+    padding: 35px 10px 50px 10px;
+    background-color: cornsilk;
+    background-size: cover;
+    background-position: center;
+    color: #fff;
+}
+
+address a {
+    text-decoration: none;
+    color: #1d1b1b;
+}
+
+address p {
+    color: #000;
+}
+
+address img {
+    padding-top: 15px;
+}
+
 h1 {
     color: #333;
     text-align: center;
@@ -47,6 +72,36 @@ h1 {
 
 h2 {
     color: aqua;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px;
+    margin-top: 25px;
+}
+
+th,
+td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+}
+
+td {
+    text-align: center;
+}
+
+th {
+    background-color: #f8f8f8;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #e0e0e0;
 }
 
 ul {
