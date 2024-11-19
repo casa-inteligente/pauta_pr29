@@ -1,12 +1,13 @@
 // Função para emitir bip e mantê-lo ativo por 10 segundos
 function bip() {
-    var audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+    var audio = new Audio('/static/compromissos/audio/beep-17.wav');
+    audio.volume = 0.8;
     audio.loop = true;  // Ativar o loop
     audio.play();
     // Desativar o bip após 10 segundos
     setTimeout(function () {
         audio.pause();
-    }, 10000);  // 10 segundos = 10000 milissegundos
+    }, 5000);  // 5 segundos = 5000 milissegundos
 }
 
 // Função para verificar os horários dos compromissos
