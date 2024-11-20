@@ -9,10 +9,16 @@
     <title>Compromissos Diários</title>
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'compromissos/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'compromissos/css/bootstrap.min.css.css' %}">
     <script src="{% static 'compromissos/js/scripts.js' %}"></script>
 </head>
 
 <body>
+    <!-- adiciona bootstrap para o JavaScript -->
+    <script src="{% static 'compromissos/js/jquery.min.js' %}"></script>
+    <script src="{% static 'compromissos/js/popper.min.js' %}"></script>
+    <script src="{% static 'compromissos/js/bootstrap.min.js' %}"></script>
+
     <main>
         <div class="Container">
             <h1>Pauta de Compromissos</h1>

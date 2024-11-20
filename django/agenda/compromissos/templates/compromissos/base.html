@@ -1,0 +1,39 @@
+<!-- compromissos/templates/compromissos/lista.html -->
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE-edge">
+    <meta name="description" content="Pauta do PR-29">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Compromissos Diários</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'compromissos/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'compromissos/css/bootstrap.min.css.css' %}">
+    <script src="{% static 'compromissos/js/scripts.js' %}"></script>
+</head>
+
+<body>
+    <!-- adiciona bootstrap para o JavaScript -->
+    <script src="{% static 'compromissos/js/jquery.min.js' %}"></script>
+    <script src="{% static 'compromissos/js/popper.min.js' %}"></script>
+    <script src="{% static 'compromissos/js/bootstrap.min.js' %}"></script>
+
+    <main>
+        <div class="Container">
+            <h1>Pauta de Compromissos</h1>
+            <h2><a href="http://127.0.0.1:8000/admin" target="_blank" class="Botao">Adicionar na Pauta</a></h2>
+        </div>
+    </main>
+
+    {% block conteudo %}
+    {% endblock conteudo %}
+    <!-- <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+    <stripe-pricing-table pricing-table-id="prctbl_1QNDHQKxrlbLGoL8zbrwJaiv"
+        publishable-key="pk_live_51NkoQAKxrlbLGoL8TuGvxrK0j2SZ2t4VuHjDA2aFJbY2nygcmiKEY7U2tVnY9tN2gtEh9kUFDeDVpFNYvgM7QauE00w0vvLkss">
+    </stripe-pricing-table> -->
+</body>
+
+</html>
