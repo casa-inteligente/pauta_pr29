@@ -21,12 +21,14 @@
     {% include 'snippets/barra_navegacao.html' %} <!-- adiciona obara de navegação-->
     <main>
         <div class="container ">
-            <h1 class="text-center">Pauta de Compromissos</h1>
+            <h1 class="text-center display-4 bg-transparent">Pauta de Compromissos</h1>
         </div>
     </main>
 
     {% block conteudo %}
     {% endblock conteudo %}
+
+    {% include 'snippets/rodape.html' %}
     <!-- <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
     <stripe-pricing-table pricing-table-id="prctbl_1QNDHQKxrlbLGoL8zbrwJaiv"
         publishable-key="pk_live_51NkoQAKxrlbLGoL8TuGvxrK0j2SZ2t4VuHjDA2aFJbY2nygcmiKEY7U2tVnY9tN2gtEh9kUFDeDVpFNYvgM7QauE00w0vvLkss">
