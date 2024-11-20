@@ -23,4 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('compromissos.urls')),
     path('accounts/', include('django.contrib.auth.urls')),  # Adiciona URLs de autenticação
+    path('smb/', include('django_smb.urls')),  #ADDD
 ]
