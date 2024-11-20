@@ -1,75 +1,56 @@
-<!-- compromissos/templates/compromissos/lista.html -->
-<!DOCTYPE html>
-<html>
+{% extends "compromissos/base.html" %}
+{% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE-edge">
-    <meta name="description" content="Pauta do PR-29">
-    <title>Compromissos Diários</title>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'compromissos/css/styles.css' %}">
-    <script src="{% static 'compromissos/js/scripts.js' %}"></script>
-</head>
+{% block conteudo %}
+<section id="tabela_compromisso">
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Nome</th>
+                    <th>Situação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for compromisso in compromissos %}
+                <tr class="compromisso" data-horario="{{ compromisso.data }}T{{ compromisso.horario }}">
+                    <td>{{ compromisso.data|date:"d-m-Y" }}</td>
+                    <td>{{ compromisso.horario }}</td>
+                    <td>{{ compromisso.nome }}</td>
+                    <td>{{ compromisso.situacao }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock conteudo %}
 
-<body>
-    <main>
-        <div class="Container">
-            <h1>Pauta de Compromissos</h1>
-            <h2><a href="http://127.0.0.1:8000/admin" target="_blank" class="Botao">Adicionar na Pauta</a></h2>
-        </div>
-    </main>
 
-    <section id="tabela_compromisso">
-        <div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Horário</th>
-                        <th>Nome</th>
-                        <th>Situação</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for compromisso in compromissos %}
-                    <tr class="compromisso" data-horario="{{ compromisso.data }}T{{ compromisso.horario }}">
-                        <td>{{ compromisso.data|date:"d-m-Y" }}</td>
-                        <td>{{ compromisso.horario }}</td>
-                        <td>{{ compromisso.nome }}</td>
-                        <td>{{ compromisso.situacao }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </section>
-    <!-- Rodapé -->
-    <address>
-        <div class="Container Flex6">
-            <div id="contato">
-                <p>Whatsapp</p>
-                <a href="https://api.whatsapp.com/send?phone=554936646672" target="_blank">
-                    <p>(49) 3664-6672</p>
-                </a>
-            </div>
-            <div class="endereco">
-                <p>Endereço:</p>
-                <p>Avenida Sul Brasil, 1607</p>
-                <p>Maravilha</p>
-                <p>Santa Catarina - BR</p>
-                <p>Correio eletrônico</p>
-                <a href="mailto:pr29@pp.sc.gov.br?subject=ContatoSite">
-
-                    <p>pr29@pp.sc.gov.br</p>
-                </a>
-            </div>
-        </div>
-    </address>
-    <!-- <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
-    <stripe-pricing-table pricing-table-id="prctbl_1QNDHQKxrlbLGoL8zbrwJaiv"
-        publishable-key="pk_live_51NkoQAKxrlbLGoL8TuGvxrK0j2SZ2t4VuHjDA2aFJbY2nygcmiKEY7U2tVnY9tN2gtEh9kUFDeDVpFNYvgM7QauE00w0vvLkss">
-    </stripe-pricing-table> -->
-</body>
-
-</html>
+<!--  Visualiação de conteudo
+<section id="tabela_compromisso">
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Nome</th>
+                    <th>Situação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for compromisso in compromissos %}
+                <tr class="compromisso" data-horario="{{ compromisso.data }}T{{ compromisso.horario }}">
+                    <td>{{ compromisso.data|date:"d-m-Y" }}</td>
+                    <td>{{ compromisso.horario }}</td>
+                    <td>{{ compromisso.nome }}</td>
+                    <td>{{ compromisso.situacao }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section> -->
