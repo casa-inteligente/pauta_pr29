@@ -18,12 +18,10 @@
     <script src="{% static 'compromissos/js/jquery.min.js' %}"></script>
     <script src="{% static 'compromissos/js/popper.min.js' %}"></script>
     <script src="{% static 'compromissos/js/bootstrap.min.js' %}"></script>
-
+    {% include 'snippets/barra_navegacao.html' %} <!-- adiciona obara de navegação-->
     <main>
-        <div class="container">
-            <h1>Pauta de Compromissos</h1>
-            <h2><a href="http://127.0.0.1:8000/admin" target="_blank" class="btn btn-primary">Adicionar na Pauta</a>
-            </h2>
+        <div class="container ">
+            <h1 class="text-center">Pauta de Compromissos</h1>
         </div>
     </main>
 
