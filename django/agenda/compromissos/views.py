@@ -1,10 +1,12 @@
 # compromissos/views.py
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Compromisso
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
 from django.utils import timezone 
 from datetime import timedelta
+from django.http import HttpResponse
+import subprocess
+
 
 def listar_compromissos(request): 
     hoje = timezone.now().date()
@@ -39,3 +41,14 @@ def admin_compromissos(request):
         return redirect('admin_compromissos')
 
     return render(request, 'compromissos/admin.html', {'compromissos': compromissos})
+
+
+#Para rodar scripty
+def execute_script(request):
+    try:
+        #chama o script
+        script_path = r"C:\\Users\\AULA-1\\Documents\\GitHub\\sheet_dot\\main.py"
+        subprocess.call(['python', script_path])
+        return HttpResponse(f'Script Retornado com sucesso')
+    except Exception as e:
+        return HttpResponse(f'Error as executar o Script:\t{str(e)}')
