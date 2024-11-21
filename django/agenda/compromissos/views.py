@@ -49,6 +49,6 @@ def execute_script(request):
         #chama o script
         script_path = r"C:\\Users\\AULA-1\\Documents\\GitHub\\sheet_dot\\main.py"
         subprocess.call(['python', script_path])
-        return HttpResponse(f'Script Retornado com sucesso')
+        return redirect('pagina_inicial')
     except Exception as e:
         return HttpResponse(f'Error as executar o Script:\t{str(e)}')
