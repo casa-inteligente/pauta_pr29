@@ -2,55 +2,69 @@
 {% load static %}
 
 {% block conteudo %}
-<section id="tabela_compromisso">
-    <div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Horário</th>
-                    <th>Nome</th>
-                    <th>Situação</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for compromisso in compromissos %}
-                <tr class="compromisso" data-horario="{{ compromisso.data }}T{{ compromisso.horario }}">
-                    <td>{{ compromisso.data|date:"d-m-Y" }}</td>
-                    <td>{{ compromisso.horario }}</td>
-                    <td>{{ compromisso.nome }}</td>
-                    <td>{{ compromisso.situacao }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+<main>
+    <div class="container ">
+        <h1 class="text-center display-4 bg-transparent">Pauta de Compromissos</h1>
     </div>
+</main>
+
+<section id="tabela_compromisso" class="table-responsive">
+    <table class="table table-striped" id="compromissoTabela">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col" onclick="sortTable(0)">Data</th>
+                <th scope="col" onclick="sortTable(1)">Horário</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Situação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for compromisso in compromissos %}
+            <tr class="compromisso" data-horario="{{ compromisso.data|date:" Y-m-d" }}T{{ compromisso.horario }}">
+                <td>{{ compromisso.data|date:"d/m/Y" }}</td>
+                <td>{{ compromisso.horario }}</td>
+                <td>{{ compromisso.nome }}</td>
+                <td>{{ compromisso.situacao }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </section>
+
+<!-- Script para verificar e tachar compromissos passados e ordenar a tabela -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var now = new Date();
+        var compromissos = document.querySelectorAll('.compromisso');
+
+        compromissos.forEach(function (compromisso) {
+            var compromissoDataHora = new Date(compromisso.dataset.horario);
+            if (compromissoDataHora < now) {
+                compromisso.classList.add('text-muted');  // Classe do Bootstrap para texto acinzentado
+                compromisso.style.textDecoration = 'line-through';  // Adiciona o tache
+            }
+        });
+    });
+
+    // Função para ordenar a tabela
+    function sortTable(columnIndex) {
+        const table = document.getElementById("compromissoTabela");
+        const rows = Array.from(table.rows).slice(1);
+
+        rows.sort((a, b) => {
+            const aData = a.cells[columnIndex].innerText;
+            const bData = b.cells[columnIndex].innerText;
+
+            // Converter a data e hora para o formato apropriado para comparação
+            const aDate = new Date(aData.split('/').reverse().join('-') + ' ' + a.cells[1].innerText);
+            const bDate = new Date(bData.split('/').reverse().join('-') + ' ' + b.cells[1].innerText);
+
+            return aDate - bDate;
+        });
+
+        rows.forEach(row => table.appendChild(row));
+    }
+</script>
+
 {% endblock conteudo %}
-
-
-<!--  Visualiação de conteudo
-<section id="tabela_compromisso">
-    <div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Horário</th>
-                    <th>Nome</th>
-                    <th>Situação</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for compromisso in compromissos %}
-                <tr class="compromisso" data-horario="{{ compromisso.data }}T{{ compromisso.horario }}">
-                    <td>{{ compromisso.data|date:"d-m-Y" }}</td>
-                    <td>{{ compromisso.horario }}</td>
-                    <td>{{ compromisso.nome }}</td>
-                    <td>{{ compromisso.situacao }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</section> -->

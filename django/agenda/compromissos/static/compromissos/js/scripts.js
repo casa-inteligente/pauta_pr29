@@ -7,16 +7,24 @@ function bip() {
     // Desativar o bip após 10 segundos
     setTimeout(function () {
         audio.pause();
-    }, 5000);  // 5 segundos = 5000 milissegundos
+    }, 10000);  // 10 segundos = 10000 milissegundos
 }
 
-// Função para verificar os horários dos compromissos
+// Função para verificar os horários dos compromissos e tachar os passados
 function verificarHorarios() {
     const compromissos = document.querySelectorAll('.compromisso');
     const now = new Date();
 
     compromissos.forEach(compromisso => {
         const compromissoData = new Date(compromisso.dataset.horario);
+
+        // Tachar compromissos passados
+        if (compromissoData < now) {
+            compromisso.classList.add('text-muted');  // Classe do Bootstrap para texto acinzentado
+            compromisso.style.textDecoration = 'line-through';  // Adiciona o tache
+        }
+
+        // Verificar se o compromisso é agora para emitir bip
         if (now.getFullYear() === compromissoData.getFullYear() &&
             now.getMonth() === compromissoData.getMonth() &&
             now.getDate() === compromissoData.getDate() &&
@@ -29,3 +37,6 @@ function verificarHorarios() {
 
 // Verificar os horários a cada minuto
 setInterval(verificarHorarios, 60000);
+
+// Executar a função imediatamente ao carregar a página
+verificarHorarios();

@@ -18,6 +18,10 @@ def pagina_inicial(request):
      compromissos = Compromisso.objects.filter(data__gte=hoje, data__lte=amanha) 
      return render(request, 'compromissos/lista.html', {'compromissos': compromissos})
 
+# Adiciona a página de ajuda
+def pagina_ajuda(request):
+    return render(request, 'compromissos/ajuda.html')
+
 
 @login_required
 def admin_compromissos(request): 
