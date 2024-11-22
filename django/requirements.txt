@@ -1,4 +1,0 @@
-django >= 5.1.3
-django-smb
-django-flatpickr
-pillow
