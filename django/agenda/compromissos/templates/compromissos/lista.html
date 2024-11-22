@@ -67,4 +67,10 @@
     }
 </script>
 
+<form action="{% url 'execute_script' %}" method="post"> {% csrf_token %} <button type="submit"
+        class="btn btn-primary">Executar Script</button>
+</form>
+
+
+
 {% endblock conteudo %}
