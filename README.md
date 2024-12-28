@@ -32,7 +32,7 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 
 * inicialização do app
 ```python manage.py startapp pauta```
->[!WARING]
+>[!WARNING]
 > Cada alteração no banco de dados deverá, restabelecer as conexões; <br>
 > Com os comandos abaixo;
 
