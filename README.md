@@ -47,5 +47,5 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 
 ## Deverá reiniciar o servidor
 >[!WARNING]
-> ``` sudo supervisorctl restart projeto_pauta ```
+> ``` sudo supervisorctl restart projeto_pauta ``` <br>
 > ```sudo systemctl restart apache2 ```
