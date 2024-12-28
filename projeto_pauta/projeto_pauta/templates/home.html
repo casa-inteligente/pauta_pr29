@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Inicial dos Projetos</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url("{% static 'imagens/logo.jpg' %}");
+            < !-- background-image: url('https://cdn.pixabay.com/photo/2024/06/01/14/00/ai-8802304_1280.jpg');
+            -->background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .header {
+            background-color: #343a40;
+            color: white;
+            padding: 15px 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 15px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn {
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-white bg-secondary fixed-top">Bem-vindo à Página Inicial das funcionalidades!</h1>
+        <a href="{% url 'admin:index' %}" class="btn btn-primary">Admin</a>
+        <a href="{% url 'pauta:index' %}" class="btn btn-primary">Pauta</a>
+        <a href='https://www.sc.gov.br/sap/ipen/signin' class='btn btn-primary'>i-Pen</a> <br>
+        <a href='http://sc.sac24.com.br' class='btn btn-info'>Agendamento UME </a>
+        <a href='https://eproc1g.tjsc.jus.br/eproc/index.php' class='btn btn-secondary'>EPROC</a>
+    </div>
+
+    <footer class="footer">
+        <div class="containet">
+            <p class="mb-0">2025 Presídio Regional de Maravilha - Todos os direitos reservados</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS e dependências -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
