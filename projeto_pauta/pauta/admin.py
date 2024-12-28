@@ -10,7 +10,7 @@ from datetime import timedelta
 pt_BR_formats.TIME_FORMAT = 'H:i'
 pt_BR_formats.DATETIME_FORMAT = 'd/m/Y H:i'
 
-admin.register(Pauta)
+@admin.register(Pauta)
 class PautaAdmin(admin.ModelAdmin):
     form = PautaForm
     list_display = ('data_formatada', 'hora_formatada', 'nome', 'situacao')

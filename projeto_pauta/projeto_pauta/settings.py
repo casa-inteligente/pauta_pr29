@@ -134,8 +134,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = os.path.join(BASE_DIR, 'projeto_pauta/static')
-
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'projeto_pauta/static'),
+    os.path.join(BASE_DIR, 'pauta/static'),
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
