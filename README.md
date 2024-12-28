@@ -25,5 +25,19 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 ```python manage.py migrate```
 
 * Criar um superusuario
-```python manage.py createsuperuser```
+```python manage.py createsuperuser``` <br>
 -- solicita Nome; e-mail e senha
+
+#### Passos para criação dos app's
+
+* inicialização do app
+```python manage.py startapp pauta```
+>[!WARING]
+> Cada alteração no banco de dados deverá, restabelecer as conexões; <br>
+> Com os comandos abaixo;
+
+* Criação do banco de dados para o app (pauta)
+```python manage.py makemigrations pauta```
+* Aplica as mudanças necessarias
+``` python manage.py migrate```
+
