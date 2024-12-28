@@ -44,3 +44,8 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 >[!IMPORTANT]
 > Deve-se mapear os arquivos estaticos
 ```python manage.py collectstatic```
+
+## Deverá reiniciar o servidor
+>[!WARNING]
+> ``` sudo supervisorctl restart projeto_pauta ```
+> ```sudo systemctl restart apache2 ```
