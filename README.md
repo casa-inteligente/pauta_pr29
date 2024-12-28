@@ -41,3 +41,6 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 * Aplica as mudanças necessarias
 ``` python manage.py migrate```
 
+>[!IMPORTANT]
+> Deve-se mapear os arquivos estaticos
+```python manage.py collectstatic```
