@@ -1,0 +1,20 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var timeInputs = document.querySelectorAll('.time-input');
+        timeInputs.forEach(function (input) {
+            input.addEventListener('input', function () {
+                var value = input.value;
+                var minutes = parseInt(value.split(':')[1]);
+                var roundedMinutes = Math.round(minutes / 5) * 5;
+                if (roundedMinutes < 10) {
+                    roundedMinutes = '0' + roundedMinutes;
+                }
+                input.value = value.split(':')[0] + ':' + roundedMinutes;
+            });
+        });
+    });
+</script>
