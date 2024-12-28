@@ -21,5 +21,9 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 ### Para iniciar o projeto
 * ```django-admin startproject projeto_pauta```
 
-* inicio do banco de dados
-``` python manage.py ```
+* inicio do banco de dados, habilita a criação do superusuario
+```python manage.py migrate```
+
+* Criar um superusuario
+```python manage.py createsuperuser```
+-- solicita Nome; e-mail e senha
