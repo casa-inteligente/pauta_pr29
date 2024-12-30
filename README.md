@@ -53,4 +53,8 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 
 
 ## Rodando testes
-```python manage.py test pauta.tests```
+```python manage.py test pauta.tests``` <br>
+* Testes com o __coverage__
+```coverage run --source='.' manage.py test pauta.tests``` <br>
+```coverage report``` exibe no terminal os testes <br>
+```coverge html``` Cria uma página web para visualização dos testes <br>
