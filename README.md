@@ -49,3 +49,8 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 >[!WARNING]
 > ``` sudo supervisorctl restart projeto_pauta ``` <br>
 > ```sudo systemctl restart apache2 ```
+
+
+
+## Rodando testes
+```python manage.py test pauta.tests```
