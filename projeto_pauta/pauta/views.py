@@ -14,5 +14,5 @@ def index(request):
 #Visualização de toda a pauta
 def pauta_all(request):
     today = timezone.now().date()
-    pauta_alls = Pauta.objects.filter(data__gte=today.order_by('data', 'hora'))
+    pauta_alls = Pauta.objects.filter(data__gte=today).order_by('data', 'hora')
     return render(request, 'pauta/pauta_all.html', {'pauta_all': pauta_alls}) 
