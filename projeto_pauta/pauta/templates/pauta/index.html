@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 
@@ -58,7 +59,7 @@
         <button type="button" class="btn btn-info btn-lg"><a href="http://127.0.0.1:8000" target="_blank">Início</a>
         </button>
         <button type="button" class="btn btn-primary btn-lg">
-            <a href="http://127.0.0.1:8000/admin" target="_blank" class="text-white text-decoration-none">Admin</a>
+            <a href="{% url 'admin:index' %}" target="_blank" class="text-white text-decoration-none">Admin</a>
         </button>
 
     </div>

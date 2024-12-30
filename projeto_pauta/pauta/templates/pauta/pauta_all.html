@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 
@@ -55,16 +56,15 @@
         </div>
     </header>
     <div class="container btn-container">
-        <button type="button" class="btn btn-info btn-lg"><a href="http://127.0.0.1:8000" target="_blank">Início</a>
+        <button type="button" class="btn btn-info btn-lg">
+            <a href="{% url 'home' %}" class="text-white text-decoration-none">Início</a>
         </button>
         <button type="button" class="btn btn-primary btn-lg">
-            <a href="http://127.0.0.1:8000/admin" target="_blank" class="text-white text-decoration-none">Admin</a>
+            <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Admin</a>
         </button>
-
     </div>
 
-    <div class="container">
-
+    <div class="container table-container">
         <table class="table table-striped table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
@@ -89,7 +89,7 @@
 
     <!-- Rodapé -->
     <footer class="footer">
-        <div class="containet">
+        <div class="container">
             <p class="mb-0">2025 Presídio Regional de Maravilha - Todos os direitos reservados</p>
         </div>
     </footer>
@@ -97,7 +97,6 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 </body>
 
 </html>
