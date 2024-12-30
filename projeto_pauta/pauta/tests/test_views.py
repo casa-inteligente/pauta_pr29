@@ -15,15 +15,15 @@ class IndexViewTest(TestCase):
         )
 
     def test_index_view_status_code(self):
-        response = self.client.get(reverse('index'))
+        response = self.client.get(reverse('pauta:index'))
         self.assertEqual(response.status_code, 200)
 
     def test_index_view_template(self):
-        response = self.client.get(reverse('index'))
+        response = self.client.get(reverse('pauta:index'))
         self.assertTemplateUsed(response, 'pauta/index.html')
 
     def test_index_view_context(self):
-        response = self.client.get(reverse('index'))
+        response = self.client.get(reverse('pauta:index'))
         self.assertIn('pautas', response.context)
         self.assertEqual(len(response.context['pautas']), 1)
         self.assertEqual(response.context['pautas'][0], self.pauta)
