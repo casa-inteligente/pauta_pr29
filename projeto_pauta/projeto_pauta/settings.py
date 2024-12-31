@@ -53,6 +53,10 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', #Para acesso cruzado
 ]
 
+## Configura que a seção durará até ser fechado o navegador
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 ##ADICIONADO permissão cruzada
 CORS_ALLOW_ALL_ORIGINS = True
 
