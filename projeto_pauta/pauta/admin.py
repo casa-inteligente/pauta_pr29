@@ -16,6 +16,7 @@ class PautaAdmin(admin.ModelAdmin):
     list_display = ('data_formatada', 'hora_formatada', 'nome', 'situacao')
     search_fields = ('nome', 'data')
     list_filter = ('data', 'nome')
+    ordering = ('data', 'hora')
     change_form_template = 'admin/pauta/change_form.html'  # Especifica o template personalizado
 
     #Cria condição para repetição
