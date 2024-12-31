@@ -1,7 +1,6 @@
 {% extends "admin/change_form.html" %}
 {% load static %}
 {% block extrahead %}
-{{ block.super }}
 <style>
     .highlight-code {
         background-color: #f8f9fa;
@@ -32,7 +31,7 @@
 
 <!-- Informações para a inserção de compromissos na pauta -->
 {% block content %}
-{{ block.super }}
+
 <div class="container mt-4 p-3 border rounded bg-light">
     <h2 class="mb-3">Informações para a inserção de compromissos na pauta</h2>
     <p class="mb-2">Caso possua compromissos que se repetem, poderá utilizar as opções de inserção automática.</p>
@@ -43,4 +42,5 @@
     </p>
 </div>
 </div>
+{{ block.super }}
 {% endblock %}
