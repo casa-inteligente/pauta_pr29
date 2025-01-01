@@ -79,8 +79,8 @@
                 <tr>
                     <td class="border">{{ pauta.data|date:"d/m/y" }}</td>
                     <td class="border">{{ pauta.hora }}</td>
-                    <td class="border">{{ pauta.nome }}</td>
-                    <td class="border">{{ pauta.situacao }}</td>
+                    <td class="border">{{ pauta.nome|safe|linebreaksbr }}</td>
+                    <td class="border">{{ pauta.situacao|safe|linebreaksbr }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
