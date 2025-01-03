@@ -58,3 +58,9 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 ```coverage run --source='.' manage.py test pauta.tests``` <br>
 ```coverage report``` exibe no terminal os testes <br>
 ```coverage html``` Cria uma página web para visualização dos testes <br>
+
+
+
+<br>
+
+https://weareoutman.github.io/clockpicker/
