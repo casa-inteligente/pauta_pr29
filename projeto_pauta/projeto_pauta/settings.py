@@ -196,3 +196,8 @@ DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = { 
     'location': os.path.join(BASE_DIR, 'backups'),     
 }
+
+#Define o padrão da data
+DBBACKUP_DATE_FORMAT = '%Y-%m-%d'
+# Define o padrão do nome do arquivo de backup .dump 
+DBBACKUP_FILENAME_TEMPLATE = "backup_{datetime}.dump"
