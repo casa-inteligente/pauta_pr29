@@ -32,14 +32,15 @@ ALLOWED_HOSTS = ['127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
+    "django.contrib.admin", #templetes de Admnistração
+    "django.contrib.auth", # Regras de sautentificações
     "django.contrib.contenttypes",
-    "django.contrib.sessions",
+    "django.contrib.sessions", # Controle de seções
     "django.contrib.messages",
-    "django.contrib.staticfiles",
+    "django.contrib.staticfiles", # Arquivos staticos
     'pauta', #App pauta digital
     'corsheaders', # Para acesso cruzado
+    'dbbackup', #Para realizar backup
 ]
 
 MIDDLEWARE = [
@@ -188,3 +189,10 @@ LOGGING = {
         },
     },
  }
+
+#  BACKUP do banco de dados 
+# Diretório onde os backups serão armazenados 
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = { 
+    'location': os.path.join(BASE_DIR, 'backups'),     
+}
