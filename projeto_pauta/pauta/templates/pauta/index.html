@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <html>
 
@@ -45,6 +44,36 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+
+        @media print {
+            @page {
+                size: landscape;
+                margin: 1cm;
+            }
+
+            body {
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+
+            .header,
+            .footer {
+                position: static;
+            }
+
+            table,
+            th,
+            td {
+                border: 2px solid black;
+                /* Define bordas pretas e espessas */
+            }
+
+            th,
+            td {
+                border-width: 2px;
+                /* Define a espessura das bordas */
+            }
+        }
     </style>
 </head>
 
@@ -61,11 +90,9 @@
         <button type="button" class="btn btn-primary btn-lg">
             <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Admin</a>
         </button>
-
     </div>
 
     <div class="container">
-
         <table class="table table-striped table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
@@ -98,7 +125,6 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 </body>
 
 </html>
