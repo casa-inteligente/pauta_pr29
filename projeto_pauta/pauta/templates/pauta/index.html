@@ -61,10 +61,16 @@
                 position: static;
             }
 
+            .btn-container {
+                /*Oculta botões na impressão */
+                display: none;
+            }
+
             table,
             th,
-            td {
-                border: 2px solid black;
+            td,
+            tr {
+                border: 2px solid rgb(5, 5, 5);
                 /* Define bordas pretas e espessas */
             }
 
@@ -104,7 +110,7 @@
             </thead>
             <tbody>
                 {% for pauta in pautas %}
-                <tr>
+                <tr class="text-center">
                     <td class="border">{{ pauta.data|date:"d/m/y" }}</td>
                     <td class="border">{{ pauta.hora }}</td>
                     <td class="border">{{ pauta.nome|safe|linebreaksbr }}</td>
