@@ -49,13 +49,13 @@
         var copyButtons = document.querySelectorAll('.copy-button');
         copyButtons.forEach(function (button) {
             button.addEventListener('click', function () {
-                var codeElement = button.previousElementSibling;
-                var range = document.createRange();
-                range.selectNodeContents(codeElement);
-                var selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
+                var textToCopy = button.getAttribute('data-copy-text');
+                var tempInput = document.createElement('input');
+                tempInput.value = textToCopy;
+                document.body.appendChild(tempInput);
+                tempInput.select();
                 document.execCommand('copy');
+                document.body.removeChild(tempInput);
                 alert('Texto copiado!');
             });
         });
@@ -72,11 +72,17 @@
     <p class="mb-2">Para destacar um nome, insira como:
         <code
             class="highlight-code">&lt;b&gt; <b>Aqui estará em negrito </b>&lt;/b&gt; Aqui não estará em negrito</code>
-        <button class="copy-button"><i class="fas fa-copy"></i></button>
+        <button class="copy-button" data-copy-text="&lt;b&gt;negrito &lt;/b&gt;"><i class="fas fa-copy"></i></button>
     </p>
     <p class="mb-2">Para deixar em duas linhas, insira como:
         <code class="highlight-code">Primeira Linha &lt;br&gt; <br> Pula Linha (No mesmo compromisso)</code>
-        <button class="copy-button"><i class="fas fa-copy"></i></button>
+        <button class="copy-button" data-copy-text="&lt;br&gt;"><i class="fas fa-copy"></i></button>
+    </p>
+    <p class="mb-2">Para inserir um link:
+        <code
+            class="highlight-code">&lt;a href='INSIRA O LINK AQUI(https://google.com.br)'&gt; Texto a ser exibido(Google) &lt;/a&gt; </code>
+        <button class="copy-button" data-copy-text="&lt;a href='INSIRA O LINK'&gt; Texto a ser exibido &lt;/a&gt;"><i
+                class="fas fa-copy"></i></button>
     </p>
 </div>
 {{ block.super }}
