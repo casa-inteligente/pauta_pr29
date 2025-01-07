@@ -10,12 +10,35 @@ from datetime import timedelta
 pt_BR_formats.TIME_FORMAT = 'H:i'
 pt_BR_formats.DATETIME_FORMAT = 'd/m/Y H:i'
 
+
+#Cria filtro personalizado para selecionar ano anterior
+class AnoAnteriorFilter(admin.SimpleListFilter):
+    ano_atual = timezone.now().year
+    ano_anterior = ano_atual - 1
+    title = f'Ano de: {ano_anterior}'
+    parameter_name = 'ano_anterior'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('ano_anterior', 'Ano Anterior'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'ano_anterior':
+            ano_atual = timezone.now().year
+            ano_anterior = ano_atual - 1
+            inicio_ano_anterior = timezone.datetime(ano_anterior, 1, 1)
+            fim_ano_anterior = timezone.datetime(ano_anterior, 12, 31, 23, 59, 59)
+            return queryset.filter(data__range=(inicio_ano_anterior, fim_ano_anterior))
+        return queryset
+
+
 @admin.register(Pauta)
 class PautaAdmin(admin.ModelAdmin):
     form = PautaForm
     list_display = ('data_formatada', 'hora_formatada', 'nome', 'situacao')
     search_fields = ('nome', 'data')
-    list_filter = ('data', 'nome')
+    list_filter = ('data', AnoAnteriorFilter, 'nome')
     ordering = ('data', 'hora')
     change_form_template = 'admin/pauta/change_form.html'  # Especifica o template personalizado
 

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Administração de compromisso{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  {% block extrastyle %}{% endblock %}
+</head>
+
+<body class="{% block bodyclass %}{% endblock %}">
+  <div id="container">
+    <div id="header">
+      <div id="branding">
+        <h1 id="site-name"><a href="{% url 'admin:index' %}">Administração de compromisso</a></h1>
+      </div>
+    </div>
+    <div id="content" class="colM">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</body>
+
+</html>

@@ -11,7 +11,27 @@
         color: #495057;
     }
 </style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/clockpicker/0.0.7/bootstrap-clockpicker.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clockpicker/0.0.7/bootstrap-clockpicker.min.js"></script>
+
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/resources/demos/style.css">
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 <script>
+    // moment.locale('pt-br')
+    $(function () {
+        $("#calendario").datepicker({
+            numberOfMonths: 3,
+            showButtonPanel: true
+        });
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         var timeInputs = document.querySelectorAll('.time-input');
         timeInputs.forEach(function (input) {
@@ -25,22 +45,47 @@
                 input.value = value.split(':')[0] + ':' + roundedMinutes;
             });
         });
+
+        var copyButtons = document.querySelectorAll('.copy-button');
+        copyButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                var textToCopy = button.getAttribute('data-copy-text');
+                console.log(textToCopy)
+                var tempInput = document.createElement('input');
+                tempInput.value = textToCopy;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                alert('Texto copiado!');
+            });
+        });
     });
 </script>
 {% endblock %}
 
 <!-- Informações para a inserção de compromissos na pauta -->
 {% block content %}
+<a href="{% url 'pauta:password_change' %}">Alterar senha</a>
 
 <div class="container mt-4 p-3 border rounded bg-light">
     <h2 class="mb-3">Informações para a inserção de compromissos na pauta</h2>
     <p class="mb-2">Caso possua compromissos que se repetem, poderá utilizar as opções de inserção automática.</p>
-    <p class="mb-2">Para destacar um nome, insira como: <code
-            class="highlight-code"> &lt;b&gt;Nome da Pessoa/Situação&lt;/b&gt; </code> </p>
-    <p class="mb-2">Para deixar em duas linhas, insira como: <code
-            class="highlight-code"> &lt;br&gt;Nome da Pessoa/Sitaução&lt;/br&gt; </code>
+    <p class="mb-2">Para destacar um nome, insira como:
+        <code
+            class="highlight-code">&lt;b&gt; <b>Aqui estará em negrito </b>&lt;/b&gt; Aqui não estará em negrito</code>
+        <button class="copy-button" data-copy-text="&lt;b&gt;negrito &lt;/b&gt;"><i class="fas fa-copy"></i></button>
     </p>
-</div>
+    <p class="mb-2">Para deixar em duas linhas, insira como:
+        <code class="highlight-code">Primeira Linha &lt;br&gt; <br> Pula Linha (No mesmo compromisso)</code>
+        <button class="copy-button" data-copy-text="&lt;br&gt;"><i class="fas fa-copy"></i></button>
+    </p>
+    <p class="mb-2">Para inserir um link, mantenha o link entre aspas simples:
+        <code
+            class="highlight-code">&lt;a href='INSIRA O LINK AQUI(https://google.com.br)'&gt; Texto a ser exibido &lt;/a&gt; </code>
+        <button class="copy-button" data-copy-text="&lt;a href='(INSIRA O LINK)'&gt; Texto a ser exibido &lt;/a&gt;"><i
+                class="fas fa-copy"></i></button>
+    </p>
 </div>
 {{ block.super }}
 {% endblock %}
