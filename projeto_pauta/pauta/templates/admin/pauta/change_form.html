@@ -66,7 +66,10 @@
 
 <!-- Informações para a inserção de compromissos na pauta -->
 {% block content %}
-<a href="{% url 'pauta:password_change' %}">Alterar senha</a>
+<button type="button" class="btn btn-info btn-lg"><a href="{% url 'pauta:pauta_all' %}">Início</a>
+</button>
+<button type="button" class="btn btn-info btn-lg"><a href="{% url 'pauta:password_change' %}">Alterar senha</a>
+</button>
 
 <div class="container mt-4 p-3 border rounded bg-light">
     <h2 class="mb-3">Informações para a inserção de compromissos na pauta</h2>

@@ -75,8 +75,11 @@
             tr {
                 /* Define bordas pretas e espessas */
                 border: 2px solid rgb(5, 5, 5);
+            }
 
-
+            table tr {
+                /* diminui altura das linhas */
+                line-height: 0.5;
             }
 
             th,
@@ -109,6 +112,12 @@
         <button type="button" class="btn btn-info btn-lg">
             <a href="{% url 'pauta:pauta_all' %}" class="text-white text-decoration-none">Início</a>
         </button>
+        <button type="button" class="btn btn-info btn-lg">
+            <a href="{% url 'admin:pauta_pauta_add' %}" class="text-white text-decoration-none">Inserir</a>
+        </button>
+
+        <!-- http://10.40.22.165:8000/admin/pauta/pauta/add/ -->
+
         <button type="button" class="btn btn-primary btn-lg">
             <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Admin</a>
         </button>
