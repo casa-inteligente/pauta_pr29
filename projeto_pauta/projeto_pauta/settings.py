@@ -52,6 +52,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     'corsheaders.middleware.CorsMiddleware', #Para acesso cruzado
+    'pauta.middleware.RestrictIPMiddleware', # Restringe IP
 ]
 
 ## Configura que a seção durará até ser fechado o navegador
