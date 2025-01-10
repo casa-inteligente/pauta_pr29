@@ -1,0 +1,49 @@
+{% extends "admin/change_list.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .button-group {
+        display: flex;
+        gap: 10px;
+        /* Espaçamento entre os botões */
+    }
+
+    .button-group .btn {
+        text-decoration: none;
+        /* Remove a sublinha do link */
+        color: white;
+        /* Cor do texto */
+        background-color: #888686;
+        /* Cor de fundo cinza escuro */
+        border-radius: 15px;
+        /* Botões arredondados */
+        padding: 10px 20px;
+        /* Espaçamento interno do botão */
+        border: none;
+        /* Remove a borda padrão */
+    }
+
+    .button-group .btn a {
+        text-decoration: none;
+        /* Remove a sublinha do link */
+        color: inherit;
+        /* Herdar a cor do texto do botão */
+    }
+
+    .button-group .btn:hover {
+        background-color: #3a3939;
+        /* Cor de fundo ao passar o mouse */
+    }
+</style>
+{% endblock %}
+
+{% block object-tools %}
+{{ block.super }}
+<div class="button-group">
+    <button type="button" class="btn btn-info btn-lg">
+        <a href="{% url 'pauta:pauta_all' %}" style="color: inherit; text-decoration: none;">Pauta Completa</a>
+    </button>
+    <!-- Botão ADICIONAR PAUTA existente -->
+</div>
+{% endblock %}
