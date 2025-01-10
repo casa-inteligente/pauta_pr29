@@ -55,6 +55,8 @@
             body {
                 padding-top: 0;
                 padding-bottom: 0;
+                /* Esconde o conteudo que ultrapassa uma página */
+                overflow: hidden;
             }
 
             .header,
@@ -71,14 +73,26 @@
             th,
             td,
             tr {
-                border: 2px solid rgb(5, 5, 5);
                 /* Define bordas pretas e espessas */
+                border: 2px solid rgb(5, 5, 5);
+
+
             }
 
             th,
             td {
-                border-width: 2px;
                 /* Define a espessura das bordas */
+                border-width: 2px;
+
+            }
+
+            .content {
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            table {
+                page-break-inside: avoid;
             }
         }
     </style>
