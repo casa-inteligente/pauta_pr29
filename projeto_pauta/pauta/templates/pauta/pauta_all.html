@@ -45,6 +45,42 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+
+        @media print {
+            @page {
+                size: landscape;
+                margin: 1cm;
+            }
+
+            body {
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+
+            .header,
+            .footer {
+                position: static;
+            }
+
+            .btn-container {
+                /*Oculta botões na impressão */
+                display: none;
+            }
+
+            table,
+            th,
+            td,
+            tr {
+                border: 2px solid rgb(5, 5, 5);
+                /* Define bordas pretas e espessas */
+            }
+
+            th,
+            td {
+                border-width: 2px;
+                /* Define a espessura das bordas */
+            }
+        }
     </style>
 </head>
 
@@ -57,7 +93,7 @@
     </header>
     <div class="container btn-container">
         <button type="button" class="btn btn-info btn-lg">
-            <a href="{% url 'home' %}" class="text-white text-decoration-none">Início</a>
+            <a href="{% url 'pauta:pauta_all' %}" class="text-white text-decoration-none">Início</a>
         </button>
         <button type="button" class="btn btn-primary btn-lg">
             <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Admin</a>

@@ -54,6 +54,8 @@
             body {
                 padding-top: 0;
                 padding-bottom: 0;
+                /* Esconde o conteudo que ultrapassa uma página */
+                overflow: hidden;
             }
 
             .header,
@@ -79,6 +81,11 @@
                 border-width: 2px;
                 /* Define a espessura das bordas */
             }
+
+            .content {
+                height: 100vh;
+                overflow: hidden;
+            }
         }
     </style>
 </head>
@@ -91,7 +98,7 @@
         </div>
     </header>
     <div class="container btn-container">
-        <button type="button" class="btn btn-info btn-lg"><a href="{% url 'home' %}">Início</a>
+        <button type="button" class="btn btn-info btn-lg"><a href="{% url 'pauta:pauta_all' %}">Início</a>
         </button>
         <button type="button" class="btn btn-primary btn-lg">
             <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Admin</a>
