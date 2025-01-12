@@ -10,6 +10,39 @@
         font-family: monospace;
         color: #495057;
     }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        /* Espaçamento entre os botões */
+    }
+
+    .button-group .btn {
+        text-decoration: none;
+        /* Remove a sublinha do link */
+        color: white;
+        /* Cor do texto */
+        background-color: #888686;
+        /* Cor de fundo cinza escuro */
+        border-radius: 15px;
+        /* Botões arredondados */
+        padding: 10px 20px;
+        /* Espaçamento interno do botão */
+        border: none;
+        /* Remove a borda padrão */
+    }
+
+    .button-group .btn a {
+        text-decoration: none;
+        /* Remove a sublinha do link */
+        color: inherit;
+        /* Herdar a cor do texto do botão */
+    }
+
+    .button-group .btn:hover {
+        background-color: #3a3939;
+        /* Cor de fundo ao passar o mouse */
+    }
 </style>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/clockpicker/0.0.7/bootstrap-clockpicker.min.css">
@@ -20,6 +53,12 @@
 <link rel="stylesheet" href="/resources/demos/style.css">
 <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+
+<!-- Bootstrap JS e dependências -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
@@ -66,7 +105,19 @@
 
 <!-- Informações para a inserção de compromissos na pauta -->
 {% block content %}
-<a href="{% url 'pauta:password_change' %}">Alterar senha</a>
+
+<div class="button-group">
+    <button type="button" class="btn btn-info btn-lg"><a href="{% url 'pauta:pauta_all' %}">Pauta Completa</a>
+    </button>
+
+    <button type="button" class="btn btn-info btn-lg"><a href="{% url 'admin:index' %}">Admin</a>
+    </button>
+
+    <!-- <button type="button" class="btn btn-info btn-lg"><a href="{% url 'pauta:password_change' %}">Alterar senha</a>
+    </button> -->
+</div>
+
+
 
 <div class="container mt-4 p-3 border rounded bg-light">
     <h2 class="mb-3">Informações para a inserção de compromissos na pauta</h2>
