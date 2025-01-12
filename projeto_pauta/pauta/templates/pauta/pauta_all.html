@@ -67,7 +67,7 @@
                 padding-top: 0;
                 padding-bottom: 0;
                 /* Esconde o conteúdo que ultrapassa uma página */
-                overflow: hidden;
+                /* overflow: hidden; */
             }
 
             .header,
@@ -99,13 +99,8 @@
                 border-width: 2px;
             }
 
-            .content {
-                height: 100vh;
-                overflow: hidden;
-            }
-
-            table {
-                page-break-inside: avoid;
+            .remo_print {
+                display: none;
             }
         }
     </style>
@@ -153,7 +148,7 @@
         </div>
 
         <!-- Coluna para inserir compromissos -->
-        <div class="col">
+        <div class="col remo_print">
             <h2 class="text-center">INSERÇÃO DE COMPROMISSOS:</h2>
             <form method="post" action="{% url 'pauta:pauta_all' %}">
                 {% csrf_token %}
