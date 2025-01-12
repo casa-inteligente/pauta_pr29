@@ -154,7 +154,7 @@
 
         <!-- Coluna para inserir compromissos -->
         <div class="col">
-            <h2 class="text-center">INSERÇÃO DE COMPROMISSOS</h2>
+            <h2 class="text-center">INSERÇÃO DE COMPROMISSOS:</h2>
             <form method="post" action="{% url 'pauta:pauta_all' %}">
                 {% csrf_token %}
                 {{ form.as_p }}
