@@ -37,7 +37,7 @@ class AnoAnteriorFilter(admin.SimpleListFilter):
 class PautaAdmin(admin.ModelAdmin):
     form = PautaForm
     list_display = ('data_formatada', 'hora_formatada', 'nome', 'situacao')
-    search_fields = ('nome', 'data')
+    search_fields = ('nome', 'data', 'situacao')
     list_filter = ('data', AnoAnteriorFilter, 'nome')
     ordering = ('data', 'hora')
     change_form_template = 'admin/pauta/change_form.html'  # Especifica o template personalizado
