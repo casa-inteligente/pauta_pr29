@@ -59,7 +59,7 @@
 
         @media print {
             @page {
-                size: landscape;
+                size: portrait;
                 margin: 1cm;
             }
 
@@ -90,7 +90,7 @@
 
             table tr {
                 /* diminui altura das linhas */
-                line-height: 0.5;
+                line-height: 0.8;
             }
 
             th,
@@ -114,11 +114,11 @@
         </div>
     </header>
     <div class="container btn-container">
-        <button type="button" class="btn btn-info btn-lg">
+        <!-- <button type="button" class="btn btn-info btn-lg">
             <a href="{% url 'admin:pauta_pauta_add' %}" class="text-white text-decoration-none">Inserir</a>
-        </button>
-        <button type="button" class="btn btn-primary btn-lg">
-            <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Admin</a>
+        </button> -->
+        <button type="button" class="btn btn-primary btn-sm">
+            <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Login</a>
         </button>
     </div>
 
@@ -149,12 +149,14 @@
 
         <!-- Coluna para inserir compromissos -->
         <div class="col remo_print">
-            <h2 class="text-center">INSERÇÃO DE COMPROMISSOS:</h2>
+            <h5 class="text-center">INSERÇÃO DE COMPROMISSOS:</h5>
             <form method="post" action="{% url 'pauta:pauta_all' %}">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <button type="submit" class="btn btn-success">Salvar</button>
+                Lembre-se de lançar o compromisso no <b>Ipen</b>.
             </form>
+
         </div>
     </div>
 
