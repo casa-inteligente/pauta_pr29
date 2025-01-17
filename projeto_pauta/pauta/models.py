@@ -5,7 +5,7 @@ class Pauta(models.Model):
     data = models.DateField('Data*')
     hora = models.TimeField('Hora*')
     nome = models.CharField('Nome*', max_length=200)
-    situacao = models.CharField('Situação*', max_length=200)
+    situacao = models.TextField('Situação*', max_length=200)
     intervalo_repeticao = models.IntegerField("Intervalo de repetição em DIAS", null=True, blank=True)
     numero_repeticoes = models.IntegerField("Número de repetições", null=True, blank=True)
 
