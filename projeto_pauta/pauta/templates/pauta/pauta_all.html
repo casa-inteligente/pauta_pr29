@@ -32,6 +32,20 @@
             text-align: center;
         }
 
+        .insercao {
+            position: sticky;
+            /* ajuste conforme necessário */
+            top: 80px;
+            /* ajuste conforme necessário */
+            right: 20px;
+            background-color: #a5a9ad;
+            /* ajuste conforme necessário */
+            width: 300px;
+            /* ajusta a altura */
+            height: calc(100vh - 80px);
+
+        }
+
         .content {
             display: flex;
             justify-content: space-between;
@@ -149,7 +163,7 @@
         </div>
 
         <!-- Coluna para inserir compromissos -->
-        <div class="col remo_print">
+        <div class="col remo_print insercao">
             <h5 class="text-center">INSERÇÃO DE COMPROMISSOS:</h5>
             <form method="post" action="{% url 'pauta:pauta_all' %}">
                 {% csrf_token %}
@@ -159,6 +173,9 @@
             </form>
 
         </div>
+        <!-- <aside style="background-color: aqua;">
+            Botões
+        </aside> -->
     </div>
 
     <!-- Rodapé -->
