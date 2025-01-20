@@ -132,7 +132,7 @@
     <!-- Cabeçalho -->
     <header class="header">
         <div class="container">
-            <h2 class="text-center">Presídio Regional de Maravilha - Pauta</h2>
+            <h2 class="text-center">Presídio Regional de Maravilha &#8211; Pauta</h2>
         </div>
     </header>
     <div class="container btn-container">
@@ -176,10 +176,10 @@
             <form method="post" action="{% url 'pauta:pauta_all' %}">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit" class="btn btn-success">Salvar</button>
+                <button type="submit" class="btn btn-success btn-sm">Salvar</button>
                 Lembre-se de lançar o compromisso no <a href="https://www.sc.gov.br/sap/ipen/signin" class="btn btn-sm"
                     target="_blank">
-                    <b>i-PEN</b></a>.
+                    <b>i-PEN</b></a>
             </form>
 
         </div>
@@ -191,7 +191,7 @@
     <!-- Rodapé -->
     <footer class="footer">
         <div class="container">
-            <p class="mb-0">2025 Presídio Regional de Maravilha - Todos os direitos reservados</p>
+            <p class="mb-0">2025 Presídio Regional de Maravilha &#8211; Todos os direitos reservados</p>
         </div>
     </footer>
     <!-- Bootstrap JS e dependências -->
