@@ -41,7 +41,7 @@ body {
     position: sticky;
     top: 80px;
     right: 20px;
-    background-color: none;
+    /* background-color: rgb(255, 255, 255); */
     width: 300px;
     height: calc(100vh - 80px);
 }
@@ -115,6 +115,11 @@ td {
     }
 
     .remo_print {
+        display: none;
+    }
+
+    /* Remove o icone para cima */
+    #topo {
         display: none;
     }
 
