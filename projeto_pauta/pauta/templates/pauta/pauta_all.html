@@ -8,124 +8,7 @@
     <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
     <!--adiciona uma imagem na aba do navegador-->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            padding-top: 80px;
-            padding-bottom: 60px;
-        }
-
-        .header {
-            background-color: #343a40;
-            color: white;
-            padding: 5px 0;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-        }
-
-        .footer {
-            background-color: #343a40;
-            color: white;
-            padding: 10px 0;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-        }
-
-        .insercao {
-            position: sticky;
-            top: 80px;
-            right: 20px;
-            background-color: none;
-            width: 300px;
-            height: calc(100vh - 80px);
-        }
-
-        .content {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-
-        .col {
-            width: 100%;
-        }
-
-        .table-container {
-            margin: 20px 0;
-        }
-
-        .btn-voltar {
-            margin: 20px 0;
-        }
-
-        .btn-container {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        table,
-        th,
-        td {
-            border: 2px solid rgb(5, 5, 5);
-        }
-
-        .print-info {
-            display: none;
-        }
-
-        @media print {
-            @page {
-                size: portrait;
-                margin: 0.5cm;
-            }
-
-            body {
-                padding-top: 0;
-                padding-bottom: 0;
-            }
-
-            .header,
-            .footer {
-                position: static;
-            }
-
-            .btn-container {
-                display: none;
-            }
-
-            table,
-            th,
-            td,
-            tr {
-                border: 2px solid rgb(5, 5, 5);
-                border-collapse: collapse;
-                line-height: 0.8;
-            }
-
-            td {
-                font-size: 11pt;
-            }
-
-            .remo_print {
-                display: none;
-            }
-
-            .print-info {
-                display: block;
-                position: fixed;
-                top: 10px;
-                left: 10px;
-                width: 100%;
-                font-size: 12px;
-                color: black;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/style_pauta_all.css' %}">
 </head>
 
 <body>
@@ -145,7 +28,7 @@
         <button type="button" class="btn btn-secondary btn-sm" onclick="window.print()">Imprimir</button>
     </div>
 
-    <div class="container content">
+    <div class="container content" id="inicio">
         <!-- Coluna para mostrar os compromissos -->
         <div class="col table-container">
             <table class="table table-striped table-bordered table-hover">
@@ -215,6 +98,8 @@
             document.getElementById('document-url').innerText = documentURL;
         });
     </script>
+
+    <a href="#inicio" id="topo"> <img src="{% static 'img/para-cima.png' %}" alt="Topo do compromisso"></a>
 </body>
 
 </html>
