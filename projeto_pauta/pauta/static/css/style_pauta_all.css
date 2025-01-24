@@ -119,7 +119,7 @@ td {
     }
 
     /* Remove o icone para cima */
-    #topo {
+    #topo * {
         display: none;
     }
 
