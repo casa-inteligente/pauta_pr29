@@ -1,3 +1,4 @@
+from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from .models import Pauta
 from .forms import PautaForm
@@ -48,11 +49,20 @@ class PautaAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if obj.intervalo_repeticao and obj.numero_repeticoes:
             data_atual = obj.data
+            #print(obj.intervalo_repeticao)
 
             for i in range(1, obj.numero_repeticoes):
-                nova_data = obj.data + timedelta(days=(obj.intervalo_repeticao * i))
+                if obj.intervalo_repeticao == 30:
+                    data_atual += relativedelta(months=1)
+                elif obj.intervalo_repeticao == 15:
+                    data_atual += relativedelta(weeks=2)
+                elif obj.intervalo_repeticao == 21:
+                    data_atual += relativedelta(weeks=3)
+                else:
+                    data_atual += relativedelta(days=obj.intervalo_repeticao)
+                
                 Pauta.objects.create(
-                    data=nova_data,
+                    data=data_atual,
                     hora=obj.hora,
                     nome=obj.nome,
                     situacao=obj.situacao,
