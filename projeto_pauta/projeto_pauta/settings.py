@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'pauta', #App pauta digital
     'corsheaders', # Para acesso cruzado
     'dbbackup', #Para realizar backup
+    'relação_detentos', #Para o controle dos prazos
 ]
 
 MIDDLEWARE = [
@@ -78,6 +79,7 @@ TEMPLATES = [
         "DIRS": [
             os.path.join(BASE_DIR, 'projeto_pauta/templates'),
             os.path.join(BASE_DIR, 'pauta/templates'),
+            os.path.join(BASE_DIR, 'relação_detentos/templates'),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
