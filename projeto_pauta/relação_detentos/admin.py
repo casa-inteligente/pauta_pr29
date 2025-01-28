@@ -6,4 +6,5 @@ from .forms import RelacaoDetentosForm
 @admin.register(Relacao)
 class RelacaoAdmin(admin.ModelAdmin):
     form = RelacaoDetentosForm
-    list_display = ('IPEN', 'nome')
+    list_display = ('IPEN', 'nome', 'artigo', 'ingresso')
+    search_fields = ('nome', "ingresso")
