@@ -5,6 +5,6 @@ class RelacaoDetentosForm(forms.ModelForm):
     class Meta:
         model = Relacao
         fields = '__all__'
-        widgets = {
-            'IPEN' = forms.DateInput(attrs={'type': 'date'}),
-        }
+        # widgets = {
+        #     'IPEN' = forms.DateInput(attrs={'type': 'date'}),
+        # }
