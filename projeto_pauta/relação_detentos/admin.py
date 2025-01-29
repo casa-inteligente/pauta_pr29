@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Relacao
+from .models import Relacao, Pena
 from .forms import RelacaoDetentosForm
 
 # Register your models here.
@@ -8,3 +8,7 @@ class RelacaoAdmin(admin.ModelAdmin):
     form = RelacaoDetentosForm
     list_display = ('IPEN', 'nome', 'artigo', 'ingresso')
     search_fields = ('nome', "ingresso")
+
+# @admin.register(Pena)
+# class PenaAdmin(admin.ModelAdmin):
+#     list_display = ('ano', 'mes', 'dias')
