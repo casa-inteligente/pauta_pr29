@@ -18,11 +18,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
     path('', include('pauta.urls')),
-    path('relacoes/', include('relação_detentos.urls')),  # Ajuste para incluir relação_detentos
+    path('relacoes/', include('relação_detentos.urls')),
     path('home', views.home, name='home'),
     path('admin/', admin.site.urls),
+    path('login/', auth_views.LoginView.as_view(), name='login'),  # URL de login
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),  # URL de logout
+    path('accounts/', include('django.contrib.auth.urls')),  # URLs de autenticação padrão
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
