@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Relação de Detentos</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Relação de Detentos</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>IPEN</th>
+                <th>Nome</th>
+                <th>Comarca</th>
+                <th>Artigo</th>
+                <th>Ingresso</th>
+                <th>Regime</th>
+                <th>Pena</th>
+                <th>Previsão de Saída</th>
+                <th>Local da Alocação</th>
+                <th>Atualizado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for relacao in relacoes %}
+            <tr>
+                <td>{{ relacao.IPEN }}</td>
+                <td>{{ relacao.nome }}</td>
+                <td>{{ relacao.comarca }}</td>
+                <td>{{ relacao.artigo }}</td>
+                <td>{{ relacao.formatted_ingresso }}</td>
+                <td>{{ relacao.regime_nome_completo }}</td>
+                <td>{{ relacao.pena }}</td>
+                <td>{{ relacao.formatted_previsao_saida }}</td>
+                <td>{{ relacao.local_alocacao_nome_completo }}</td>
+                <td>{{ relacao.formatted_atualizado }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>

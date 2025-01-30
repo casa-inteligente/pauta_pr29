@@ -21,9 +21,8 @@ from django.urls import path, include
 from . import views
 
 urlpatterns = [
-    #path('', views.home, name='home'),
     path('', include('pauta.urls')),
+    path('relacoes/', include('relação_detentos.urls')),  # Ajuste para incluir relação_detentos
     path('home', views.home, name='home'),
-    #path('pauta/', include('pauta.urls', namespace='pauta')),
     path('admin/', admin.site.urls),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

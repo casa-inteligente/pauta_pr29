@@ -1,4 +1,5 @@
 # from django.core.validators import MinLengthValidator, MaxLengthValidator, MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -6,6 +7,7 @@ from django.utils import timezone
 
 # Create your models here.
 class Relacao(models.Model):
+  
     campo_regime = (
             ('P','Provisório'),
             ('F', 'Fechado'),
@@ -18,28 +20,36 @@ class Relacao(models.Model):
     IPEN = models.PositiveIntegerField('iPEN')
     nome = models.CharField('Nome', max_length=150)
     comarca = models.CharField('Comarca', max_length=10)
-    artigo = models.CharField('Artigo', max_length=8)
+    artigo = models.CharField('Artigos', max_length=8)
     ingresso = models.DateField('Ingresso', default=timezone.now)
     regime = models.CharField('Regime',max_length=2, choices=campo_regime, default="P")
-    pena = models.CharField('Pena', max_length=10)
-    previsao_saida = models.DateField('Previsão de saída', blank=True, null=True)
+    pena = models.CharField('Pena', max_length=10, blank=True, null=True)
+    previsao_saida = models.DateField('Previsão saída', blank=True, null=True)
     local_alocacao = models.CharField('Local da alocação', choices=alocacao_local, default='F', max_length=2)
     atualizado = models.DateField('Atualizado', default=timezone.now)#colocar atualização padrão na data atual
 
     def __str__(self):
         return self.nome
     
+    def save(self, *args, **kwargs):
+        if self.regime == 'P':
+            self.previsao_saida = None
+        # if self.regime in ['F', 'SA'] and not self.pena:
+        #     raise ValidationError('O campo "Pena" é obrigatório para os regimes "Fechado" e "Semiaberto".')
+        super(Relacao, self).save(*args, **kwargs)
+    
     def formatted_ingresso(self):
         return self.ingresso.strftime('%d-%m-%y')
+    formatted_ingresso.short_description = 'Ingresso'
 
     def formatted_previsao_saida(self):
         if self.previsao_saida:
             return self.previsao_saida.strftime('%d-%m-%y')
-        return 
+        elif self.regime == 'P':
+            return '-'
+        return '-'
+    formatted_previsao_saida.short_description = 'Previsão de Saída'
 
     def formatted_atualizado(self):
-        return self.atualizado.strftime('%d-%m-%y')
-
-    formatted_ingresso.short_description = 'Ingresso'
-    formatted_previsao_saida.short_description = 'Previsão de Saída'
+        return self.atualizado.strftime('%d-%m-%y')    
     formatted_atualizado.short_description = 'Atualizado'

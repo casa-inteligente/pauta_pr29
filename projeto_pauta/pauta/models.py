@@ -14,7 +14,7 @@ class Pauta(models.Model):
         return self.nome
     
 
+    #Podendo ser formatada em admin.py
     def formato_data(self):
         return self.data.strftime('%d/%m/%y')
-    
     formato_data.short_description = 'Data'

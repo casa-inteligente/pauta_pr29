@@ -7,7 +7,7 @@ from .forms import RelacaoDetentosForm
 class RelacaoAdmin(admin.ModelAdmin):
     form = RelacaoDetentosForm
     list_display = ('IPEN', 'nome', 'comarca', 'artigo', 'formatted_ingresso', 'regime', 'pena', 'formatted_previsao_saida', 'local_alocacao', 'formatted_atualizado')
-    search_fields = ('nome', "ingresso", 'previsao_saida')
+    search_fields = ('nome', "ingresso", 'formatted_previsao_saida')
 
 # @admin.register(Pena)
 # class PenaAdmin(admin.ModelAdmin):
