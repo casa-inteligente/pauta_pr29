@@ -13,3 +13,8 @@ class Pauta(models.Model):
     def __str__(self):
         return self.nome
     
+
+    def formato_data(self):
+        return self.data.strftime('%d/%m/%y')
+    
+    formato_data.short_description = 'Data'
