@@ -9,7 +9,9 @@ from django.utils import timezone
 class Relacao(models.Model):
   
     campo_regime = (
-            ('P','Provisório'),
+            ('PRE', 'Preventiva'),
+            ('A', 'Alimentos'),
+            ('PRO','Provisório'),
             ('F', 'Fechado'),
             ('SA', 'Semiaberto')
             )
@@ -19,14 +21,14 @@ class Relacao(models.Model):
     )
     IPEN = models.PositiveIntegerField('iPEN')
     nome = models.CharField('Nome', max_length=150)
-    comarca = models.CharField('Comarca', max_length=10)
+    comarca = models.CharField('Comarca', max_length=50)
     artigo = models.CharField('Artigos', max_length=8)
     ingresso = models.DateField('Ingresso', default=timezone.now)
-    regime = models.CharField('Regime',max_length=2, choices=campo_regime, default="P")
+    regime = models.CharField('Regime',max_length=3, choices=campo_regime, default="P")
     pena = models.CharField('Pena', max_length=10, blank=True, null=True)
     previsao_saida = models.DateField('Previsão saída', blank=True, null=True)
     local_alocacao = models.CharField('Local da alocação', choices=alocacao_local, default='F', max_length=2)
-    atualizado = models.DateField('Atualizado', default=timezone.now)#colocar atualização padrão na data atual
+    atualizado = models.DateField('Atualizado', default=timezone.now)
 
     def __str__(self):
         return self.nome
@@ -34,8 +36,6 @@ class Relacao(models.Model):
     def save(self, *args, **kwargs):
         if self.regime == 'P':
             self.previsao_saida = None
-        # if self.regime in ['F', 'SA'] and not self.pena:
-        #     raise ValidationError('O campo "Pena" é obrigatório para os regimes "Fechado" e "Semiaberto".')
         super(Relacao, self).save(*args, **kwargs)
     
     def formatted_ingresso(self):
