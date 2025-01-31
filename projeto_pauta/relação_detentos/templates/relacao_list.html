@@ -37,6 +37,9 @@
     <button type="button" class="btn btn-primary btn-sm">
         <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Login</a>
     </button>
+
+    <!-- Tabela para Detentos do Regime Fechado -->
+    <h2>Alocado no Fechado</h2>
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
@@ -55,6 +58,7 @@
             </thead>
             <tbody>
                 {% for relacao in relacoes %}
+                {% if relacao.local_alocacao_nome_completo == 'Fechado' %}
                 <tr>
                     <td>{{ relacao.IPEN }}</td>
                     <td>{{ relacao.nome }}</td>
@@ -67,10 +71,90 @@
                     <td class="text-center">{{ relacao.local_alocacao_nome_completo }}</td>
                     <td class="text-center">{{ relacao.formatted_atualizado }}</td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- Tabela para Detentos do Regime Semiaberto -->
+    <h2>Alocado no Semiaberto</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>IPEN</th>
+                    <th>Nome</th>
+                    <th>Comarca</th>
+                    <th>Artigo</th>
+                    <th>Ingresso</th>
+                    <th>Regime</th>
+                    <th>Pena</th>
+                    <th>Previsão de Saída</th>
+                    <th>Local da Alocação</th>
+                    <th>Atualizado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for relacao in relacoes %}
+                {% if relacao.local_alocacao_nome_completo == 'Semiaberto' %}
+                <tr>
+                    <td>{{ relacao.IPEN }}</td>
+                    <td>{{ relacao.nome }}</td>
+                    <td>{{ relacao.comarca }}</td>
+                    <td>{{ relacao.artigo }}</td>
+                    <td>{{ relacao.formatted_ingresso }}</td>
+                    <td>{{ relacao.regime_nome_completo }}</td>
+                    <td>{{ relacao.pena }}</td>
+                    <td>{{ relacao.formatted_previsao_saida }}</td>
+                    <td class="text-center">{{ relacao.local_alocacao_nome_completo }}</td>
+                    <td class="text-center">{{ relacao.formatted_atualizado }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tabela para Detentos com Tornozeleira -->
+    <h2>Tornozeleira</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>IPEN</th>
+                    <th>Nome</th>
+                    <th>Comarca</th>
+                    <th>Artigo</th>
+                    <th>Ingresso</th>
+                    <th>Regime</th>
+                    <th>Pena</th>
+                    <th>Previsão de Saída</th>
+                    <th>Local da Alocação</th>
+                    <th>Atualizado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for relacao in relacoes %}
+                {% if relacao.local_alocacao_nome_completo == 'Domiciliar' %}
+                <tr>
+                    <td>{{ relacao.IPEN }}</td>
+                    <td>{{ relacao.nome }}</td>
+                    <td>{{ relacao.comarca }}</td>
+                    <td>{{ relacao.artigo }}</td>
+                    <td>{{ relacao.formatted_ingresso }}</td>
+                    <td>{{ relacao.regime_nome_completo }}</td>
+                    <td>{{ relacao.pena }}</td>
+                    <td>{{ relacao.formatted_previsao_saida }}</td>
+                    <td class="text-center">{{ relacao.local_alocacao_nome_completo }}</td>
+                    <td class="text-center">{{ relacao.formatted_atualizado }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
     <!-- Script JS do Bootstrap -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>

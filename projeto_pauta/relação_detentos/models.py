@@ -13,11 +13,13 @@ class Relacao(models.Model):
             ('A', 'Alimentos'),
             ('PRO','Provisório'),
             ('F', 'Fechado'),
-            ('SA', 'Semiaberto')
-            )
+            ('SA', 'Semiaberto'),
+            ('TOR', 'Tornozeleira')
+        )
     alocacao_local = (
         ('F', 'Fechado'),
-        ('SA', 'Semiaberto')
+        ('SA', 'Semiaberto'),
+        ('TOR', 'Domiciliar')
     )
     IPEN = models.PositiveIntegerField('iPEN')
     nome = models.CharField('Nome', max_length=150)
@@ -25,9 +27,9 @@ class Relacao(models.Model):
     artigo = models.CharField('Artigos', max_length=8)
     ingresso = models.DateField('Ingresso', default=timezone.now)
     regime = models.CharField('Regime',max_length=3, choices=campo_regime, default="P")
-    pena = models.CharField('Pena', max_length=10, blank=True, null=True)
+    pena = models.CharField('Pena', max_length=30, blank=True, null=True)
     previsao_saida = models.DateField('Previsão saída', blank=True, null=True)
-    local_alocacao = models.CharField('Local da alocação', choices=alocacao_local, default='F', max_length=2)
+    local_alocacao = models.CharField('Local da alocação', choices=alocacao_local, default='F', max_length=3)
     atualizado = models.DateField('Atualizado', default=timezone.now)
 
     def __str__(self):

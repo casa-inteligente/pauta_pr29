@@ -18,14 +18,19 @@ def relacao_list(request):
     ).order_by('regime_order', 'previsao_saida', 'local_alocacao', 'nome')
 
     regime_map = {
-        'P': 'Provisório',
+        'PRO': 'Provisório',
         'F': 'Fechado',
-        'SA': 'Semiaberto'
+        'SA': 'Semiaberto',
+        'TOR': 'Tornozeleira',
+        'PRE': 'Preventiva',
+        'A' : 'Alimentos'
+
     }
 
     local_alocacao_map = {
         'F' : 'Fechado',
-        'SA' : 'Semiaberto'
+        'SA' : 'Semiaberto',
+        'TOR' : 'Domiciliar'
     }
 
     for relacao in relacoes:
