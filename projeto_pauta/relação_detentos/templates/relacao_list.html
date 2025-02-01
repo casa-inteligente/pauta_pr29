@@ -20,7 +20,13 @@
         </div>
     </header>
 
-    <div class="conteiner">
+    <div class="conteiner btn-container">
+
+        <button type="button" class="btn btn-sm">
+            <a href="{% url 'pauta:pauta_all' %}" class="text-white text-decoration-none"><img
+                    src="{% static 'img/home.png' %}" height="20" alt="home"></a>
+        </button>
+
         <button type="button" class="btn btn-sm">
             <a href="{% url 'admin:index' %}" class="text-white text-decoration-none"><img
                     src="{% static 'img/login.png' %}" height="20" alt="login"></a>
