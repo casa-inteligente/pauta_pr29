@@ -1,0 +1,21 @@
+body {
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+}
+
+th,
+td {
+    text-align: left;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+thead th {
+    background-color: #343a40;
+    color: white;
+}

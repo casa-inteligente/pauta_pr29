@@ -18,20 +18,22 @@
             <h2 class="text-center">Presídio Regional de Maravilha &#8211; Pauta</h2>
         </div>
     </header>
-    <div class="container btn-container">
+    <div class="container btn-container" id="inicio">
         <!-- <button type="button" class="btn btn-info btn-lg">
             <a href="{% url 'admin:pauta_pauta_add' %}" class="text-white text-decoration-none">Inserir</a>
         </button> -->
-        <button type="button" class="btn btn-primary btn-sm">
-            <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Login</a>
+        <button type="button" class="btn btn-sm">
+            <a href="{% url 'admin:index' %}" class="text-white text-decoration-none"><img
+                    src="{% static 'img/login.png' %}" height="20" alt="Login"></a>
         </button>
         <button type="button" class="btn btn-primary btn-sm">
             <a href="{% url 'relação_detentos:relacao_list' %}" class="text-white text-decoration-none">Relação</a>
         </button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="window.print()">Imprimir</button>
+        <button type="button" class="btn btn-sm" onclick="window.print()"><img src="{% static 'img/printer.png' %}"
+                height="20" alt="print"></button>
     </div>
 
-    <div class="container content" id="inicio">
+    <div class="container content">
         <!-- Coluna para mostrar os compromissos -->
         <div class="col table-container">
             <table class="table table-striped table-bordered table-hover">
