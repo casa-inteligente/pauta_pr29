@@ -5,16 +5,31 @@
 <head>
     <meta charset="UTF-8">
     <title>Relação de Detentos</title>
+    <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
     <!-- Link para o CSS do Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/style_relacao_list.css' %}">
 </head>
 
 <body>
-    <h1>Relação de Detentos</h1>
-    <button type="button" class="btn btn-primary btn-sm">
-        <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Login</a>
-    </button>
+
+    <!-- Cabeçalho -->
+    <header class="header">
+        <div class="container">
+            <h2 class="text-center">Relação de Detentos</h2>
+        </div>
+    </header>
+
+    <div class="conteiner">
+        <button type="button" class="btn btn-sm">
+            <a href="{% url 'admin:index' %}" class="text-white text-decoration-none"><img
+                    src="{% static 'img/login.png' %}" height="20" alt="login"></a>
+        </button>
+        <button type="button" class="btn btn-sm" onclick="window.print()"><img src="{% static 'img/printer.png' %}"
+                height="20" alt="print">
+        </button>
+
+    </div>
 
     <!-- Tabela para Detentos do Regime Fechado -->
     <h2>Alocado no Fechado</h2>
@@ -132,7 +147,12 @@
             </tbody>
         </table>
     </div>
-
+    <!-- Rodapé -->
+    <footer class="footer">
+        <div class="container">
+            <p class="mb-0">2025 Presídio Regional de Maravilha &#8211; Todos os direitos reservados</p>
+        </div>
+    </footer>
     <!-- Script JS do Bootstrap -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>

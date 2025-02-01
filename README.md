@@ -66,4 +66,6 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 https://weareoutman.github.io/clockpicker/ <br>
 
 
-https://pythonclub.com.br/editando-o-admin-do-django.html
+https://pythonclub.com.br/editando-o-admin-do-django.html <br>
+
+https://www.flaticon.com/icon-fonts-most-downloaded <br>
