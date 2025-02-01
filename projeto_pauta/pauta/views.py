@@ -28,3 +28,11 @@ def pauta_all(request):
         'pauta_all': pauta_alls,
         'form': form,
     })
+
+
+# Visualização do dia atual até o setimo dia seguinte
+def index_7(request):
+    today = timezone.now().date()
+    end_date = today + timedelta(days=7)
+    pautas = Pauta.objects.filter(data__range=[today, end_date]).order_by('data', 'hora')
+    return render(request, 'pauta/index_7.html', {'pautas': pautas})

@@ -5,6 +5,7 @@ from .forms import PautaForm
 from django.conf.locale.pt_BR import formats as pt_BR_formats
 from django.utils import timezone
 from datetime import timedelta
+import datetime
 
 # Register your models here.
 
@@ -12,6 +13,22 @@ from datetime import timedelta
 pt_BR_formats.TIME_FORMAT = 'H:i'
 pt_BR_formats.DATETIME_FORMAT = 'd/m/Y H:i'
 
+#Filtro para os proximos 7 dias
+class Proximos7DiasFilter(admin.SimpleListFilter):
+    title = 'Próximos 7 Dias'
+    parameter_name = 'proximos_7_dias'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('sim', 'Sim'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'sim':
+            agora = timezone.now()
+            sete_dias_depois = agora + datetime.timedelta(days=7)
+            return queryset.filter(data__range=(agora, sete_dias_depois))
+        return queryset
 
 # Cria filtro personalizado para selecionar ano anterior
 class AnoAnteriorFilter(admin.SimpleListFilter):
@@ -40,12 +57,18 @@ class PautaAdmin(admin.ModelAdmin):
     form = PautaForm
     list_display = ('data_formatada', 'hora_formatada', 'nome', 'situacao')
     search_fields = ('nome', 'data', 'situacao')
-    list_filter = ('data', AnoAnteriorFilter, 'nome')
+    list_filter = ('data', AnoAnteriorFilter, Proximos7DiasFilter, 'nome')
     ordering = ('data', 'hora')
     change_form_template = 'admin/pauta/change_form.html'  # Especifica o template personalizado
 
     # Cria condição para repetição
     def save_model(self, request, obj, form, change):
+        if change: #verifica se é alteração
+            # Recupera o objeto original
+            original_obj = self.get_object(request, obj.pk)
+            if original_obj:
+                obj.data = original_obj.data  # Mantém a data original se ela não foi alterada explicitament
+
         super().save_model(request, obj, form, change)
         if obj.intervalo_repeticao and obj.numero_repeticoes:
             data_atual = obj.data

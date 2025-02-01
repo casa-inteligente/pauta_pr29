@@ -1,3 +1,5 @@
+<!-- Utilizado para visualização na aréa de trabalhho -->
+{% load static %}
 <!DOCTYPE html>
 <html>
 
@@ -97,14 +99,16 @@
     <!-- Cabeçalho -->
     <header class="header">
         <div class="container">
-            <h2 class="text-center">Pauta de Audiências</h2>
+            <h2 class="text-center">Presídio Regional de Maravilha &#8211; Pauta</h2>
         </div>
     </header>
     <div class="container btn-container">
-        <button type="button" class="btn btn-info btn-lg"><a href="{% url 'pauta:pauta_all' %}">Início</a>
+        <button type="button" class="btn btn-lg"><a href="{% url 'pauta:pauta_all' %}">
+                <img src="{% static 'img/home.png' %}" height="20" alt="inicio"></a>
         </button>
-        <button type="button" class="btn btn-primary btn-lg">
-            <a href="{% url 'admin:index' %}" class="text-white text-decoration-none">Admin</a>
+        <button type="button" class="btn btn-sm">
+            <a href="{% url 'admin:index' %}" class="text-white text-decoration-none"><img
+                    src="{% static 'img/login.png' %}" height="20" alt="login"></a>
         </button>
     </div>
 
