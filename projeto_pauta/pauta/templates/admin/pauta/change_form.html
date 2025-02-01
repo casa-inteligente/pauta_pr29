@@ -107,10 +107,12 @@
 {% block content %}
 
 <div class="button-group">
-    <button type="button" class="btn btn-info btn-lg"><a href="{% url 'pauta:pauta_all' %}">Pauta Completa</a>
+    <button type="button" class="btn btn-lg"><a href="{% url 'pauta:pauta_all' %}"><img
+                src="{% static 'img/home.png' %}" height="20" alt="inicio"></a>
     </button>
 
-    <button type="button" class="btn btn-info btn-lg"><a href="{% url 'admin:index' %}">Admin</a>
+    <button type="button" class="btn btn-lg"><a href="{% url 'admin:index' %}"><img
+                src="{% static 'img/administrador-alternativo.png' %}" height="20" alt="admin"></a>
     </button>
 
     <!-- <button type="button" class="btn btn-info btn-lg"><a href="{% url 'pauta:password_change' %}">Alterar senha</a>
