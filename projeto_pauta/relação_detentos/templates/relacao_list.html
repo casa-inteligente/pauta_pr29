@@ -50,6 +50,7 @@
                     <th>Ingresso</th>
                     <th>Regime</th>
                     <th>Pena</th>
+                    <th>Alocação</th>
                     <th>Previsão de Saída</th>
                     <th>Atualizado</th>
                 </tr>
@@ -67,6 +68,8 @@
                     <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
                     <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
+                    <td><span class="editable" data-field="regime-aloc"
+                            data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
                     <td><span class="editable" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td class="text-center"><span class="editable" data-field="atualizado"
@@ -90,6 +93,7 @@
                     <th>Ingresso</th>
                     <th>Regime</th>
                     <th>Pena</th>
+                    <th>Alocação</th>
                     <th>Previsão de Saída</th>
                     <th>Atualizado</th>
                 </tr>
@@ -107,6 +111,8 @@
                     <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
                     <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
+                    <td><span class="editable" data-field="regime-aloc"
+                            data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
                     <td><span class="editable" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td class="text-center"><span class="editable" data-field="atualizado"
@@ -130,6 +136,7 @@
                     <th>Ingresso</th>
                     <th>Regime</th>
                     <th>Pena</th>
+                    <th>Alocação</th>
                     <th>Previsão de Saída</th>
                     <th>Atualizado</th>
                 </tr>
@@ -147,6 +154,8 @@
                     <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
                     <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
+                    <td><span class="editable" data-field="regime-aloc"
+                            data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
                     <td><span class="editable" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td class="text-center"><span class="editable" data-field="atualizado"
@@ -197,6 +206,31 @@
                     element.innerHTML = '';
                     element.appendChild(select);
                 }
+
+                // Substituir por dropdown para 'regime' dropdown-aloc
+                if (type === 'dropdown-aloc' && field === 'regime-aloc') {
+                    const options = {
+
+                        'TRO': 'Domiciliar',
+                        'F': 'Fechado',
+                        'SA': 'Semiaberto'
+
+                    };
+                    const select = document.createElement('select');
+                    select.className = 'form-control';
+                    for (const [key, label] of Object.entries(options)) {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        option.textContent = label;
+                        if (label === value) option.selected = true;  // Usar o label para seleção correta
+                        select.appendChild(option);
+                    }
+                    element.innerHTML = '';
+                    element.appendChild(select);
+                }
+
+
+
                 // Substituir por input de data para campos de data
                 else if (type === 'date') {
                     const input = document.createElement('input');

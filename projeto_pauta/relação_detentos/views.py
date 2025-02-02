@@ -56,6 +56,7 @@ def salvar_alteracoes(request):
                 detento.nome = item.get('nome')
                 detento.comarca = item.get('comarca')
                 detento.artigo = item.get('artigo')
+                detento.alocacao_local = item.get('regime-aloc')
                 detento.ingresso = datetime.datetime.strptime(item.get('ingresso'), '%Y-%m-%d').date()
                 detento.regime = item.get('regime')
                 
