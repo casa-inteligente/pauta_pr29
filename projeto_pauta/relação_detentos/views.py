@@ -56,19 +56,27 @@ def salvar_alteracoes(request):
                 detento.nome = item.get('nome')
                 detento.comarca = item.get('comarca')
                 detento.artigo = item.get('artigo')
-                detento.ingresso = datetime.datetime.strptime(item.get('ingresso'), '%d/%m/%Y').date()
+                detento.ingresso = datetime.datetime.strptime(item.get('ingresso'), '%Y-%m-%d').date()
                 detento.regime = item.get('regime')
                 
                 # Verificar se os campos opcionais possuem valor antes de salvar
                 if item.get('pena'):
                     detento.pena = item.get('pena')
+                else:
+                    detento.pena = None
                 if item.get('previsao_saida'):
-                    detento.previsao_saida = datetime.datetime.strptime(item.get('previsao_saida'), '%d/%m/%Y').date()
+                    detento.previsao_saida = datetime.datetime.strptime(item.get('previsao_saida'), '%Y-%m-%d').date()
+                else:
+                    detento.previsao_saida = None
                 if item.get('atualizado'):
-                    detento.atualizado = datetime.datetime.strptime(item.get('atualizado'), '%d/%m/%Y').date()
+                    detento.atualizado = datetime.datetime.strptime(item.get('atualizado'), '%Y-%m-%d').date()
+                else:
+                    detento.atualizado = None
                 
                 detento.save()  # Salva as alterações no banco de dados
             return JsonResponse({'success': True})
+        except ValueError as e:
+            return JsonResponse({'success': False, 'error': f'Erro de formatação de data: {str(e)}'})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Método não permitido'})

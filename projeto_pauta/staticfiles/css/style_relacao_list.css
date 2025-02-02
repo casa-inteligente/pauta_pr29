@@ -1,0 +1,62 @@
+* {
+    margin: 0;
+    /* border: 0; */
+    padding: 0;
+}
+
+body {
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+}
+
+th,
+td {
+    text-align: left;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+thead th {
+    background-color: #343a40;
+    color: white;
+}
+
+/* cabeçalho */
+.header {
+    background-color: #343a40;
+    color: white;
+    padding: 5px 0;
+    position: relative;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+/* rodapé */
+.footer {
+    background-color: #343a40;
+    color: white;
+    padding: 10px 0;
+    position: relative;
+    /* position: fixed; */
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}
+
+/* para a alteração */
+editable {
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.editable:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
