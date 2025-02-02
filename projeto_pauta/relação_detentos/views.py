@@ -6,6 +6,7 @@ import json
 from .models import Relacao
 from django.db.models import Case, When, Value
 from django.db.models.functions import Concat
+import datetime
 
 @login_required
 def relacao_list(request):
@@ -47,13 +48,26 @@ def relacao_list(request):
 def salvar_alteracoes(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            for item in data:
-                detento = Relacao.objects.get(id=item['id'])
-                for field, value in item.items():
-                    if field != 'id' and hasattr(detento, field):
-                        setattr(detento, field, value)
-                detento.save()
+            dados = json.loads(request.body)
+            for item in dados:
+                id = item.get('id')
+                detento = Relacao.objects.get(id=id)
+                detento.IPEN = item.get('IPEN')
+                detento.nome = item.get('nome')
+                detento.comarca = item.get('comarca')
+                detento.artigo = item.get('artigo')
+                detento.ingresso = datetime.datetime.strptime(item.get('ingresso'), '%d/%m/%Y').date()
+                detento.regime = item.get('regime')
+                
+                # Verificar se os campos opcionais possuem valor antes de salvar
+                if item.get('pena'):
+                    detento.pena = item.get('pena')
+                if item.get('previsao_saida'):
+                    detento.previsao_saida = datetime.datetime.strptime(item.get('previsao_saida'), '%d/%m/%Y').date()
+                if item.get('atualizado'):
+                    detento.atualizado = datetime.datetime.strptime(item.get('atualizado'), '%d/%m/%Y').date()
+                
+                detento.save()  # Salva as alterações no banco de dados
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
