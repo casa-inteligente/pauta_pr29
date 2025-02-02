@@ -63,11 +63,21 @@ def salvar_alteracoes(request):
                 if item.get('pena'):
                     detento.pena = item.get('pena')
                 else:
-                    detento.pena = None
-                if item.get('previsao_saida'):
-                    detento.previsao_saida = datetime.datetime.strptime(item.get('previsao_saida'), '%Y-%m-%d').date()
+                    detento.pena = '-'
+
+                 # Verificar se 'previsao_saida' está presente e é uma data válida
+                previsao_saida_str = item.get('previsao_saida')
+                #print(previsao_saida_str)
+                if previsao_saida_str:
+                    try:
+                        #detento.previsao_saida = datetime.datetime.strptime(previsao_saida_str, '%Y-%m-%d').date()
+                        detento.previsao_saida = previsao_saida_str
+                    except ValueError:
+                        detento.previsao_saida = None
                 else:
                     detento.previsao_saida = None
+                
+
                 if item.get('atualizado'):
                     detento.atualizado = datetime.datetime.strptime(item.get('atualizado'), '%Y-%m-%d').date()
                 else:
