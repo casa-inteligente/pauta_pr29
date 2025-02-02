@@ -48,3 +48,15 @@ thead th {
     width: 100%;
     text-align: center;
 }
+
+/* para a alteração */
+editable {
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.editable:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
