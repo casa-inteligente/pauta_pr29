@@ -7,7 +7,7 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
  - [x]  Implementar banco de dados 🕠 :50:
  - [x]  Criação de um programa para mostrar no plano de fundo da estação de trabalho 👆
  - [ ]  Criação de um app android para monstrar a pauta :zzz:
- - [x]  Criar uma animação para proteção de tela com a pauta 🪟 :zzz:
+ - [ ]  Criar uma animação para proteção de tela com a pauta 🪟 :zzz:
 
 ### Nome do banco de dados:  
 
