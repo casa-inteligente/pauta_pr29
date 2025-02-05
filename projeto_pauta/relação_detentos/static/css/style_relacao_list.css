@@ -10,6 +10,8 @@ body {
 
 table {
     width: 100%;
+    font-size: 0.8em;
+    line-height: 0.8em;
 }
 
 th,
@@ -23,7 +25,7 @@ h1 {
 
 thead th {
     background-color: #343a40;
-    color: white;
+    color: rgb(241, 241, 241);
 }
 
 /* cabeçalho */
@@ -37,14 +39,13 @@ thead th {
     z-index: 1000;
 }
 
-.header span {
-    text-decoration: #80bdff;
-    font-size: 0.8em;
+/* Diminui a quantidade total de detentos */
+.header h2 span {
+    font-size: 0.5em;
 }
 
-/* Para fixar os botões de alteraçõe  */
-.fixado {
-    position: fixed;
+h4 span {
+    font-size: 0.5em;
 }
 
 /* rodapé */
@@ -69,4 +70,10 @@ editable {
     outline: none;
     border-color: #80bdff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Detalies */
+details {
+    /* font-weight: 700; */
+    font-size: 0.8em;
 }

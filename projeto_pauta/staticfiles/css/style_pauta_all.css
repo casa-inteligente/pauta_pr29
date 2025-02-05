@@ -6,31 +6,15 @@ body {
 
 * {
     margin: 0;
+    /* border: 0; */
     padding: 0;
 }
 
-.container {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-}
-
-.insercao {
-    flex: 1;
-    min-width: 300px;
-    max-width: 30%;
-    padding: 10px;
-}
-
-.table-container {
-    flex: 3;
-    min-width: 600px;
-    max-width: 70%;
-    padding: 10px;
-}
-
-.table {
-    width: 100%;
+/* Seta para o topo do site */
+#topo {
+    position: fixed;
+    right: 10px;
+    bottom: 45px;
 }
 
 .header {
@@ -51,6 +35,29 @@ body {
     bottom: 0;
     width: 100%;
     text-align: center;
+}
+
+.insercao {
+    position: sticky;
+    top: 80px;
+    right: 20px;
+    /* background-color: rgb(255, 255, 255); */
+    width: 300px;
+    height: calc(100vh - 80px);
+}
+
+.content {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.col {
+    width: 100%;
+}
+
+.table-container {
+    margin: 20px 0;
 }
 
 .btn-voltar {
