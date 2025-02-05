@@ -28,6 +28,11 @@ def relacao_list(request):
         'PRE': 'Preventiva',
         'A' : 'Alimentos'
     }
+    #cria a variavel para passar a aquantidade de presos no fechado
+    qtd_fechado = relacoes.filter(local_alocacao='F').count()
+    qtd_semiaberto = relacoes.filter(local_alocacao='SA').count()
+    qtd_total = qtd_fechado + qtd_semiaberto
+    #print(qtd_fechado)
 
     local_alocacao_map = {
         'F' : 'Fechado',
@@ -41,7 +46,10 @@ def relacao_list(request):
 
     return render(request, 'relacao_list.html', {
         'relacoes': relacoes,
-        'csrf_token': request.COOKIES.get('csrftoken', '')  # Adiciona o CSRF token ao contexto
+        'csrf_token': request.COOKIES.get('csrftoken', ''),  # Adiciona o CSRF token ao contexto
+        'qtd_fechado' : qtd_fechado, #quantidade de alocados no fechado
+        'qtd_semiaberto': qtd_semiaberto, #Quantidade de alocados no semiaberto
+        'qtd_total': qtd_total, #quantidade de alocados na unidade
     })
 
 @csrf_exempt

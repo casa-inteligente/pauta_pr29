@@ -13,7 +13,7 @@
 <body>
     <header class="header">
         <div class="container">
-            <h2 class="text-center">Relação de Detentos</h2>
+            <h2 class="text-center">Relação de Detentos <span> [{{ qtd_total }}]</span></h2>
         </div>
     </header>
 
@@ -38,7 +38,7 @@
     </div>
 
     <!-- Tabela para Detentos do Regime Fechado -->
-    <h2>Alocado no Fechado</h2>
+    <h2>Fechado <span>[{{ qtd_fechado }}]</span></h2>
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
@@ -80,8 +80,9 @@
             </tbody>
         </table>
     </div>
+
     <!-- Tabela para Detentos do Regime Semiaberto -->
-    <h2>Alocado no Semiaberto</h2>
+    <h2>Semiaberto <span>[{{ qtd_semiaberto }}]</span></h2>
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
@@ -261,7 +262,7 @@
                     const type = cell.getAttribute('data-type');
                     let value;
                     // Coletar valor do dropdown
-                    if (type === 'dropdown') {
+                    if (type === 'dropdown' || type === 'dropdown-alc') {
                         const select = cell.querySelector('select');
                         value = select ? select.value : cell.textContent.trim();
                     }
