@@ -37,6 +37,11 @@ thead th {
     z-index: 1000;
 }
 
+.header span {
+    text-decoration: #80bdff;
+    font-size: 0.8em;
+}
+
 /* rodapé */
 .footer {
     background-color: #343a40;

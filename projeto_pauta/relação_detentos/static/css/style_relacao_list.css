@@ -37,6 +37,16 @@ thead th {
     z-index: 1000;
 }
 
+.header span {
+    text-decoration: #80bdff;
+    font-size: 0.8em;
+}
+
+/* Para fixar os botões de alteraçõe  */
+.fixado {
+    position: fixed;
+}
+
 /* rodapé */
 .footer {
     background-color: #343a40;

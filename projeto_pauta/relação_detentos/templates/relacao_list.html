@@ -17,7 +17,7 @@
         </div>
     </header>
 
-    <div class="conteiner btn-container">
+    <div class="conteiner btn-container fixado">
         <button type="button" class="btn btn-sm">
             <a href="{% url 'pauta:pauta_all' %}" class="text-white text-decoration-none"><img
                     src="{% static 'img/home.png' %}" height="20" alt="home"></a>
@@ -30,11 +30,9 @@
                 height="20" alt="print">
         </button>
         <!-- Botão para habilitar a edição -->
-        <button type="button" class="btn btn-sm" onclick="enableEditing()"><img
-                src="{% static 'img/text-box-edit.png' %}" height="20" alt="editar"></button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="enableEditing()">Alterar</button>
         <!-- Botão para salvar as alterações -->
-        <button type="button" class="btn btn-sm" onclick="saveChanges()"><img src="{% static 'img/save.png' %}"
-                height="20" alt="salvar"></button>
+        <button type="button" class="btn btn-sm btn-primary" onclick="saveChanges()">Salvar</button>
     </div>
 
     <!-- Tabela para Detentos do Regime Fechado -->
