@@ -64,7 +64,7 @@ def salvar_alteracoes(request):
                 detento.nome = item.get('nome')
                 detento.comarca = item.get('comarca')
                 detento.artigo = item.get('artigo')
-                detento.alocacao_local = item.get('regime-aloc')
+                detento.local_alocacao = item.get('local_alocacao')
                 detento.ingresso = datetime.datetime.strptime(item.get('ingresso'), '%Y-%m-%d').date()
                 detento.regime = item.get('regime')
                 
@@ -73,22 +73,24 @@ def salvar_alteracoes(request):
                     detento.pena = item.get('pena')
                 else:
                     detento.pena = '-'
-
-                 # Verificar se 'previsao_saida' está presente e é uma data válida
+                
+                # Verificar se 'previsao_saida' está presente e é uma data válida
                 previsao_saida_str = item.get('previsao_saida')
-                #print(previsao_saida_str)
                 if previsao_saida_str:
                     try:
-                        #detento.previsao_saida = datetime.datetime.strptime(previsao_saida_str, '%Y-%m-%d').date()
-                        detento.previsao_saida = previsao_saida_str
+                        detento.previsao_saida = datetime.datetime.strptime(previsao_saida_str, '%Y-%m-%d').date()
                     except ValueError:
                         detento.previsao_saida = None
                 else:
                     detento.previsao_saida = None
                 
-
-                if item.get('atualizado'):
-                    detento.atualizado = datetime.datetime.strptime(item.get('atualizado'), '%Y-%m-%d').date()
+                # Verificar se 'atualizado' está presente e é uma data válida
+                atualizado_str = item.get('atualizado')
+                if atualizado_str:
+                    try:
+                        detento.atualizado = datetime.datetime.strptime(atualizado_str, '%Y-%m-%d').date()
+                    except ValueError:
+                        detento.atualizado = None
                 else:
                     detento.atualizado = None
                 

@@ -68,7 +68,7 @@
                     <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
                     <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
-                    <td><span class="editable" data-field="regime-aloc"
+                    <td><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
                     <td><span class="editable" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
@@ -112,7 +112,7 @@
                     <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
                     <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
-                    <td><span class="editable" data-field="regime-aloc"
+                    <td><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
                     <td><span class="editable" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
@@ -155,7 +155,7 @@
                     <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
                     <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
-                    <td><span class="editable" data-field="regime-aloc"
+                    <td><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
                     <td><span class="editable" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
@@ -208,14 +208,12 @@
                     element.appendChild(select);
                 }
 
-                // Substituir por dropdown para 'regime' dropdown-aloc
-                if (type === 'dropdown-aloc' && field === 'regime-aloc') {
+                // Substituir por dropdown para 'regime-aloc'
+                else if (type === 'dropdown-aloc' && field === 'local_alocacao') {
                     const options = {
-
-                        'TRO': 'Domiciliar',
+                        'TOR': 'Domiciliar',
                         'F': 'Fechado',
                         'SA': 'Semiaberto'
-
                     };
                     const select = document.createElement('select');
                     select.className = 'form-control';
@@ -229,8 +227,6 @@
                     element.innerHTML = '';
                     element.appendChild(select);
                 }
-
-
 
                 // Substituir por input de data para campos de data
                 else if (type === 'date') {
@@ -262,7 +258,7 @@
                     const type = cell.getAttribute('data-type');
                     let value;
                     // Coletar valor do dropdown
-                    if (type === 'dropdown' || type === 'dropdown-alc') {
+                    if (type === 'dropdown' || type === 'dropdown-aloc') {
                         const select = cell.querySelector('select');
                         value = select ? select.value : cell.textContent.trim();
                     }
