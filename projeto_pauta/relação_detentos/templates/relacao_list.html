@@ -18,6 +18,76 @@
         </div>
     </header>
 
+    <!-- Add novos cadastros -->
+    <!-- Formulário para adicionar novas informações -->
+    <details>
+        <summary>
+            Adicionar novos
+        </summary>
+        <div class="container mt-3">
+            <form id="addDetentoForm" method="post" action="{% url 'relação_detentos:add_detento' %}">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group col-md-2">
+                        <label for="IPEN">IPEN</label>
+                        <input type="text" class="form-control" id="IPEN" name="IPEN" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="nome">Nome</label>
+                        <input type="text" class="form-control" id="nome" name="nome" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="comarca">Comarca</label>
+                        <input type="text" class="form-control" id="comarca" name="comarca" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="artigo">Artigo</label>
+                        <input type="text" class="form-control" id="artigo" name="artigo" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="ingresso">Ingresso</label>
+                        <input type="date" class="form-control" id="ingresso" name="ingresso" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="regime">Regime</label>
+                        <select class="form-control" id="regime" name="regime" required>
+                            <option value="PRE">Preventiva</option>
+                            <option value="A">Alimentos</option>
+                            <option value="PRO">Provisório</option>
+                            <option value="F">Fechado</option>
+                            <option value="SA">Semiaberto</option>
+                            <option value="TOR">Tornozeleira</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="pena">Pena</label>
+                        <input type="text" class="form-control" id="pena" name="pena">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="local_alocacao">Alocação</label>
+                        <select class="form-control" id="local_alocacao" name="local_alocacao" required>
+                            <option value="F">Fechado</option>
+                            <option value="SA">Semiaberto</option>
+                            <option value="TOR">Domiciliar</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="previsao_saida">Previsão de Saída</label>
+                        <input type="date" class="form-control" id="previsao_saida" name="previsao_saida">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="atualizado">Atualizado</label>
+                        <input type="date" class="form-control" id="atualizado" name="atualizado">
+                    </div>
+                    <div class="form-group col-md-2 align-self-end">
+                        <button type="submit" class="btn btn-primary btn-sm">Adicionar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </details>
+
+
     <div class="conteiner btn-container fixado">
         <button type="button" class="btn btn-sm">
             <a href="{% url 'pauta:pauta_all' %}" class="text-white text-decoration-none"><img
@@ -31,9 +101,9 @@
                 height="20" alt="print">
         </button>
         <!-- Botão para habilitar a edição -->
-        <button type="button" class="btn btn-sm btn-primary" onclick="enableEditing()">Alterar</button>
+        <button type="button" class="btn btn-sm btn-warning" onclick="enableEditing()">Alterar</button>
         <!-- Botão para salvar as alterações -->
-        <button type="button" class="btn btn-sm btn-primary" onclick="saveChanges()">Salvar</button>
+        <button type="button" class="btn btn-sm btn-success" onclick="saveChanges()">Salvar</button>
 
 
     </div>
@@ -311,6 +381,25 @@
                     alert('Erro ao salvar as alterações.');
                 });
         }
+
+
+
+
+        // function highlightTodayRows() {
+        //     const today = new Date();
+        //     const todayString = today.toLocaleDateString('pt-br', { day: '2-digit', month: '2-digit', year: '2-digit' });
+        //     const rows = document.querySelectorAll('#pauta-content tr');
+        //     rows.forEach(row => {
+        //         const dateCell = row.querySelector('td:first-child');
+        //         if (dateCell && dateCell.textContent.trim() === todayString) {
+        //             row.classList.add('highlight-today');
+        //         }
+        //     });
+        // }
+
+
+
+
     </script>
 </body>
 

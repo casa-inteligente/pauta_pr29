@@ -9,7 +9,57 @@ from django.db.models.functions import Concat
 import datetime
 
 @login_required
+def add_detento(request):
+    '''
+    Responsavel pela adicão de novos cadastros
+    '''
+    if request.method == 'POST':
+        IPEN = request.POST.get('IPEN')
+        nome = request.POST.get('nome')
+        comarca = request.POST.get('comarca')
+        artigo = request.POST.get('artigo')
+        ingresso = request.POST.get('ingresso')
+        regime = request.POST.get('regime')
+        pena = request.POST.get('pena', '-')
+        local_alocacao = request.POST.get('local_alocacao')
+        previsao_saida = request.POST.get('previsao_saida')
+        atualizado = request.POST.get('atualizado')
+
+        # Converter datas para o formato correto
+        ingresso = datetime.datetime.strptime(ingresso, '%Y-%m-%d').date()
+        if previsao_saida:
+            previsao_saida = datetime.datetime.strptime(previsao_saida, '%Y-%m-%d').date()
+        else:
+            previsao_saida = None
+        if atualizado:
+            atualizado = datetime.datetime.strptime(atualizado, '%Y-%m-%d').date()
+        else:
+            atualizado = None
+
+        # Criar novo registro no banco de dados
+        Relacao.objects.create(
+            IPEN=IPEN,
+            nome=nome,
+            comarca=comarca,
+            artigo=artigo,
+            ingresso=ingresso,
+            regime=regime,
+            pena=pena,
+            local_alocacao=local_alocacao,
+            previsao_saida=previsao_saida,
+            atualizado=atualizado
+        )
+
+        return redirect('relação_detentos:relacao_list')
+
+    return render(request, 'relacao_list.html')
+
+
 def relacao_list(request):
+
+    '''
+    responsavél por processaro os dados e exibir na página
+    '''
     regime_order = Case(
         When(regime='P', then=Value(1)),
         When(regime='F', then=Value(2)),
@@ -54,6 +104,9 @@ def relacao_list(request):
 
 @csrf_exempt
 def salvar_alteracoes(request):
+    """
+    Responsavél por salvar as informações alteradas na página inicial
+    """
     if request.method == 'POST':
         try:
             dados = json.loads(request.body)
