@@ -29,6 +29,19 @@ thead th {
     color: rgb(241, 241, 241);
 }
 
+.limita_omprimento_da_celula {
+    /* Limita o tamanho maximo */
+    max-width: 50px;
+    /* Impede a quebra de linha dentro da célula */
+    white-space: nowrap;
+    /* Oculta o excesso de conteúdo */
+    overflow: hidden;
+    /* oculta o conteudo excedente */
+    text-overflow: ellipsis;
+
+
+}
+
 /* cabeçalho */
 .header {
     background-color: #343a40;

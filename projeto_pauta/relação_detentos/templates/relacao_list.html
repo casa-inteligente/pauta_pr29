@@ -8,6 +8,7 @@
     <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/style_relacao_list.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 
 <body>
@@ -94,7 +95,7 @@
         </div>
     </details>
 
-
+    <!-- botões de navegações -->
     <div class="conteiner btn-container fixado">
         <button type="button" class="btn btn-sm">
             <a href="{% url 'pauta:pauta_all' %}" class="text-white text-decoration-none"><img
@@ -121,17 +122,20 @@
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
-                    <th>IPEN</th>
-                    <th>Nome</th>
-                    <th>Comarca</th>
-                    <th>Artigo</th>
-                    <th>Ingresso</th>
-                    <th>Regime</th>
-                    <th>Pena</th>
-                    <th>Alocação</th>
-                    <th>Previsão de Saída</th>
+                    <th onclick="shortTable(0)">IPEN <i class="fas fa-sort"></i></th>
+                    <th onclick="shortTable(1)">Nome <i class="fas fa-sort"></i></th>
+                    <th onclick="shortTable(2)">Comarca <i class="fas fa-sort"></i></th>
+                    <th onclick="shortTable(3)">Artigo <i class="fas fa-sort"></i></th>
+                    <th class="limita_omprimento_da_celula" onclick="shortTable(4)">Ingresso <i class="fas fa-sort"></i>
+                    </th>
+                    <th onclick="shortTable(5)">Regime <i class="fas fa-sort"></i></th>
+                    <th onclick="shortTable(6)">Pena <i class="fas fa-sort"></i></th>
+                    <th onclick="shortTable(7)">Alocação <i class="fas fa-sort"></i></th>
+                    <th class="limita_omprimento_da_celula" onclick="shortTable(7)">Previsão de Saída <i
+                            class="fas fa-sort"></i></th>
                     <th>Observações</th>
-                    <th>Atualizado</th>
+                    <th class="limita_omprimento_da_celula" onclick="shortTable(10)">Atualizado <i
+                            class="fas fa-sort"></i></th>
                 </tr>
             </thead>
             <tbody>
@@ -142,17 +146,17 @@
                     <td><span class="editable" data-field="nome">{{ relacao.nome }}</span></td>
                     <td><span class="editable" data-field="comarca">{{ relacao.comarca }}</span></td>
                     <td><span class="editable" data-field="artigo">{{ relacao.artigo }}</span></td>
-                    <td><span class="editable" data-field="ingresso"
+                    <td><span class="editable limita_omprimento_da_celula" data-field="ingresso"
                             data-type="date">{{ relacao.ingresso|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
                     <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
                     <td><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
-                    <td><span class="editable" data-field="previsao_saida"
+                    <td><span class="editable limita_omprimento_da_celula" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
-                    <td class="text-center"><span class="editable" data-field="atualizado"
+                    <td class="text-center limita_omprimento_da_celula"><span class="editable" data-field="atualizado"
                             data-type="date">{{ relacao.atualizado|date:"d/m/y" }}</span></td>
                 </tr>
                 {% endif %}
@@ -167,17 +171,17 @@
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
-                    <th>IPEN</th>
-                    <th>Nome</th>
-                    <th>Comarca</th>
-                    <th>Artigo</th>
-                    <th>Ingresso</th>
-                    <th>Regime</th>
-                    <th>Pena</th>
-                    <th>Alocação</th>
-                    <th>Previsão de Saída</th>
+                    <th>IPEN <i class="fas fa-sort"></i></th>
+                    <th>Nome <i class="fas fa-sort"></i></th>
+                    <th>Comarca <i class="fas fa-sort"></i></th>
+                    <th>Artigo <i class="fas fa-sort"></i></th>
+                    <th class="limita_omprimento_da_celula">Ingresso <i class="fas fa-sort"></i></th>
+                    <th>Regime <i class="fas fa-sort"></i></th>
+                    <th>Pena <i class="fas fa-sort"></i></th>
+                    <th>Alocação <i class="fas fa-sort"></i></th>
+                    <th class="limita_omprimento_da_celula">Previsão de Saída <i class="fas fa-sort"></i></th>
                     <th>Observações</th>
-                    <th>Atualizado</th>
+                    <th class="limita_omprimento_da_celula">Atualizado <i class="fas fa-sort"></i></th>
                 </tr>
             </thead>
             <tbody>
@@ -188,17 +192,17 @@
                     <td><span class="editable" data-field="nome">{{ relacao.nome }}</span></td>
                     <td><span class="editable" data-field="comarca">{{ relacao.comarca }}</span></td>
                     <td><span class="editable" data-field="artigo">{{ relacao.artigo }}</span></td>
-                    <td><span class="editable" data-field="ingresso"
+                    <td class="limita_omprimento_da_celula"><span class="editable" data-field="ingresso"
                             data-type="date">{{ relacao.ingresso|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
                     <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
                     <td><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
-                    <td><span class="editable" data-field="previsao_saida"
+                    <td><span class="editable limita_omprimento_da_celula" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
-                    <td class="text-center"><span class="editable" data-field="atualizado"
+                    <td class="text-center limita_omprimento_da_celula"><span class="editable" data-field="atualizado"
                             data-type="date">{{ relacao.atualizado|date:"d/m/y" }}</span></td>
                 </tr>
                 {% endif %}
@@ -216,17 +220,17 @@
             <table class="table table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th>IPEN</th>
-                        <th>Nome</th>
-                        <th>Comarca</th>
-                        <th>Artigo</th>
-                        <th>Ingresso</th>
-                        <th>Regime</th>
-                        <th>Pena</th>
-                        <th>Alocação</th>
-                        <th>Previsão de Saída</th>
+                        <th>IPEN <i class="fas fa-sort"></i></th>
+                        <th>Nome <i class="fas fa-sort"></i></th>
+                        <th>Comarca <i class="fas fa-sort"></i></th>
+                        <th>Artigo <i class="fas fa-sort"></i></th>
+                        <th>Ingresso <i class="fas fa-sort"></i></th>
+                        <th>Regime <i class="fas fa-sort"></i></th>
+                        <th>Pena <i class="fas fa-sort"></i></th>
+                        <th>Alocação <i class="fas fa-sort"></i></th>
+                        <th>Previsão de Saída <i class="fas fa-sort"></i></th>
                         <th>Observações</th>
-                        <th>Atualizado</th>
+                        <th>Atualizado <i class="fas fa-sort"></i></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -409,9 +413,50 @@
         //         }
         //     });
         // }
+        // Definir a data atual no campo "Atualizado"
+        document.addEventListener('DOMContentLoaded', function () {
+            const atualizadoField = document.getElementById('atualizado');
+            const today = new Date().toISOString().split('T')[0];
+            atualizadoField.value = today;
+        });
 
-
-
+        // Função para classificar a tabela
+        function sortTable(n) {
+            const table = document.querySelector("table");
+            let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            switching = true;
+            dir = "asc";
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
 
     </script>
 </body>
