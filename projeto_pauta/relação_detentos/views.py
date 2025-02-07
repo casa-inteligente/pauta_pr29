@@ -23,6 +23,7 @@ def add_detento(request):
         pena = request.POST.get('pena', '-')
         local_alocacao = request.POST.get('local_alocacao')
         previsao_saida = request.POST.get('previsao_saida')
+        observacao = request.POST.get('observacao')
         atualizado = request.POST.get('atualizado')
 
         # Converter datas para o formato correto
@@ -47,6 +48,7 @@ def add_detento(request):
             pena=pena,
             local_alocacao=local_alocacao,
             previsao_saida=previsao_saida,
+            observacoes=observacao,
             atualizado=atualizado
         )
 
@@ -61,9 +63,10 @@ def relacao_list(request):
     responsavél por processaro os dados e exibir na página
     '''
     regime_order = Case(
-        When(regime='P', then=Value(1)),
-        When(regime='F', then=Value(2)),
-        When(regime='SA', then=Value(3)),
+        When(regime='PRO', then=Value(1)),
+        When(regime='PRE', then=Value(2)),
+        When(regime='F', then=Value(3)),
+        When(regime='SA', then=Value(4)),
     )
 
     relacoes = Relacao.objects.all().annotate(
@@ -120,6 +123,7 @@ def salvar_alteracoes(request):
                 detento.local_alocacao = item.get('local_alocacao')
                 detento.ingresso = datetime.datetime.strptime(item.get('ingresso'), '%Y-%m-%d').date()
                 detento.regime = item.get('regime')
+                detento.observacoes = item.get('observacao')
                 
                 # Verificar se os campos opcionais possuem valor antes de salvar
                 if item.get('pena'):

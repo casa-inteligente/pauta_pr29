@@ -22,38 +22,39 @@
     <!-- Formulário para adicionar novas informações -->
     <details>
         <summary>
-            Adicionar novos
+            Adicionar &#43;
         </summary>
         <div class="container mt-3">
             <form id="addDetentoForm" method="post" action="{% url 'relação_detentos:add_detento' %}">
                 {% csrf_token %}
                 <div class="form-row">
                     <div class="form-group col-md-2">
-                        <label for="IPEN">IPEN</label>
+                        <label for="IPEN">IPEN&#42;</label>
                         <input type="text" class="form-control" id="IPEN" name="IPEN" required>
                     </div>
                     <div class="form-group col-md-2">
-                        <label for="nome">Nome</label>
+                        <label for="nome">Nome&#42;</label>
                         <input type="text" class="form-control" id="nome" name="nome" required>
                     </div>
                     <div class="form-group col-md-2">
-                        <label for="comarca">Comarca</label>
+                        <label for="comarca">Comarca&#42;</label>
                         <input type="text" class="form-control" id="comarca" name="comarca" required>
                     </div>
                     <div class="form-group col-md-2">
-                        <label for="artigo">Artigo</label>
-                        <input type="text" class="form-control" id="artigo" name="artigo" required>
+                        <label for="artigo">Artigo&#42;</label>
+                        <input type="text" class="form-control" id="artigo" name="artigo" placeholder="AAAA,art; "
+                            required>
                     </div>
                     <div class="form-group col-md-2">
-                        <label for="ingresso">Ingresso</label>
+                        <label for="ingresso">Ingresso&#42;</label>
                         <input type="date" class="form-control" id="ingresso" name="ingresso" required>
                     </div>
                     <div class="form-group col-md-2">
-                        <label for="regime">Regime</label>
+                        <label for="regime">Regime&#42;</label>
                         <select class="form-control" id="regime" name="regime" required>
-                            <option value="PRE">Temporária</option>
+                            <option value="PRE">Preventiva</option>
                             <option value="A">Alimentos</option>
-                            <option value="PRO">Provisório</option>
+                            <option value="PRO">Temporária</option>
                             <option value="F">Fechado</option>
                             <option value="SA">Semiaberto</option>
                             <option value="TOR">Tornozeleira</option>
@@ -61,10 +62,10 @@
                     </div>
                     <div class="form-group col-md-2">
                         <label for="pena">Pena</label>
-                        <input type="text" class="form-control" id="pena" name="pena">
+                        <input type="text" class="form-control" id="pena" name="pena" placeholder="2a 10m">
                     </div>
                     <div class="form-group col-md-2">
-                        <label for="local_alocacao">Alocação</label>
+                        <label for="local_alocacao">Alocação&#42;</label>
                         <select class="form-control" id="local_alocacao" name="local_alocacao" required>
                             <option value="F">Fechado</option>
                             <option value="SA">Semiaberto</option>
@@ -75,8 +76,14 @@
                         <label for="previsao_saida">Previsão de Saída</label>
                         <input type="date" class="form-control" id="previsao_saida" name="previsao_saida">
                     </div>
+                    <!-- add observação -->
                     <div class="form-group col-md-2">
-                        <label for="atualizado">Atualizado</label>
+                        <label for="observacao">Observações</label>
+                        <input type="text" class="form-control" id="observacao" name="observacao">
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <label for="atualizado">Atualizado&#42;</label>
                         <input type="date" class="form-control" id="atualizado" name="atualizado">
                     </div>
                     <div class="form-group col-md-2 align-self-end">
@@ -123,6 +130,7 @@
                     <th>Pena</th>
                     <th>Alocação</th>
                     <th>Previsão de Saída</th>
+                    <th>Observações</th>
                     <th>Atualizado</th>
                 </tr>
             </thead>
@@ -143,6 +151,7 @@
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
                     <td><span class="editable" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
+                    <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
                     <td class="text-center"><span class="editable" data-field="atualizado"
                             data-type="date">{{ relacao.atualizado|date:"d/m/y" }}</span></td>
                 </tr>
@@ -167,6 +176,7 @@
                     <th>Pena</th>
                     <th>Alocação</th>
                     <th>Previsão de Saída</th>
+                    <th>Observações</th>
                     <th>Atualizado</th>
                 </tr>
             </thead>
@@ -187,6 +197,7 @@
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
                     <td><span class="editable" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
+                    <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
                     <td class="text-center"><span class="editable" data-field="atualizado"
                             data-type="date">{{ relacao.atualizado|date:"d/m/y" }}</span></td>
                 </tr>
@@ -214,6 +225,7 @@
                         <th>Pena</th>
                         <th>Alocação</th>
                         <th>Previsão de Saída</th>
+                        <th>Observações</th>
                         <th>Atualizado</th>
                     </tr>
                 </thead>
@@ -234,6 +246,7 @@
                                 data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
                         <td><span class="editable" data-field="previsao_saida"
                                 data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
+                        <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
                         <td class="text-center"><span class="editable" data-field="atualizado"
                                 data-type="date">{{ relacao.atualizado|date:"d/m/y" }}</span></td>
                     </tr>
@@ -265,9 +278,9 @@
                 // Substituir por dropdown para 'regime'
                 if (type === 'dropdown' && field === 'regime') {
                     const options = {
-                        'PRE': 'Temporária',
+                        'PRE': 'Preventiva',
                         'A': 'Alimentos',
-                        'PRO': 'Provisório',
+                        'PRO': 'Temporária',
                         'F': 'Fechado',
                         'SA': 'Semiaberto',
                         'TOR': 'Tornozeleira'

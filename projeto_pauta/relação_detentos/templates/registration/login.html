@@ -31,11 +31,25 @@
         .card {
             text-align: center;
             background-color: rgb(194, 199, 199);
+            padding-top: 30px;
             padding-bottom: 20px;
         }
 
         .oculta {
             display: none;
+        }
+
+        /* rodapé */
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 0;
+            position: fixed;
+            /* position: fixed; */
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            height: 50px;
         }
     </style>
 </head>
@@ -47,7 +61,7 @@
         </div>
         <div class="container card">
 
-            <h1>Login</h1>
+            <!-- <h1>Login</h1> -->
             <form method="post">
                 {% csrf_token %}
                 {{ form.as_p }}
@@ -56,6 +70,12 @@
         </div>
 
     </div>
+    <!-- Rodapé -->
+    <footer class="footer">
+        <div>
+            <p class="mb-0">2025 Presídio Regional de Maravilha &#8211; Todos os direitos reservados</p>
+        </div>
+    </footer>
 </body>
 
 </html>

@@ -30,6 +30,7 @@ class Relacao(models.Model):
     pena = models.CharField('Pena', max_length=30, blank=True, null=True, default='-')
     previsao_saida = models.DateField('Previsão saída', blank=True, null=True)
     local_alocacao = models.CharField('Local da alocação', choices=alocacao_local, default='F', max_length=3)
+    observacoes = models.CharField('Observações', max_length=150, blank=True, null=True, default='-')
     atualizado = models.DateField('Atualizado', default=timezone.now)
 
     def __str__(self):
