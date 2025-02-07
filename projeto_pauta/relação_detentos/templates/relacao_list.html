@@ -51,7 +51,7 @@
                     <div class="form-group col-md-2">
                         <label for="regime">Regime</label>
                         <select class="form-control" id="regime" name="regime" required>
-                            <option value="PRE">Preventiva</option>
+                            <option value="PRE">Temporária</option>
                             <option value="A">Alimentos</option>
                             <option value="PRO">Provisório</option>
                             <option value="F">Fechado</option>
@@ -68,7 +68,7 @@
                         <select class="form-control" id="local_alocacao" name="local_alocacao" required>
                             <option value="F">Fechado</option>
                             <option value="SA">Semiaberto</option>
-                            <option value="TOR">Domiciliar</option>
+                            <option value="TOR">Liberado</option>
                         </select>
                     </div>
                     <div class="form-group col-md-2">
@@ -219,7 +219,7 @@
                 </thead>
                 <tbody>
                     {% for relacao in relacoes %}
-                    {% if relacao.local_alocacao_nome_completo == 'Domiciliar' %}
+                    {% if relacao.local_alocacao_nome_completo == 'Liberado' %}
                     <tr data-id="{{ relacao.id }}">
                         <td><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
                         <td><span class="editable" data-field="nome">{{ relacao.nome }}</span></td>
@@ -265,7 +265,7 @@
                 // Substituir por dropdown para 'regime'
                 if (type === 'dropdown' && field === 'regime') {
                     const options = {
-                        'PRE': 'Preventiva',
+                        'PRE': 'Temporária',
                         'A': 'Alimentos',
                         'PRO': 'Provisório',
                         'F': 'Fechado',
@@ -288,7 +288,7 @@
                 // Substituir por dropdown para 'regime-aloc'
                 else if (type === 'dropdown-aloc' && field === 'local_alocacao') {
                     const options = {
-                        'TOR': 'Domiciliar',
+                        'TOR': 'Liberado',
                         'F': 'Fechado',
                         'SA': 'Semiaberto'
                     };

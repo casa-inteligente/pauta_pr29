@@ -54,7 +54,7 @@ def add_detento(request):
 
     return render(request, 'relacao_list.html')
 
-
+@login_required
 def relacao_list(request):
 
     '''
@@ -71,7 +71,7 @@ def relacao_list(request):
     ).order_by('regime_order', 'previsao_saida', 'local_alocacao', 'nome')
 
     regime_map = {
-        'PRO': 'Provisório',
+        'PRO': 'Temporária',
         'F': 'Fechado',
         'SA': 'Semiaberto',
         'TOR': 'Tornozeleira',
@@ -87,7 +87,7 @@ def relacao_list(request):
     local_alocacao_map = {
         'F' : 'Fechado',
         'SA' : 'Semiaberto',
-        'TOR' : 'Domiciliar'
+        'TOR' : 'Liberado'
     }
 
     for relacao in relacoes:
@@ -154,3 +154,6 @@ def salvar_alteracoes(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Método não permitido'})
+
+
+    #visualização para o chefe de segurança dos internos trabalhandos
