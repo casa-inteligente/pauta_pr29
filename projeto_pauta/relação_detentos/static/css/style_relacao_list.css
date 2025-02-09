@@ -92,10 +92,12 @@ details {
     font-size: 0.8em;
 }
 
-/* Para deixar a linha vermelha para alguns tipos de prisão */
+/* Estilização das linhas destacadas */
+.highlight-yellow {
+    background-color: yellow !important;
+}
 
-
-/*Paar deixar em amarelo as proximas progressões*/
-table .highlight-today {
-    background-color: #afd81a;
+.highlight-red {
+    background-color: red !important;
+    color: rgb(90, 86, 86);
 }
