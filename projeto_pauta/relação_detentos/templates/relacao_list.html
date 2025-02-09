@@ -139,21 +139,20 @@
                 {% for relacao in relacoes %}
                 {% if relacao.local_alocacao_nome_completo == 'Fechado' %}
                 <tr data-id="{{ relacao.id }}">
-                    <td width="50" height="10"><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
+                    <td><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
                     <td><span class="editable" data-field="nome">{{ relacao.nome }}</span></td>
                     <td><span class="editable" data-field="comarca">{{ relacao.comarca }}</span></td>
                     <td><span class="editable" data-field="artigo">{{ relacao.artigo }}</span></td>
-                    <td width="10" height="10"><span data-field="ingresso"
-                            data-type="date">{{ relacao.ingresso|date:"d/m/y" }}</span></td>
-                    <td width="90" height="10"><span class="editable" data-field="regime"
+                    <td><span data-field="ingresso" data-type="date">{{ relacao.ingresso|date:"d/m/y" }}</span></td>
+                    <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
-                    <td width="100" height="10"><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
-                    <td width="90" height="10"><span class="editable" data-field="local_alocacao"
+                    <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
+                    <td><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
-                    <td width="10" height="10"><span data-field="previsao_saida"
+                    <td><span data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
-                    <td width="10" height="10"><span class="editable" data-field="atualizado"
+                    <td><span class="editable" data-field="atualizado"
                             data-type="date">{{ relacao.atualizado|date:"d/m/y" }}</span></td>
                 </tr>
                 {% endif %}
@@ -186,21 +185,21 @@
                 {% for relacao in relacoes %}
                 {% if relacao.local_alocacao_nome_completo == 'Semiaberto' %}
                 <tr data-id="{{ relacao.id }}">
-                    <td width="50" height="10"><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
+                    <td><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
                     <td><span class="editable" data-field="nome">{{ relacao.nome }}</span></td>
                     <td><span class="editable" data-field="comarca">{{ relacao.comarca }}</span></td>
                     <td><span class="editable" data-field="artigo">{{ relacao.artigo }}</span></td>
-                    <td width="10" height="10"><span class="editable" data-field="ingresso"
+                    <td><span class="editable" data-field="ingresso"
                             data-type="date">{{ relacao.ingresso|date:"d/m/y" }}</span></td>
-                    <td width="90" height="10" s><span class="editable" data-field="regime"
+                    <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
-                    <td width="100" height="10"><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
-                    <td width="90" height="10"><span class="editable" data-field="local_alocacao"
+                    <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
+                    <td><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
                     <td><span data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
-                    <td width="10" height="10"><span class="editable" data-field="atualizado"
+                    <td><span class="editable" data-field="atualizado"
                             data-type="date">{{ relacao.atualizado|date:"d/m/y" }}</span></td>
                 </tr>
                 {% endif %}
@@ -396,21 +395,6 @@
                     alert('Erro ao salvar as alterações.');
                 });
         }
-
-
-
-
-        // function highlightTodayRows() {
-        //     const today = new Date();
-        //     const todayString = today.toLocaleDateString('pt-br', { day: '2-digit', month: '2-digit', year: '2-digit' });
-        //     const rows = document.querySelectorAll('#pauta-content tr');
-        //     rows.forEach(row => {
-        //         const dateCell = row.querySelector('td:first-child');
-        //         if (dateCell && dateCell.textContent.trim() === todayString) {
-        //             row.classList.add('highlight-today');
-        //         }
-        //     });
-        // }
 
         // Definir a data atual no campo "Atualizado"
         document.addEventListener('DOMContentLoaded', function () {
