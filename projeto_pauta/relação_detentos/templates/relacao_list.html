@@ -116,44 +116,44 @@
 
     </div>
 
-    <!-- Tabela para Detentos do Regime Fechado -->
+    <!-- Tabela para Detentos Alocados Fechado -->
     <h4>Fechado <span>[{{ qtd_fechado }}]</span></h4>
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)">IPEN</th>
-                    <th onclick="sortTable(1)">Nome</th>
-                    <th onclick="sortTable(2)">Comarca</th>
-                    <th onclick="sortTable(3)">Artigo</th>
-                    <th onclick="sortTable(4)">Ingresso</th>
-                    <th onclick="sortTable(5)">Regime</th>
-                    <th onclick="sortTable(6)">Pena</th>
-                    <th onclick="sortTable(7)">Alocação</th>
-                    <th onclick="sortTable(7)">Previsão de Saída</th>
-                    <th onclick="sortTable(9)">Observações</th>
-                    <th onclick="sortTable(10)">Atualizado</th>
+                    <th onclick="sortTable(0 ,0)">IPEN</th>
+                    <th onclick="sortTable(1 ,0)">Nome</th>
+                    <th onclick="sortTable(2 ,0)">Comarca</th>
+                    <th onclick="sortTable(3 ,0)">Artigo</th>
+                    <th onclick="sortTable(4 ,0)">Ingresso</th>
+                    <th onclick="sortTable(5 ,0)">Regime</th>
+                    <th onclick="sortTable(6 ,0)">Pena</th>
+                    <th onclick="sortTable(7 ,0)">Alocação</th>
+                    <th onclick="sortTable(7 ,0)">Previsão de Saída</th>
+                    <th onclick="sortTable(9 ,0)">Observações</th>
+                    <th onclick="sortTable(10 ,0)">Atualizado</th>
                 </tr>
             </thead>
             <tbody>
                 {% for relacao in relacoes %}
                 {% if relacao.local_alocacao_nome_completo == 'Fechado' %}
-                <tr data-id="{{ relacao.id }}">
-                    <td><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
+                <tr data-id="{{ relacao.id }}" class="highlight-today">
+                    <td width="50" height="10"><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
                     <td><span class="editable" data-field="nome">{{ relacao.nome }}</span></td>
                     <td><span class="editable" data-field="comarca">{{ relacao.comarca }}</span></td>
                     <td><span class="editable" data-field="artigo">{{ relacao.artigo }}</span></td>
-                    <td><span class="editable limita_omprimento_da_celula" data-field="ingresso"
+                    <td width="10" height="10"><span data-field="ingresso"
                             data-type="date">{{ relacao.ingresso|date:"d/m/y" }}</span></td>
-                    <td><span class="editable" data-field="regime"
+                    <td width="90" height="10"><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
-                    <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
-                    <td><span class="editable" data-field="local_alocacao"
+                    <td width="100" height="10"><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
+                    <td width="90" height="10"><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
-                    <td><span class="editable limita_omprimento_da_celula" data-field="previsao_saida"
+                    <td width="10" height="10"><span data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
-                    <td class="text-center limita_omprimento_da_celula"><span class="editable" data-field="atualizado"
+                    <td width="10" height="10"><span class="editable" data-field="atualizado"
                             data-type="date">{{ relacao.atualizado|date:"d/m/y" }}</span></td>
                 </tr>
                 {% endif %}
@@ -162,47 +162,45 @@
         </table>
     </div>
 
-    <!-- Tabela para Detentos do Regime Semiaberto -->
+    <!-- Tabela para Detentos Alocados Semiaberto -->
     <h4>Semiaberto <span>[{{ qtd_semiaberto }}]</span></h4>
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)">IPEN <i class="fas fa-sort"></i></th>
-                    <th onclick="sortTable(1)">Nome <i class="fas fa-sort"></i></th>
-                    <th onclick="sortTable(2)">Comarca <i class="fas fa-sort"></i></th>
-                    <th onclick="sortTable(3)">Artigo <i class="fas fa-sort"></i></th>
-                    <th class="limita_omprimento_da_celula" onclick="sortTable(4)">Ingresso <i class="fas fa-sort"></i>
+                    <th onclick="sortTable(0 ,1)">IPEN <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(1 ,1)">Nome <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(2 ,1)">Comarca <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(3 ,1)">Artigo <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(4 ,1)">Ingresso <i class="fas fa-sort"></i>
                     </th>
-                    <th onclick="sortTable(5)">Regime <i class="fas fa-sort"></i></th>
-                    <th onclick="sortTable(6)">Pena <i class="fas fa-sort"></i></th>
-                    <th onclick="sortTable(7)">Alocação <i class="fas fa-sort"></i></th>
-                    <th class="limita_omprimento_da_celula" onclick="sortTable(8)">Previsão de Saída <i
-                            class="fas fa-sort"></i></th>
-                    <th onclick="sortTable(9)">Observações</th>
-                    <th class="limita_omprimento_da_celula" onclick="sortTable(10)">Atualizado <i
-                            class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(5 ,1)">Regime <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(6 ,1)">Pena <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(7 ,1)">Alocação <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(8 ,1)">Previsão de Saída <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(9 ,1)">Observações</th>
+                    <th onclick="sortTable(10 ,1)">Atualizado <i class="fas fa-sort"></i></th>
                 </tr>
             </thead>
             <tbody>
                 {% for relacao in relacoes %}
                 {% if relacao.local_alocacao_nome_completo == 'Semiaberto' %}
                 <tr data-id="{{ relacao.id }}">
-                    <td><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
+                    <td width="50" height="10"><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
                     <td><span class="editable" data-field="nome">{{ relacao.nome }}</span></td>
                     <td><span class="editable" data-field="comarca">{{ relacao.comarca }}</span></td>
                     <td><span class="editable" data-field="artigo">{{ relacao.artigo }}</span></td>
-                    <td class="limita_omprimento_da_celula"><span class="editable" data-field="ingresso"
+                    <td width="10" height="10"><span class="editable" data-field="ingresso"
                             data-type="date">{{ relacao.ingresso|date:"d/m/y" }}</span></td>
-                    <td><span class="editable" data-field="regime"
+                    <td width="90" height="10" s><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
-                    <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
-                    <td><span class="editable" data-field="local_alocacao"
+                    <td width="100" height="10"><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
+                    <td width="90" height="10"><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
-                    <td><span class="editable limita_omprimento_da_celula" data-field="previsao_saida"
+                    <td width="10" height="10"><span data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
-                    <td class="text-center limita_omprimento_da_celula"><span class="editable" data-field="atualizado"
+                    <td width="10" height="10"><span class="editable" data-field="atualizado"
                             data-type="date">{{ relacao.atualizado|date:"d/m/y" }}</span></td>
                 </tr>
                 {% endif %}
@@ -220,17 +218,17 @@
             <table class="table table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th>IPEN <i class="fas fa-sort"></i></th>
-                        <th>Nome <i class="fas fa-sort"></i></th>
-                        <th>Comarca <i class="fas fa-sort"></i></th>
-                        <th>Artigo <i class="fas fa-sort"></i></th>
-                        <th>Ingresso <i class="fas fa-sort"></i></th>
-                        <th>Regime <i class="fas fa-sort"></i></th>
-                        <th>Pena <i class="fas fa-sort"></i></th>
-                        <th>Alocação <i class="fas fa-sort"></i></th>
-                        <th>Previsão de Saída <i class="fas fa-sort"></i></th>
-                        <th onclick="sortTable(9)">Observações</th>
-                        <th>Atualizado <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(0, 2)">IPEN <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(1, 2)">Nome <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(2, 2)">Comarca <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(3, 2)">Artigo <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(4, 2)">Ingresso <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(5, 2)">Regime <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(6, 2)">Pena <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(7, 2)">Alocação <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(8, 2)">Previsão de Saída <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(9, 2)">Observações</th>
+                        <th onclick="sortTable(10, 2)">Atualizado <i class="fas fa-sort"></i></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -413,6 +411,7 @@
         //         }
         //     });
         // }
+
         // Definir a data atual no campo "Atualizado"
         document.addEventListener('DOMContentLoaded', function () {
             const atualizadoField = document.getElementById('atualizado');
@@ -420,10 +419,11 @@
             atualizadoField.value = today;
         });
 
+
         // Função para classificar a tabela
-        function sortTable(n) {
-            //alert('Foi clicado em ' + n);
-            const table = document.querySelector("table");
+        function sortTable(n, tableIndex) {
+            const tables = document.querySelectorAll("table");
+            const table = tables[tableIndex];
             let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
             switching = true;
             dir = "asc";
@@ -458,7 +458,6 @@
                 }
             }
         }
-
 
     </script>
 </body>

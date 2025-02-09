@@ -91,3 +91,11 @@ details {
     /* font-weight: 700; */
     font-size: 0.8em;
 }
+
+/* Para deixar a linha vermelha para alguns tipos de prisão */
+
+
+/*Paar deixar em amarelo as proximas progressões*/
+table .highlight-today {
+    background-color: #afd81a;
+}
