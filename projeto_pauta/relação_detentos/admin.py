@@ -12,3 +12,4 @@ class RelacaoAdmin(admin.ModelAdmin):
 # @admin.register(Pena)
 # class PenaAdmin(admin.ModelAdmin):
 #     list_display = ('ano', 'mes', 'dias')
+#@admin.display()
