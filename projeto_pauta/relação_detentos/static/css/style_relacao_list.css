@@ -94,10 +94,10 @@ details {
 
 /* Estilização das linhas destacadas */
 .highlight-yellow {
-    background-color: yellow !important;
+    background-color: rgba(252, 248, 1, 0.815) !important;
 }
 
 .highlight-red {
-    background-color: red !important;
-    color: rgb(90, 86, 86);
+    background-color: rgb(255, 152, 152) !important;
+    color: rgb(0, 0, 0);
 }

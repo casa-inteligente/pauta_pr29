@@ -37,7 +37,7 @@ class Relacao(models.Model):
         return self.nome
     
     def save(self, *args, **kwargs):
-        if self.regime == 'PRE':
+        if self.regime == 'P':
             self.previsao_saida = None
         super(Relacao, self).save(*args, **kwargs)
     
@@ -48,9 +48,7 @@ class Relacao(models.Model):
     def formatted_previsao_saida(self):
         if self.previsao_saida:
             return self.previsao_saida.strftime('%d-%m-%y')
-        elif self.regime == 'PRE':
-            return '-'
-        return '-'
+       
     formatted_previsao_saida.short_description = 'Previsão de Saída'
 
     def formatted_atualizado(self):

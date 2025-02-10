@@ -143,13 +143,14 @@
                     <td><span class="editable" data-field="nome">{{ relacao.nome }}</span></td>
                     <td><span class="editable" data-field="comarca">{{ relacao.comarca }}</span></td>
                     <td><span class="editable" data-field="artigo">{{ relacao.artigo }}</span></td>
-                    <td><span data-field="ingresso" data-type="date">{{ relacao.ingresso|date:"d/m/y" }}</span></td>
+                    <td><span class="editable" data-field="ingresso"
+                            data-type="date">{{ relacao.ingresso|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="regime"
                             data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
                     <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
                     <td><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
-                    <td><span data-field="previsao_saida"
+                    <td><span class="editable" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
                     <td><span class="editable" data-field="atualizado"
@@ -196,7 +197,7 @@
                     <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
                     <td><span class="editable" data-field="local_alocacao"
                             data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
-                    <td><span data-field="previsao_saida"
+                    <td><span class="editable" data-field="previsao_saida"
                             data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
                     <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
                     <td><span class="editable" data-field="atualizado"
@@ -210,7 +211,7 @@
 
     <details>
         <summary>
-            Domiciliar
+            Liberado
         </summary>
 
         <div class="table-responsive">
@@ -276,8 +277,21 @@
                 const type = element.getAttribute('data-type');
                 const value = element.textContent.trim();
 
+                // Substituir por input de data para campos de data
+                if (type === 'date') {
+                    const input = document.createElement('input');
+                    input.type = 'date';
+                    input.className = 'form-control';
+                    // Converter formato dd/mm/yy para yyyy-mm-dd
+                    const [day, month, year] = value.split('/');
+                    if (day && month && year) {
+                        input.value = `20${year}-${month}-${day}`;
+                    }
+                    element.innerHTML = '';
+                    element.appendChild(input);
+                }
                 // Substituir por dropdown para 'regime'
-                if (type === 'dropdown' && field === 'regime') {
+                else if (type === 'dropdown' && field === 'regime') {
                     const options = {
                         'PRE': 'Preventiva',
                         'A': 'Alimentos',
@@ -298,7 +312,6 @@
                     element.innerHTML = '';
                     element.appendChild(select);
                 }
-
                 // Substituir por dropdown para 'regime-aloc'
                 else if (type === 'dropdown-aloc' && field === 'local_alocacao') {
                     const options = {
@@ -317,18 +330,6 @@
                     }
                     element.innerHTML = '';
                     element.appendChild(select);
-                }
-
-                // Substituir por input de data para campos de data
-                else if (type === 'date') {
-                    const input = document.createElement('input');
-                    input.type = 'date';
-                    input.className = 'form-control';
-                    // Converter formato dd/mm/yy para yyyy-mm-dd
-                    const [day, month, year] = value.split('/');
-                    input.value = `20${year}-${month}-${day}`;
-                    element.innerHTML = '';
-                    element.appendChild(input);
                 }
                 // Campos de texto normais (edição direta)
                 else {
@@ -468,7 +469,20 @@
 
         // Chamar a função para destacar as linhas
         highlightRows();
-        //});
+
+        // Adicionar evento de teclado para salvar alterações com Ctrl + S
+        document.addEventListener('keydown', function (event) {
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault();
+                if (isEditingEnabled) {
+                    saveChanges();
+                }
+            }
+        });
+
+        // Tornar as funções globais para que possam ser chamadas a partir do HTML
+        window.enableEditing = enableEditing;
+        window.saveChanges = saveChanges;
 
     </script>
 </body>

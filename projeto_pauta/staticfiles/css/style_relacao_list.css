@@ -31,7 +31,7 @@ thead th {
 
 .limita_omprimento_da_celula {
     /* Limita o tamanho maximo */
-    max-width: 50px;
+    max-width: 100px;
     /* Impede a quebra de linha dentro da célula */
     white-space: nowrap;
     /* Oculta o excesso de conteúdo */
@@ -90,4 +90,14 @@ editable {
 details {
     /* font-weight: 700; */
     font-size: 0.8em;
+}
+
+/* Estilização das linhas destacadas */
+.highlight-yellow {
+    background-color: rgb(175, 175, 47) !important;
+}
+
+.highlight-red {
+    background-color: rgb(209, 108, 108) !important;
+    color: rgb(90, 86, 86);
 }
