@@ -7,7 +7,17 @@ from django.utils import timezone
 
 # Create your models here.
 class Relacao(models.Model):
-  
+    
+    empresas_conveniadas = (
+        ('ROTOPLAST', 'ROTOPLAST'),
+        ('CHAMALUX', 'CHAMALUX'),
+        ('PREFEITURA', 'PREFEITURA'),
+        ('PRESÍDIO', 'PRESÍDIO'),
+        ('OLIVEIRA', 'CONS. OLIVEIRA'),
+        ('REALCE', 'REALCE'),
+        ('SEPAT', 'SEPAT')
+    )
+
     campo_regime = (
             ('PRE', 'Preventiva'),
             ('A', 'Alimentos'),
@@ -32,6 +42,8 @@ class Relacao(models.Model):
     local_alocacao = models.CharField('Local da alocação', choices=alocacao_local, default='F', max_length=3)
     observacoes = models.CharField('Observações', max_length=150, blank=True, null=True, default='-')
     atualizado = models.DateField('Atualizado', default=timezone.now)
+    trampo_empresa = models.CharField('Convênio',max_length=15, choices=empresas_conveniadas, default=None, blank=True, null=True)
+    observacoes_trabalho = models.CharField('Observações', max_length=50, blank=True, null=True)
 
     def __str__(self):
         return self.nome
