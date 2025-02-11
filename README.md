@@ -14,7 +14,8 @@ criação de uma pauta virtual para o Presídio Regional de Maravilha.
 
  > [!NOTE]
  > Todos podem adicionar na pauta; </br>
- > Opção de alerta;
+ > Opção de alerar; <br>
+ > Controle visual de progressões; <br>
 
 
 ### Para iniciar o projeto
