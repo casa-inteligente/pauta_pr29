@@ -101,3 +101,8 @@ details {
     background-color: rgb(177, 18, 38, 0.5) !important;
     color: rgb(0, 0, 0);
 }
+
+.highlight-green {
+    background-color: rgba(54, 194, 41, 0.5) !important;
+    color: rgb(0, 0, 0);
+}

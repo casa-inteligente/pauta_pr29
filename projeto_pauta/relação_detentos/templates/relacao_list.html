@@ -449,10 +449,26 @@
             const rows = document.querySelectorAll('tbody tr');
             const sixMonthsFromNow = new Date();
             sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+            const maisUmAno = new Date();
+            maisUmAno.setFullYear(maisUmAno.getFullYear() - 1);
 
             rows.forEach(row => {
                 const alocacao = row.querySelector('[data-field="regime"]').textContent.trim();
                 const previsaoSaida = row.querySelector('[data-field="previsao_saida"]').textContent.trim();
+                const atualizado = row.querySelector('[data-field="atualizado"]').textContent.trim();
+                //alert(atualizado)
+
+                // Verificar condição de atualização
+                if (atualizado) {
+                    const [day_upd, month_upd, year_upd] = atualizado.split('/');
+                    const atualizacaoData = new Date(`20${year_upd}-${month_upd}-${day_upd}`);
+                    const umAnoAtras = new Date();
+                    umAnoAtras.setFullYear(umAnoAtras.getFullYear() - 1);
+                    //alert(umAnoAtras)
+                    if (atualizacaoData <= umAnoAtras) {
+                        row.classList.add('highlight-green');
+                    }
+                }
 
                 // Verificar condição de alocação
                 if (alocacao === 'Alimentos' || alocacao === 'Temporária') {
@@ -464,8 +480,11 @@
                         row.classList.add('highlight-yellow');
                     }
                 }
+
+
             });
         }
+
 
         // Chamar a função para destacar as linhas
         highlightRows();
