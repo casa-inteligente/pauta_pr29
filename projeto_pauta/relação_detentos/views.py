@@ -1,12 +1,18 @@
+
+import pdfplumber
+import pandas as pd
+import json
+import datetime
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-import json
+from django.core.files.storage import FileSystemStorage
 from .models import Relacao
 from django.db.models import Case, When, Value
 from django.db.models.functions import Concat
-import datetime
+from django.utils import timezone
+
 
 @login_required
 def add_detento(request):
@@ -161,3 +167,67 @@ def salvar_alteracoes(request):
 
 
     #visualização para o chefe de segurança dos internos trabalhandos
+
+
+
+'''
+    Processa o relatorio 1.8 e atualiza o banco de dados
+'''
+def map_local_alocacao(value):
+    mapping = {
+        'A': 'F',
+        'C': 'F',
+        'B': 'SA',
+        'D': 'SA'
+    }
+    return mapping.get(value, 'F')
+
+def process_pdf(file_path):
+    with pdfplumber.open(file_path) as pdf:
+        all_tables = []
+        for page in pdf.pages:
+            tables = page.extract_tables()
+            for table in tables:
+                all_tables.append(table)
+
+        df = pd.concat([pd.DataFrame(table) for table in all_tables])
+
+        # Pegar as colunas necessárias
+        first_col = df.iloc[:, 0].drop([0, 1, 2]).reset_index(drop=True)
+        fourth_col = df.iloc[:, 3].drop([0, 1, 2]).reset_index(drop=True)
+
+        for i in range(len(first_col)):
+            ipen_nome = first_col[i].split('-', 1)
+            if len(ipen_nome) == 2:
+                ipen = int(ipen_nome[0])
+                nome = ipen_nome[1].replace('\n', ' ')
+                local_alocacao = map_local_alocacao(fourth_col[i])
+
+                # Verificar se o IPEN já está cadastrado
+                relacao, created = Relacao.objects.get_or_create(IPEN=ipen, defaults={
+                    'nome': nome,
+                    'local_alocacao': local_alocacao,
+                    #'ingresso': timezone.now(),
+                    'atualizado': timezone.now()
+                })
+
+                if created:
+                    print(f'Registro adicionado: {nome} ({ipen})')
+                else:
+                    print(f'Registro já existente: {nome} ({ipen})')
+
+def upload_pdf(request):
+    if request.method == 'POST' and request.FILES['pdfFile']:
+        pdf_file = request.FILES['pdfFile']
+        fs = FileSystemStorage()
+        filename = fs.save(pdf_file.name, pdf_file)
+        file_path = fs.path(filename)
+
+        added_records = process_pdf(file_path)
+
+        if added_records:
+            message = 'Registros adicionados: ' + ', '.join(added_records)
+            return render(request, 'relacao_list.html', {'message': message})
+
+        return redirect('relação_detentos:relacao_list')
+    return render(request, 'relacao_list.html')

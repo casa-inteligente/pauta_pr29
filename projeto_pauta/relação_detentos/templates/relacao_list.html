@@ -25,7 +25,22 @@
         <summary>
             Adicionar &#43;
         </summary>
+
+
+
         <div class="container mt-3">
+            <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
+                action="{% url 'relação_detentos:upload_pdf' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="pdfFile">Selecione o relatório 1.8 do IPEN</label>
+                    <input type="file" class="form-control-file" id="pdfFile" name="pdfFile" accept="application/pdf"
+                        required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
+            </form>
+
+
             <form id="addDetentoForm" method="post" action="{% url 'relação_detentos:add_detento' %}">
                 {% csrf_token %}
                 <div class="form-row">
