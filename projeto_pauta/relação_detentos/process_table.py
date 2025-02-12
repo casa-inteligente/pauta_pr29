@@ -56,6 +56,9 @@ def process_pdf(file_path):
                     print(f'Registro adicionado: {nome} ({ipen})')
                 else:
                     print(f'Registro já existente: {nome} ({ipen})')
+        
+        #Excluir os arquivos
+        os.remove(file_path)
 
         return added_records
 
