@@ -35,6 +35,8 @@ def process_pdf(file_path):
         first_col = df.iloc[:, 0].drop([0, 1, 2]).reset_index(drop=True)
         fourth_col = df.iloc[:, 3].drop([0, 1, 2]).reset_index(drop=True)
 
+        added_records = []
+
         for i in range(len(first_col)):
             ipen_nome = first_col[i].split('-', 1)
             if len(ipen_nome) == 2:
@@ -50,10 +52,17 @@ def process_pdf(file_path):
                 })
 
                 if created:
+                    added_records.append(f'{nome} ({ipen})')
                     print(f'Registro adicionado: {nome} ({ipen})')
                 else:
                     print(f'Registro já existente: {nome} ({ipen})')
 
+        return added_records
+
 if __name__ == '__main__':
     pdf_file_path = 'caminho/para/seu/arquivo.pdf'
-    process_pdf(pdf_file_path)
+    added_records = process_pdf(pdf_file_path)
+    if added_records:
+        print('Registros adicionados:')
+        for record in added_records:
+            print(record)

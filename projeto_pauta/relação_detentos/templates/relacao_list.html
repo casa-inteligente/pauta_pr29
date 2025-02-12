@@ -275,6 +275,12 @@
 
     </div>
 
+    <!-- Adicionar um elemento para exibir mensagens -->
+    <div id="message-container" class="container mt-3"></div>
+
+    <!-- Seu conteúdo existente -->
+
+
     <!-- Rodapé -->
     <footer class="footer">
         <div class="container">
@@ -286,6 +292,22 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+        //função para gerar alerta
+        function showMessage(message) {
+            const messageContainer = document.getElementById('message-container');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            messageContainer.appendChild(alertDiv);
+        }
+
+
+
+        //função para editar a tabela
         function enableEditing() {
             document.querySelectorAll('.editable').forEach(element => {
                 const field = element.getAttribute('data-field');
