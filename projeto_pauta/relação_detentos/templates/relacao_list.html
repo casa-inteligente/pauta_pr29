@@ -29,7 +29,7 @@
 
 
         <div class="container mt-3">
-
+            <span mt-3>Siga a ordem dos documentos:</span>
             <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
                 action="{% url 'relação_detentos:upload_pdf' %}">
                 {% csrf_token %}
@@ -46,7 +46,7 @@
                 action="{% url 'relação_detentos:upload_regime_pdf' %}">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="regimePdfFile">Selecione o relatório que contenha o 'REGIME'</label>
+                    <label for="regimePdfFile">Selecione o relatório 2.13 do IPEN, que contenha o 'REGIME'</label>
                     <input type="file" class="form-control-file" id="regimePdfFile" name="regimePdfFile"
                         accept="application/pdf" required>
                 </div>
