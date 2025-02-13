@@ -38,7 +38,7 @@ def process_pdf(file_path):
 
         # Primeira tabela fixa [2x6]
         first_table = all_tables[0]
-        total_dados = int(first_table[1][5])
+        total_dados = int(first_table[1][5])# obtem a quantidade de detentos
         print(f'Total de dados: {total_dados} \t\t alocado na memoria: {sys.getsizeof(total_dados)} bytes')
 
         # Segunda tabela [nX9]
