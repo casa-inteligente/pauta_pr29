@@ -29,6 +29,7 @@
 
 
         <div class="container mt-3">
+
             <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
                 action="{% url 'relação_detentos:upload_pdf' %}">
                 {% csrf_token %}
@@ -41,6 +42,16 @@
                 <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
             </form>
 
+            <form id="uploadRegimeForm" method="post" enctype="multipart/form-data"
+                action="{% url 'relação_detentos:upload_regime_pdf' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="regimePdfFile">Selecione o relatório que contenha o 'REGIME'</label>
+                    <input type="file" class="form-control-file" id="regimePdfFile" name="regimePdfFile"
+                        accept="application/pdf" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
+            </form>
 
             <form id="addDetentoForm" method="post" action="{% url 'relação_detentos:add_detento' %}">
                 {% csrf_token %}
