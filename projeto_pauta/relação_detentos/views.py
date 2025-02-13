@@ -12,7 +12,7 @@ from .models import Relacao
 from django.db.models import Case, When, Value
 from django.db.models.functions import Concat
 from django.utils import timezone
-
+from .process_table import process_pdf
 
 @login_required
 def add_detento(request):
@@ -170,51 +170,10 @@ def salvar_alteracoes(request):
 
 
 
-'''
-    Processa o relatorio 1.8 e atualiza o banco de dados
-'''
-def map_local_alocacao(value):
-    mapping = {
-        'A': 'F',
-        'C': 'F',
-        'B': 'SA',
-        'D': 'SA'
-    }
-    return mapping.get(value, 'F')
+# '''
+#     Processa o relatorio 1.8 e atualiza o banco de dados
+# '''
 
-def process_pdf(file_path):
-    with pdfplumber.open(file_path) as pdf:
-        all_tables = []
-        for page in pdf.pages:
-            tables = page.extract_tables()
-            for table in tables:
-                all_tables.append(table)
-
-        df = pd.concat([pd.DataFrame(table) for table in all_tables])
-
-        # Pegar as colunas necessárias
-        first_col = df.iloc[:, 0].drop([0, 1, 2]).reset_index(drop=True)
-        fourth_col = df.iloc[:, 3].drop([0, 1, 2]).reset_index(drop=True)
-
-        for i in range(len(first_col)):
-            ipen_nome = first_col[i].split('-', 1)
-            if len(ipen_nome) == 2:
-                ipen = int(ipen_nome[0])
-                nome = ipen_nome[1].replace('\n', ' ')
-                local_alocacao = map_local_alocacao(fourth_col[i])
-
-                # Verificar se o IPEN já está cadastrado
-                relacao, created = Relacao.objects.get_or_create(IPEN=ipen, defaults={
-                    'nome': nome,
-                    'local_alocacao': local_alocacao,
-                    #'ingresso': timezone.now(),
-                    'atualizado': timezone.now()
-                })
-
-                if created:
-                    print(f'Registro adicionado: {nome} ({ipen})')
-                else:
-                    print(f'Registro já existente: {nome} ({ipen})')
 
 def upload_pdf(request):
     if request.method == 'POST' and request.FILES['pdfFile']:
@@ -222,6 +181,7 @@ def upload_pdf(request):
         fs = FileSystemStorage()
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
+        print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
         added_records = process_pdf(file_path)
 
