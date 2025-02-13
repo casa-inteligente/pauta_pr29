@@ -94,10 +94,23 @@ details {
 
 /* Estilização das linhas destacadas */
 .highlight-yellow {
-    background-color: rgb(175, 175, 47) !important;
+    background-color: rgba(250, 237, 39, 0.5) !important;
 }
 
 .highlight-red {
-    background-color: rgb(209, 108, 108) !important;
-    color: rgb(90, 86, 86);
+    background-color: rgb(177, 18, 38, 0.5) !important;
+    color: rgb(0, 0, 0);
+}
+
+.highlight-green {
+    background-color: rgba(54, 194, 41, 0.5) !important;
+    color: rgb(0, 0, 0);
+}
+
+
+/* Seta para o topo do site */
+#topo {
+    position: fixed;
+    right: 10px;
+    bottom: 45px;
 }

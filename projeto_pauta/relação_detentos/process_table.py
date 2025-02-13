@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import django
 from django.utils import timezone
+import sys
 
 # Configurar o Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'projeto_pauta.settings')
@@ -27,6 +28,7 @@ def process_pdf(file_path):
         all_tables = []
         for page in pdf.pages:
             tables = page.extract_tables()
+            print(f'\n \n Tabela {page.page_number}: {tables}')
             for table in tables:
                 all_tables.append(table)
 
@@ -37,7 +39,7 @@ def process_pdf(file_path):
         # Primeira tabela fixa [2x6]
         first_table = all_tables[0]
         total_dados = int(first_table[1][5])
-        print(f'Total de dados: {total_dados}')
+        print(f'Total de dados: {total_dados} \t\t alocado na memoria: {sys.getsizeof(total_dados)} bytes')
 
         # Segunda tabela [nX9]
         second_table = all_tables[1]
@@ -45,8 +47,20 @@ def process_pdf(file_path):
 
         # Anexar tabelas adicionais à segunda tabela
         for table in all_tables[2:]:
-            additional_df = pd.DataFrame(table)
+            additional_df = pd.DataFrame(table[1:], columns=second_table[0])  # Ignorar a primeira linha (cabeçalho)
             df = pd.concat([df, additional_df], ignore_index=True)
+
+        
+        total_dados_apos_index = len(df)
+        diferenca_total_dados = total_dados - total_dados_apos_index
+
+        print(f'Total de linhas após anexar tabelas adicionais: {total_dados_apos_index}\n Total de dados: {total_dados}\n\nA diferença é: {diferenca_total_dados} \t\t\tA tabela esta utilizando: {sys.getsizeof(df)} bytes')
+
+        ##se {diferenca_total_dados} for diferente de zero, possui erro no processamento, e deverá leventar um erro e avisar na tela o usuario
+
+        if diferenca_total_dados != 0:
+            #raise ValueError('Ao final das concatenações das tabelas esta faltando informações')
+            print('Possui divergencia de informações')
 
         # Pegar as colunas necessárias
         first_col = df.iloc[:, 0].astype(str).reset_index(drop=True)
@@ -57,7 +71,6 @@ def process_pdf(file_path):
 
         for i in range(len(first_col)):
             ipen_nome = first_col[i].split(' ', 1)
-            print(f'A variavél ipen_nome: {ipen_nome[0]} \t {ipen_nome[1]}')
             if len(ipen_nome) == 2:
                 ipen = int(ipen_nome[0])
                 nome = ipen_nome[1].replace('\n', ' ')
