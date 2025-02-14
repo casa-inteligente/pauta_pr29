@@ -121,8 +121,8 @@ def process_regime_pdf(file_path):
 
         updated_records = []
 
-        # Processar todas as tabelas
-        for table in all_tables:
+        # Processar todas as tabelas, exceto a última
+        for table in all_tables[:-1]:
             df = pd.DataFrame(table[1:], columns=table[0])  # Ignorar a primeira linha (cabeçalho)
 
             # Pegar as colunas necessárias
@@ -137,7 +137,11 @@ def process_regime_pdf(file_path):
                     ipen_nome = first_col[i].split(' ', 1)
                 else:
                     ipen_nome = first_col[i].split(' ', 1)
-                    regime = sixth_col[i]
+                    if sixth_col[i] is not None:
+                        regime_parts = sixth_col[i].split(' - ')
+                        regime = regime_parts[-1] if len(regime_parts) > 1 else sixth_col[i]  # Extrair o regime após o separador '-'
+                    else:
+                        regime = None
 
                 if len(ipen_nome) == 2 and ipen_nome[0].isdigit():
                     ipen = int(ipen_nome[0])
