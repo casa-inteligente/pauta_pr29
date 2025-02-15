@@ -21,6 +21,23 @@ def map_local_alocacao(value):
     }
     return mapping.get(value, 'F')
 
+# Função para formatar o campo PENA
+def format_pena(pena):
+    if pena is None or pena == 'N I':
+        return ' - '
+    pena = pena.replace('\n', ' ')
+    anos, meses, dias = 0, 0, 0
+    if 'anos' in pena:
+        anos = pena.split('anos')[0].strip()
+        pena = pena.split('anos')[1].strip()
+    if 'meses' in pena:
+        meses = pena.split('meses')[0].strip()
+        pena = pena.split('meses')[1].strip()
+    if 'dias' in pena:
+        dias = pena.split('dias')[0].strip()
+    
+    return f'{anos}A, {meses}M, {dias}D'
+
 # Função para processar o PDF e inserir os dados no banco de dados
 def process_pdf(file_path):
     #print('Chamou a extração de dados')
@@ -74,11 +91,13 @@ def process_pdf(file_path):
         fifth_col = df.iloc[:, 4].reset_index(drop=True) # Coluna que contém a alocação
 
         added_records = []
+        ipens_no_pdf = set()
 
         for i in range(len(first_col)):
             ipen_nome = first_col[i].split(' ', 1)
             if len(ipen_nome) == 2:
                 ipen = int(ipen_nome[0])
+                ipens_no_pdf.add(ipen)
                 nome = ipen_nome[1].replace('\n', ' ')
                 ingresso = pd.to_datetime(third_col[i], format='%d/%m/%Y').date()
                 local_alocacao = map_local_alocacao(fifth_col[i])
@@ -98,6 +117,14 @@ def process_pdf(file_path):
                     pass
                     #print(f'Registro já existente: {nome} ({ipen})')
 
+        # Remover IPENs que estão no banco de dados, mas não estão no PDF
+        ipens_no_banco = set(Relacao.objects.values_list('IPEN', flat=True))
+        ipens_a_remover = ipens_no_banco - ipens_no_pdf
+
+        for ipen in ipens_a_remover:
+            Relacao.objects.filter(IPEN=ipen).delete()
+            print(f'Registro removido: {ipen}')
+
     # Excluir o arquivo PDF após o processamento
     os.remove(file_path)
     print("Arquivo PDF excluído.")
@@ -111,7 +138,7 @@ def process_regime_pdf(file_path):
         all_tables = []
         for page in pdf.pages:
             tables = page.extract_tables()
-            print(f'\n \n Tabela {page.page_number}: {tables}')  # Imprimir as tabelas para verificação
+            #print(f'\n \n Tabela {page.page_number}: {tables}')  # Imprimir as tabelas para verificação
             for table in tables:
                 all_tables.append(table)
 
@@ -132,9 +159,11 @@ def process_regime_pdf(file_path):
             first_col = df.iloc[:, 0].astype(str).reset_index(drop=True)  # Coluna que contém IPEN e NOME
             fourth_col = df.iloc[:, 3].reset_index(drop=True)  # Coluna que contém o ARTIGO
             fifth_col = df.iloc[:, 4].reset_index(drop=True)  # Coluna que contém a PENA
-
+            sixth_col = df.iloc[:, 5].reset_index(drop=True)  # Coluna que contém o rgime
+            
             i = 0
             while i < len(first_col):
+                
                 if first_col[i] == 'PRISÃO':
                     regime = 'ALIMENTOS'
                     i += 1
@@ -142,7 +171,8 @@ def process_regime_pdf(file_path):
                 else:
                     ipen_nome = first_col[i].split(' ', 1)
                     artigo = fourth_col[i]
-                    pena = fifth_col[i]
+                    pena = format_pena(fifth_col[i])
+                    regime = sixth_col[i]
 
                 if len(ipen_nome) == 2 and ipen_nome[0].isdigit():
                     ipen = int(ipen_nome[0])
@@ -160,6 +190,7 @@ def process_regime_pdf(file_path):
                         relacao.artigo = artigo
                         relacao.pena = pena
                         relacao.comarca = comarca
+                        relacao.regime = regime
                         relacao.save()
                         updated_records.append(f'{relacao.nome} ({ipen})')
                         #print(f'Artigo, Pena e Comarca atualizados: {relacao.nome} ({ipen})')
@@ -175,7 +206,6 @@ def process_regime_pdf(file_path):
     print("Arquivo PDF excluído.")
     #print(f'Dados retornados: \t{updated_records}')
     return updated_records
-
 
 if __name__ == '__main__':
     pdf_file_path = "C:\\Users\\AULA-1\\Documents\\GitHub\\pauta_pr29\\projeto_pauta\\ordem_ingresso.pdf"
