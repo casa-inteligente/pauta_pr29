@@ -111,7 +111,7 @@ def process_regime_pdf(file_path):
         all_tables = []
         for page in pdf.pages:
             tables = page.extract_tables()
-            #print(f'\n \n Tabela {page.page_number}: {tables}')
+            print(f'\n \n Tabela {page.page_number}: {tables}')  # Imprimir as tabelas para verificação
             for table in tables:
                 all_tables.append(table)
 
@@ -119,15 +119,19 @@ def process_regime_pdf(file_path):
             print("Nenhuma tabela encontrada no PDF.")
             return []
 
+        # Remover a última tabela
+        all_tables = all_tables[:-1]
+
         updated_records = []
 
-        # Processar todas as tabelas, exceto a última
-        for table in all_tables[:-1]:
+        # Processar todas as tabelas
+        for table in all_tables:
             df = pd.DataFrame(table[1:], columns=table[0])  # Ignorar a primeira linha (cabeçalho)
 
             # Pegar as colunas necessárias
             first_col = df.iloc[:, 0].astype(str).reset_index(drop=True)  # Coluna que contém IPEN e NOME
-            sixth_col = df.iloc[:, 5].reset_index(drop=True)  # Coluna que contém o regime
+            fourth_col = df.iloc[:, 3].reset_index(drop=True)  # Coluna que contém o ARTIGO
+            fifth_col = df.iloc[:, 4].reset_index(drop=True)  # Coluna que contém a PENA
 
             i = 0
             while i < len(first_col):
@@ -137,22 +141,28 @@ def process_regime_pdf(file_path):
                     ipen_nome = first_col[i].split(' ', 1)
                 else:
                     ipen_nome = first_col[i].split(' ', 1)
-                    if sixth_col[i] is not None:
-                        regime_parts = sixth_col[i].split(' - ')
-                        regime = regime_parts[-1] if len(regime_parts) > 1 else sixth_col[i]  # Extrair o regime após o separador '-'
-                    else:
-                        regime = None
+                    artigo = fourth_col[i]
+                    pena = fifth_col[i]
 
                 if len(ipen_nome) == 2 and ipen_nome[0].isdigit():
                     ipen = int(ipen_nome[0])
 
+                    # Extrair a comarca
+                    comarca = None
+                    if '|' in df.iloc[i, 2]:
+                        comarca_parts = df.iloc[i, 2].split('|')
+                        if len(comarca_parts) > 1:
+                            comarca = comarca_parts[1].split(',')[0].strip()
+
                     # Verificar se o IPEN já está cadastrado
                     try:
                         relacao = Relacao.objects.get(IPEN=ipen)
-                        relacao.regime = regime
+                        relacao.artigo = artigo
+                        relacao.pena = pena
+                        relacao.comarca = comarca
                         relacao.save()
                         updated_records.append(f'{relacao.nome} ({ipen})')
-                        print(f'Regime atualizado: {relacao.nome} ({ipen})')
+                        #print(f'Artigo, Pena e Comarca atualizados: {relacao.nome} ({ipen})')
                     except Relacao.DoesNotExist:
                         print(f'IPEN não encontrado: {ipen}')
                 else:
