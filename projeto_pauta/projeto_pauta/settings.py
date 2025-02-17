@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders', # Para acesso cruzado
     'dbbackup', #Para realizar backup
     'relação_detentos', #Para o controle dos prazos
+    'resenha_livro', #para o controle de resenhas
 ]
 
 MIDDLEWARE = [
@@ -87,6 +88,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'projeto_pauta/templates'),
             os.path.join(BASE_DIR, 'pauta/templates'),
             os.path.join(BASE_DIR, 'relação_detentos/templates'),
+            os.path.join(BASE_DIR,  'resenha_livro/templates'),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -160,6 +162,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'projeto_pauta/static'),
     os.path.join(BASE_DIR, 'pauta/static'),
     os.path.join(BASE_DIR, 'relação_detentos/static'),
+    os.path.join(BASE_DIR, 'resenha_livro/static')
 ]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

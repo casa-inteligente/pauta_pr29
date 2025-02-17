@@ -133,7 +133,7 @@ def process_pdf(file_path):
 
 # Função para processar o PDF e atualizar o campo regime no banco de dados
 def process_regime_pdf(file_path):
-    print('Chamou a extração de dados do regime')
+    #print('Chamou a extração de dados do regime')
     with pdfplumber.open(file_path) as pdf:
         all_tables = []
         for page in pdf.pages:
