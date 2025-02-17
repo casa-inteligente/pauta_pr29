@@ -1,8 +1,13 @@
 from django.contrib import admin
-from .models import ResenhaLivro
+from .models import ResenhaLivro, PeriodoLeitura
 
-# Register your models here.
-@admin.register(ResenhaLivro)
+
+
+@admin.register(ResenhaLivro) # Para exibir no admin
 class Resenha(admin.ModelAdmin):
-    list_display = ('format_data_resenha', 'nomeAluno', 'nomelivro')
+    list_display = ('dataResenha', 'nomeAluno', 'nomelivro')
 
+
+@admin.register(PeriodoLeitura)
+class IntervaloLeitura(admin.ModelAdmin):
+    pass
