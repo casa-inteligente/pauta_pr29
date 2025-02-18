@@ -26,6 +26,7 @@ urlpatterns = [
     path('relacoes/', include('relação_detentos.urls')),
     path('home', views.home, name='home'),
     path('admin/', admin.site.urls),
+    #path('imprimir_resenha/<int:aluno_id>/')
     path('login/', auth_views.LoginView.as_view(), name='login'),  # URL de login
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),  # URL de logout
     path('accounts/', include('django.contrib.auth.urls')),  # URLs de autenticação padrão
