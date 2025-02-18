@@ -53,6 +53,11 @@ class Relacao(models.Model):
             self.previsao_saida = None
         super(Relacao, self).save(*args, **kwargs)
     
+    class Meta:
+        ordering = ('regime', 'nome')
+        verbose_name = 'a relação de detentos'
+        verbose_name_plural = 'Relações de Detentos'
+    
     def formatted_ingresso(self):
         return self.ingresso.strftime('%d-%m-%y')
     formatted_ingresso.short_description = 'Ingresso'
