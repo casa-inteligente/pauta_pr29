@@ -7,7 +7,7 @@ class ResenhaAdmin(admin.ModelAdmin):
 
 @admin.register(PeriodoLeitura)
 class PeriodoLeituraAdmin(admin.ModelAdmin):
-    list_display = ('intervalo_leitura', 'data_resenha')
+    list_display = ('turma', 'intervalo_leitura', 'data_resenha')
 
 @admin.register(Turma)
 class TurmaAdmin(admin.ModelAdmin):

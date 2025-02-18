@@ -1,0 +1,76 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Listar Alunos</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- botões de navegações -->
+    <div class="conteiner btn-container fixado">
+        <button type="button" class="btn btn-sm">
+            <a href="{% url 'pauta:pauta_all' %}" class="text-white text-decoration-none"><img
+                    src="{% static 'img/home.png' %}" height="20" alt="home"></a>
+        </button>
+        <button type="button" class="btn btn-sm">
+            <a href="{% url 'admin:index' %}" class="text-white text-decoration-none"><img
+                    src="{% static 'img/login.png' %}" height="20" alt="login"></a>
+        </button>
+        <button type="button" class="btn btn-sm" onclick="window.print()"><img src="{% static 'img/printer.png' %}"
+                height="20" alt="print">
+        </button>
+
+
+    </div>
+
+
+    <h1>Listar Alunos</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome do Aluno</th>
+                <th>Turma</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for aluno in alunos %}
+            <tr>
+                <td>{{ aluno.nome }}</td>
+                <td>{{ aluno.turma.nome }}</td>
+                <td>
+                    <a href="{% url 'resenha_livro:imprimir_resenha' aluno.id %}">Gerar Folha de Resenha</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+</html>
