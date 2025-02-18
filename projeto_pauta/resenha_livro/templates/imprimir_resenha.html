@@ -30,9 +30,22 @@
             font-size: 24px;
         }
 
-        .header p {
-            margin: 5px 0;
-            font-size: 14px;
+        .header table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10mm;
+        }
+
+        .header table,
+        .header th,
+        .header td {
+            border: 1px solid black;
+        }
+
+        .header th,
+        .header td {
+            padding: 8px;
+            text-align: left;
         }
 
         .content {
@@ -73,13 +86,25 @@
     <div class="page">
         <div class="header">
             <h1>PROJETO REMIÇÃO PELA LEITURA</h1>
-            <p>Aluno: {{ aluno.nome }}</p>
-            <p>Livro: {{ resenha.nomelivro }}</p>
-            <p>Autor: {{ resenha.nomeAutor }}</p>
-            <p>Período de Leitura: {{ resenha.periodoLeitura.intervalo_leitura }}</p>
-            <p>Data da Resenha: {{ resenha.dataResenha|date:"d/m/Y" }}</p>
-            <p>Professor(a): {{ resenha.nomeProfessor }}</p>
-            <P>Local: CEJA/Ud Presídio de Maravilha</P>
+            <table>
+                <tr>
+                    <td colspan="2">Aluno: {{ aluno.nome }}</td>
+                </tr>
+                <tr>
+                    <td>Data da Resenha: {{ resenha.dataResenha|date:"d/m/Y" }}</td>
+                    <td>Período de Leitura: {{ resenha.periodoLeitura.intervalo_leitura }}</td>
+                </tr>
+                <tr>
+                    <td>Local: CEJA/Ud Presídio de Maravilha</td>
+                    <td>Professor(a): {{ resenha.nomeProfessor }}</td>
+                </tr>
+                <tr>
+                    <td colspan="2">{{ resenha.nomelivro }}</td>
+                </tr>
+                <tr>
+                    <td class="text-center" colspan="2">{{ resenha.nomeAutor }}</td>
+                </tr>
+            </table>
         </div>
         <div class="content">
             <div class="lines">
@@ -88,9 +113,21 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="footer">
+        <!-- <div class="footer">
             <p class="page-number">Página </p>
+        </div> -->
+    </div>
+    <div class="page">
+        <div class="content">
+            <div class="lines">
+                {% for i in linhas %}
+                <div class="line"></div>
+                {% endfor %}
+            </div>
         </div>
+        <!-- <div class="footer">
+            <p class="page-number">Página </p>
+        </div> -->
     </div>
     {% endfor %}
 </body>
