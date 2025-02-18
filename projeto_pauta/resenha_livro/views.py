@@ -9,8 +9,10 @@ def imprimir_resenha(request, aluno_id):
     aluno = get_object_or_404(Aluno, id=aluno_id)
     resenhas = ResenhaLivro.objects.filter(aluno=aluno)
     linhas = range(30)
+    linhas_back = range(50)
     return render(request, 'imprimir_resenha.html', {
         'aluno': aluno,
         'resenhas': resenhas,
         'linhas': linhas,
+        'linhas_back' : linhas_back,
     })
