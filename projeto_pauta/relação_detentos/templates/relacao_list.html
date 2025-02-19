@@ -29,7 +29,7 @@
 
 
         <div class="container mt-3">
-            <span mt-3>Siga a ordem dos documentos:</span>
+            <span mt-3>Siga a ordem dos documentos, salve no formato .pdf e salve no modo retrato:</span>
             <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
                 action="{% url 'relação_detentos:upload_pdf' %}">
                 {% csrf_token %}
@@ -49,6 +49,19 @@
                     <label for="regimePdfFile">Selecione o relatório 2.25 do IPEN, que contenha os 'DADOS
                         PROCESSUAIS'</label>
                     <input type="file" class="form-control-file" id="regimePdfFile" name="regimePdfFile"
+                        accept="application/pdf" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
+            </form>
+
+
+            <form id="uploadRegimeForm" method="post" enctype="multipart/form-data"
+                action="{% url 'relação_detentos:exctrai_date_exit' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="progressaoPdfFile">Selecione o relatório 2.xxx do IPEN, que contenha as
+                        'PROGRESSÃO'</label>
+                    <input type="file" class="form-control-file" id="progressaoPdfFile" name="progressaoPdfFile"
                         accept="application/pdf" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm">Enviar</button>

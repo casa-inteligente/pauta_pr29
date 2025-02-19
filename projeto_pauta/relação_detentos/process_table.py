@@ -207,6 +207,20 @@ def process_regime_pdf(file_path):
     #print(f'Dados retornados: \t{updated_records}')
     return updated_records
 
+#Extra a prevsão de saida
+def exctrai_date_exit(file_path):
+    with pdfplumber.open(file_path) as pdf:
+        all_table = []
+        for page in pdf.pages:
+            tables = page.extract_table()
+            print (f'\n\n Pagina{page.page_number}: \t {tables}')
+    
+    os.remove(file_path)
+    return None
+
+
+
+
 if __name__ == '__main__':
     pdf_file_path = "C:\\Users\\AULA-1\\Documents\\GitHub\\pauta_pr29\\projeto_pauta\\ordem_ingresso.pdf"
     added_records = process_pdf(pdf_file_path)

@@ -12,7 +12,7 @@ from .models import Relacao
 from django.db.models import Case, When, Value
 from django.db.models.functions import Concat
 from django.utils import timezone
-from .process_table import process_pdf, process_regime_pdf
+from .process_table import process_pdf, process_regime_pdf, exctrai_date_exit
 
 @login_required
 def add_detento(request):
@@ -201,6 +201,24 @@ def upload_regime_pdf(request):
         print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
         updated_records = process_regime_pdf(file_path)
+
+        if updated_records:
+            message = 'Regimes atualizados: ' + ', '.join(updated_records)
+            return render(request, 'relacao_list.html', {'message': message})
+
+        return redirect('relação_detentos:relacao_list')
+    return render(request, 'relacao_list.html')
+
+
+def exctrai_date_exit(request):
+    if request.method == 'POST' and request.FILES['progressaoPdfFile']:
+        pdf_file = request.FILES['progressaoPdfFile']
+        fs = FileSystemStorage()
+        filename = fs.save(pdf_file.name, pdf_file)
+        file_path = fs.path(filename)
+        print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
+
+        updated_records = exctrai_date_exit(file_path)
 
         if updated_records:
             message = 'Regimes atualizados: ' + ', '.join(updated_records)
