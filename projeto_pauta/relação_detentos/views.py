@@ -210,7 +210,7 @@ def upload_regime_pdf(request):
     return render(request, 'relacao_list.html')
 
 
-def exctrai_date_exit(request):
+def exctrai_date_exit_view(request):
     if request.method == 'POST' and request.FILES['progressaoPdfFile']:
         pdf_file = request.FILES['progressaoPdfFile']
         fs = FileSystemStorage()
