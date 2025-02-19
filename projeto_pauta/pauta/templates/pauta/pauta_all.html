@@ -35,6 +35,13 @@
             <a href="{% url 'pauta:index_7' %}" class="text-white text-decoration-none"><img
                     src="{% static 'img/age-restriction-seven.png' %}" height="20" alt="seven_day"></a>
         </button>
+
+        <button type="button" class="btn btn-sm btn-info">
+            <a href="{% url 'resenha_livro:listar_alunos' %}" class="text-white text-decoration-none">Folhas
+                resenhas</a>
+        </button>
+
+
         <button type="button" class="btn btn-sm" onclick="window.print()"><img src="{% static 'img/printer.png' %}"
                 height="20" alt="print"></button>
     </div>
