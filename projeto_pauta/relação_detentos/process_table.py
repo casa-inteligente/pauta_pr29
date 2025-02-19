@@ -207,18 +207,68 @@ def process_regime_pdf(file_path):
     #print(f'Dados retornados: \t{updated_records}')
     return updated_records
 
-#Extra a prevsão de saida
+
+# Função para extrair a previsão de saída
 def exctrai_date_exit(file_path):
     with pdfplumber.open(file_path) as pdf:
-        all_table = []
+        all_tables = []
         for page in pdf.pages:
-            tables = page.extract_table()
-            print (f'\n\n Pagina{page.page_number}: \t {tables}')
-    
+            tables = page.extract_tables()
+            for table in tables:
+                all_tables.append(table)
+
+        if not all_tables:
+            print("Nenhuma tabela encontrada no PDF.")
+            return []
+
+        # Remover o cabeçalho da primeira tabela
+        first_table = all_tables[0][1:]
+
+        # Anexar tabelas adicionais à primeira tabela
+        for table in all_tables[1:]:
+            if len(table) > 0:
+                first_table.extend(table)
+
+        # Ignorar a última linha da tabela
+        first_table = first_table[:-1]
+
+        # Converter a tabela em um DataFrame
+        df = pd.DataFrame(first_table)
+
+        # Verificar se as colunas 1 e 2 existem
+        if df.shape[1] < 3:
+            print("As colunas 1 e 2 não foram encontradas na tabela.")
+            return []
+
+        # Converter as colunas 1 e 2 para datas
+        df[1] = pd.to_datetime(df[1], format='%d/%m/%Y', errors='coerce')
+        df[2] = pd.to_datetime(df[2], format='%d/%m/%Y', errors='coerce')
+
+        # Encontrar a menor data entre as colunas 1 e 2
+        df['min_date'] = df[[1, 2]].min(axis=1)
+
+        # Atualizar o banco de dados com a menor data
+        updated_records = []
+        for index, row in df.iterrows():
+            if pd.notnull(row['min_date']):
+                ipen_nome = row[0].split('\n', 1)
+                if len(ipen_nome) == 2:
+                    ipen = int(ipen_nome[0][:6])  # Pegar os 6 primeiros números como IPEN
+                    previsao_saida = row['min_date'].date()
+
+                    # Verificar se o IPEN já está cadastrado
+                    try:
+                        relacao = Relacao.objects.get(IPEN=ipen)
+                        relacao.previsao_saida = previsao_saida
+                        relacao.save()
+                        updated_records.append(f'{relacao.nome} ({ipen})')
+                    except Relacao.DoesNotExist:
+                        print(f'IPEN não encontrado: {ipen}')
+
+    # Excluir o arquivo PDF após o processamento
     os.remove(file_path)
-    return None
-
-
+    print("Arquivo PDF excluído.")
+    return updated_records
 
 
 if __name__ == '__main__':
