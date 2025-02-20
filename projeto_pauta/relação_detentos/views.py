@@ -181,7 +181,7 @@ def upload_pdf(request):
         fs = FileSystemStorage()
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
-        print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
+        #print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
         added_records = process_pdf(file_path)
 
@@ -198,7 +198,7 @@ def upload_regime_pdf(request):
         fs = FileSystemStorage()
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
-        print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
+        #print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
         updated_records = process_regime_pdf(file_path)
 
@@ -216,7 +216,7 @@ def exctrai_date_exit_view(request):
         fs = FileSystemStorage()
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
-        print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
+        #print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
         updated_records = exctrai_date_exit(file_path)
 

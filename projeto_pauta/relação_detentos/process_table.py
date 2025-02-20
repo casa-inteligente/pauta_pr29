@@ -50,13 +50,13 @@ def process_pdf(file_path):
                 all_tables.append(table)
 
         if not all_tables:
-            print("Nenhuma tabela encontrada no PDF.")
+            #print("Nenhuma tabela encontrada no PDF.")
             return []
 
         # Primeira tabela fixa [2x6]
         first_table = all_tables[0]
         total_dados = int(first_table[1][5])# obtem a quantidade de detentos
-        print(f'Total de dados: {total_dados} \t\t alocado na memoria: {sys.getsizeof(total_dados)} bytes')
+        #print(f'Total de dados: {total_dados} \t\t alocado na memoria: {sys.getsizeof(total_dados)} bytes')
 
         # Segunda tabela [nX9]
         second_table = all_tables[1]
@@ -81,9 +81,9 @@ def process_pdf(file_path):
         ##se {diferenca_total_dados} for diferente de zero, possui erro no processamento, e deverá leventar um erro e avisar na tela o usuario
 
         if diferenca_total_dados != 0:
-            print('Possui divergencia de informações')
+            #print('Possui divergencia de informações')
             raise ValueError('Ao final das concatenações das tabelas esta faltando informações')
-            print('Possui divergencia de informações')
+            #print('Possui divergencia de informações')
 
         # Pegar as colunas necessárias
         first_col = df.iloc[:, 0].astype(str).reset_index(drop=True) # Coluna que contém IPEN e NOME
@@ -123,11 +123,11 @@ def process_pdf(file_path):
 
         for ipen in ipens_a_remover:
             Relacao.objects.filter(IPEN=ipen).delete()
-            print(f'Registro removido: {ipen}')
+            #print(f'Registro removido: {ipen}')
 
     # Excluir o arquivo PDF após o processamento
     os.remove(file_path)
-    print("Arquivo PDF excluído.")
+    #print("Arquivo PDF excluído.")
     #print(f'Dados retornados: \t{added_records}')
     return added_records
 
@@ -143,7 +143,7 @@ def process_regime_pdf(file_path):
                 all_tables.append(table)
 
         if not all_tables:
-            print("Nenhuma tabela encontrada no PDF.")
+            #print("Nenhuma tabela encontrada no PDF.")
             return []
 
         # Remover a última tabela
@@ -195,15 +195,17 @@ def process_regime_pdf(file_path):
                         updated_records.append(f'{relacao.nome} ({ipen})')
                         #print(f'Artigo, Pena e Comarca atualizados: {relacao.nome} ({ipen})')
                     except Relacao.DoesNotExist:
-                        print(f'IPEN não encontrado: {ipen}')
+                        pass
+                        #print(f'IPEN não encontrado: {ipen}')
                 else:
-                    print(f'Valor inesperado na coluna: {first_col[i]}')
+                    pass
+                    #print(f'Valor inesperado na coluna: {first_col[i]}')
 
                 i += 1
 
     # Excluir o arquivo PDF após o processamento
     os.remove(file_path)
-    print("Arquivo PDF excluído.")
+    #print("Arquivo PDF excluído.")
     #print(f'Dados retornados: \t{updated_records}')
     return updated_records
 
@@ -218,7 +220,7 @@ def exctrai_date_exit(file_path):
                 all_tables.append(table)
 
         if not all_tables:
-            print("Nenhuma tabela encontrada no PDF.")
+            #print("Nenhuma tabela encontrada no PDF.")
             return []
 
         # Remover o cabeçalho da primeira tabela
@@ -237,15 +239,15 @@ def exctrai_date_exit(file_path):
 
         # Verificar se as colunas 1 e 2 existem
         if df.shape[1] < 3:
-            print("As colunas 1 e 2 não foram encontradas na tabela.")
+            #print("As colunas 1 e 2 não foram encontradas na tabela.")
             return []
 
         # Converter as colunas 1 e 2 para datas
-        df[1] = pd.to_datetime(df[1], format='%d/%m/%Y', errors='coerce')
+        df[4] = pd.to_datetime(df[1], format='%d/%m/%Y', errors='coerce')
         df[2] = pd.to_datetime(df[2], format='%d/%m/%Y', errors='coerce')
 
         # Encontrar a menor data entre as colunas 1 e 2
-        df['min_date'] = df[[1, 2]].min(axis=1)
+        df['min_date'] = df[[4, 2]].min(axis=1)
 
         # Atualizar o banco de dados com a menor data
         updated_records = []
@@ -260,14 +262,16 @@ def exctrai_date_exit(file_path):
                     try:
                         relacao = Relacao.objects.get(IPEN=ipen)
                         relacao.previsao_saida = previsao_saida
+                        #add atualizado
                         relacao.save()
                         updated_records.append(f'{relacao.nome} ({ipen})')
                     except Relacao.DoesNotExist:
-                        print(f'IPEN não encontrado: {ipen}')
+                        pass
+                        #print(f'IPEN não encontrado: {ipen}')
 
     # Excluir o arquivo PDF após o processamento
     os.remove(file_path)
-    print("Arquivo PDF excluído.")
+    #print("Arquivo PDF excluído.")
     return updated_records
 
 
