@@ -178,7 +178,7 @@
             </thead>
             <tbody>
                 {% for relacao in relacoes %}
-                {% if relacao.local_alocacao_nome_completo == 'Fechado' %}
+                {% if relacao.local_alocacao_nome_completo == 'Fechado' and relacao.regime_nome_completo == 'FECHADO' %}
                 <tr data-id="{{ relacao.id }}">
                     <td><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
                     <td><span class="editable" data-field="nome">{{ relacao.nome }}</span></td>
