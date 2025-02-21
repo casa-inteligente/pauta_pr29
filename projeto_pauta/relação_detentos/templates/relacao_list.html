@@ -158,6 +158,53 @@
     </div>
 
     <!-- Tabela para Detentos Alocados Fechado -->
+    <h4>Regime: Provisorio <span>[{{ qtd_fechado }}]</span></h4>
+    <div class="table-responsive" style="overflow-x: auto;">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0 ,0)">IPEN</th>
+                    <th onclick="sortTable(1 ,0)">Nome</th>
+                    <th onclick="sortTable(2 ,0)">Comarca</th>
+                    <th onclick="sortTable(3 ,0)">Artigo</th>
+                    <th onclick="sortTable(4 ,0)">Ingresso</th>
+                    <th onclick="sortTable(5 ,0)">Regime</th>
+                    <th onclick="sortTable(6 ,0)">Pena</th>
+                    <th onclick="sortTable(7 ,0)">Alocação</th>
+                    <th onclick="sortTable(7 ,0)">Previsão de Saída</th>
+                    <th onclick="sortTable(9 ,0)">Observações</th>
+                    <th onclick="sortTable(10 ,0)">Atualizado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for relacao in relacoes %}
+                {% if relacao.local_alocacao_nome_completo == 'Fechado' and relacao.regime_nome_completo == 'FECHADO' %}
+                <tr data-id="{{ relacao.id }}">
+                    <td><span class="editable" data-field="IPEN">{{ relacao.IPEN }}</span></td>
+                    <td><span class="editable" data-field="nome">{{ relacao.nome }}</span></td>
+                    <td><span class="editable" data-field="comarca">{{ relacao.comarca }}</span></td>
+                    <td><span class="editable" data-field="artigo">{{ relacao.artigo }}</span></td>
+                    <td><span class="editable" data-field="ingresso"
+                            data-type="date">{{ relacao.ingresso|date:"d/m/y" }}</span></td>
+                    <td><span class="editable" data-field="regime"
+                            data-type="dropdown">{{ relacao.regime_nome_completo }}</span></td>
+                    <td><span class="editable" data-field="pena">{{ relacao.pena }}</span></td>
+                    <td><span class="editable" data-field="local_alocacao"
+                            data-type="dropdown-aloc">{{ relacao.local_alocacao_nome_completo }}</span></td>
+                    <td><span class="editable" data-field="previsao_saida"
+                            data-type="date">{{ relacao.previsao_saida|date:"d/m/y" }}</span></td>
+                    <td><span class="editable" data-field="observacao">{{ relacao.observacoes }}</span></td>
+                    <td><span class="editable" data-field="atualizado"
+                            data-type="date">{{ relacao.atualizado|date:"d/m/y" }}</span></td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Tabela para Detentos Alocados Fechado do REGIME FECHADO -->
     <h4>Fechado <span>[{{ qtd_fechado }}]</span></h4>
     <div class="table-responsive" style="overflow-x: auto;">
         <table class="table table-striped table-bordered">
@@ -204,7 +251,7 @@
     </div>
 
     <!-- Tabela para Detentos Alocados Semiaberto -->
-    <h4>Semiaberto <span>[{{ qtd_semiaberto }}]</span></h4>
+    <h4>Alocado no semiaberto <span>[{{ qtd_semiaberto }}]</span></h4>
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
