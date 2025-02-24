@@ -90,7 +90,9 @@ def relacao_list(request):
     #cria a variavel para passar a aquantidade de presos no fechado
     qtd_fechado = relacoes.filter(local_alocacao='F').count()
     qtd_semiaberto = relacoes.filter(local_alocacao='SA').count()
-    qtd_total = qtd_fechado + qtd_semiaberto
+    #qtd_preventiva = relacoes.filter(regime='PRE').count
+    qtd_preventiva = 0
+    qtd_total = qtd_fechado + qtd_semiaberto + qtd_preventiva
     #print(qtd_fechado)
 
     local_alocacao_map = {
@@ -109,6 +111,7 @@ def relacao_list(request):
         'qtd_fechado' : qtd_fechado, #quantidade de alocados no fechado
         'qtd_semiaberto': qtd_semiaberto, #Quantidade de alocados no semiaberto
         'qtd_total': qtd_total, #quantidade de alocados na unidade
+        'qtd_preventiva' : qtd_preventiva, #quantidade de preventivos
     })
 
 @csrf_exempt
