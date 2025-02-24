@@ -5,6 +5,8 @@ import django
 from django.utils import timezone
 import sys
 
+
+import tabula as tb
 # Configurar o Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'projeto_pauta.settings')
 django.setup()
@@ -134,11 +136,28 @@ def process_pdf(file_path):
 # Função para processar o PDF e atualizar o campo regime no banco de dados
 def process_regime_pdf(file_path):
     #print('Chamou a extração de dados do regime')
+    print(file_path)
+
+    tabelas_all = tb.read_pdf(file_path, pages='all')
+    print(len(tabelas_all))
+
+    for tabela_page in tabelas_all:
+        print(tabela_page)
+
+    '''
+    Realiza a extração de dados do pdf com a biblioteca pdfplumber
+    '''
     with pdfplumber.open(file_path) as pdf:
         all_tables = []
+  
+
         for page in pdf.pages:
             tables = page.extract_tables()
             #print(f'\n \n Tabela {page.page_number}: {tables}')  # Imprimir as tabelas para verificação
+            text_all = page.extract_text()
+            if text_all and not tables:
+                pass
+                #print(f'Texto sobrando\t\t\t\t{text_all}')
             for table in tables:
                 all_tables.append(table)
 
