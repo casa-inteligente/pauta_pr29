@@ -256,18 +256,28 @@ def exctrai_date_exit(file_path):
                 ipen_nome = row[0].split('\n', 1)
                 if len(ipen_nome) == 2:
                     ipen = int(ipen_nome[0][:6])  # Pegar os 6 primeiros números como IPEN
-                    previsao_saida = row['min_date'].date()
-
+                    min_date = row['min_date'].date()
+                    other_date = row[4].date() if min_date == row[2].date() else row[2].date()
+                    
+                    # Verificar se a menor data é anterior a 6 meses da data atual
+                    if min_date < (timezone.now().date() - pd.DateOffset(months=6)).date():
+                        previsao_saida = other_date
+                    else:
+                        previsao_saida = min_date
+                    
                     # Verificar se o IPEN já está cadastrado
                     try:
                         relacao = Relacao.objects.get(IPEN=ipen)
-                        relacao.previsao_saida = previsao_saida
-                        #add atualizado
-                        relacao.save()
+                        if relacao.previsao_saida != previsao_saida:  # Verifica se precisa atualizar
+                            relacao.previsao_saida = previsao_saida
+                            relacao.atualizado = timezone.now()
+                            #print(f' Atualizado o campo Atualizado em:\t {timezone.now()}')
+                            relacao.save()
                         updated_records.append(f'{relacao.nome} ({ipen})')
                     except Relacao.DoesNotExist:
                         pass
-                        #print(f'IPEN não encontrado: {ipen}')
+                    #print(f'IPEN não encontrado: {ipen}')
+
 
     # Excluir o arquivo PDF após o processamento
     os.remove(file_path)
