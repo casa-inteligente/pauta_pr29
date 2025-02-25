@@ -71,3 +71,5 @@ class Relacao(models.Model):
     def formatted_atualizado(self):
         return self.atualizado.strftime('%d-%m-%y')    
     formatted_atualizado.short_description = 'Atualizado'
+
+    objetos = models.Manager()#Para buscar os dados atraves do OBJETOS

@@ -136,17 +136,20 @@ def process_pdf(file_path):
 # Função para processar o PDF e atualizar o campo regime no banco de dados
 def process_regime_pdf(file_path):
     #print('Chamou a extração de dados do regime')
-    print(file_path)
+    
 
     tabelas_all = tb.read_pdf(file_path, pages='all')
-    print(len(tabelas_all))
+    print(f'A quantidade de tabelas é:\t{len(tabelas_all)}')
 
-    for tabela_page in tabelas_all:
-        print(tabela_page)
+    tabela_completa = pd.DataFrame()
 
-    '''
+    for tabela_page in tabelas_all[:-1]:  # Ignorar a última tabela
+        tabela_completa = pd.concat([tabela_completa, tabela_page], ignore_index=True)
+
+    print(tabela_completa)
+    """
     Realiza a extração de dados do pdf com a biblioteca pdfplumber
-    '''
+    """
     with pdfplumber.open(file_path) as pdf:
         all_tables = []
   
@@ -305,11 +308,16 @@ def exctrai_date_exit(file_path):
 
 
 if __name__ == '__main__':
-    pdf_file_path = "C:\\Users\\AULA-1\\Documents\\GitHub\\pauta_pr29\\projeto_pauta\\ordem_ingresso.pdf"
-    added_records = process_pdf(pdf_file_path)
-    if added_records:
-        print('Registros adicionados:')
-        for record in added_records:
-            print(record)
-    else:
-        print("Nenhum registro adicionado.")
+    '''
+    Um pouco mais sofisticado pois depende do django
+    '''
+    # pdf_file_path = "C:\\Users\\AULA-1\\Documents\\GitHub\\pauta_pr29\\projeto_pauta\\ordem_ingresso.pdf"
+    # added_records = process_pdf(pdf_file_path)
+    # if added_records:
+    #     print('Registros adicionados:')
+    #     for record in added_records:
+    #         print(record)
+    # else:
+    #     print("Nenhum registro adicionado.")
+
+    #process_regime_pdf('file_path')
