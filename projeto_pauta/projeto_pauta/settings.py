@@ -31,7 +31,8 @@ LOGOUT_REDIRECT_URL = 'home'
 SECRET_KEY = "django-insecure-pf=m^iio!47d@@%(%w4(-ef&cistro&@sil29+7_ao6fj22sok"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False 
+#DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '10.40.22.165']
 
@@ -112,8 +113,18 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
-    }
+    },
+    "resenha_livro": {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'resenha_livro',
+        'USER': 'policiapenal',
+        'PASSWORD': 'pa1debatata',
+        'HOST': '10.40.22.165', #IP da aaplicação
+        'PORT': '3306', #Porta padrão
+    },
 }
+
+DATABASE_ROUTERS = ['projeto_pauta.routers.NovoBancoRouter']
 
 
 # Password validation
@@ -135,7 +146,7 @@ AUTH_PASSWORD_VALIDATORS = [
     # {
     #     "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     # },
-    {#Criado Autentificador proprio
+    {#Criado Autentificador próprio
         'NAME': 'pauta.validators.MinimumNumericPasswordValidator',
     },
 ]
