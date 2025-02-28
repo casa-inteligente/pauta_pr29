@@ -115,16 +115,16 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     },
     "resenha_livro": {
-        'ENGINE': 'django.db.backend.mysql',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'resenha_livro',
         'USER': 'policiapenal',
         'PASSWORD': 'pa1debatata',
-        'HOST': '10.40.22.165', #Definir
-        'POR': '3635' #Definir
+        'HOST': '10.40.22.165', #IP da aaplicação
+        'PORT': '3306', #Porta padrão
     },
 }
-DATABASE_ROUTERS = ['projeto_pauta.routers.NovoBancoRouter']
 
+DATABASE_ROUTERS = ['projeto_pauta.routers.NovoBancoRouter']
 
 
 # Password validation
