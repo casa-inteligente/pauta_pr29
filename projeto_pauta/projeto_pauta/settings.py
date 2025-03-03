@@ -119,7 +119,7 @@ DATABASES = {
         'NAME': 'resenha_livro',
         'USER': 'policiapenal',
         'PASSWORD': 'pa1debatata',
-        'HOST': '10.40.22.165', #IP da aaplicação
+        'HOST': 'localhost', #IP da aaplicação
         'PORT': '5432', #Porta padrão
     },
 }
