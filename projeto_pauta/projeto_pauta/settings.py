@@ -115,12 +115,12 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     },
     "resenha_livro": {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'resenha_livro',
         'USER': 'policiapenal',
         'PASSWORD': 'pa1debatata',
-        'HOST': '10.40.22.165', #IP da aaplicação
-        'PORT': '3306', #Porta padrão
+        'HOST': 'localhost', #IP da aaplicação
+        'PORT': '5432', #Porta padrão
     },
 }
 
