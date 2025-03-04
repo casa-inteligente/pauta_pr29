@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Listar Alunos</title>
-    <link rel="stylesheet" href="{% static 'css/listar_alunos.css' %}">
+    <link rel="stylesheet" href="{% static 'resenha_livro/css/listar_alunos.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 
@@ -16,14 +16,14 @@
     <div class="conteiner btn-container fixado">
         <button type="button" class="btn btn-sm">
             <a href="{% url 'pauta:pauta_all' %}" class="text-white text-decoration-none"><img
-                    src="{% static 'img/home.png' %}" height="20" alt="home"></a>
+                    src="{% static 'resenha_livro/img/home.png' %}" height="20" alt="home"></a>
         </button>
         <button type="button" class="btn btn-sm">
             <a href="{% url 'admin:index' %}" class="text-white text-decoration-none"><img
-                    src="{% static 'img/login.png' %}" height="20" alt="login"></a>
+                    src="{% static 'resenha_livro/img/login.png' %}" height="20" alt="login"></a>
         </button>
-        <button type="button" class="btn btn-sm" onclick="window.print()"><img src="{% static 'img/printer.png' %}"
-                height="20" alt="print">
+        <button type="button" class="btn btn-sm" onclick="window.print()"><img
+                src="{% static 'resenha_livro/img/printer.png' %}" height="20" alt="print">
         </button>
 
 

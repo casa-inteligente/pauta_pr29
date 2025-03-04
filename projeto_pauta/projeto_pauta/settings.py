@@ -120,6 +120,7 @@ DATABASES = {
         'USER': 'policiapenal',
         'PASSWORD': 'pa1debatata',
         'HOST': 'localhost', #IP da aaplicação
+        #'HOST': '10.40.22.165', #IP da aaplicação
         'PORT': '5432', #Porta padrão
     },
 }
@@ -167,7 +168,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'projeto_pauta/static'),
@@ -175,6 +176,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'relação_detentos/static'),
     os.path.join(BASE_DIR, 'resenha_livro/static')
 ]
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
