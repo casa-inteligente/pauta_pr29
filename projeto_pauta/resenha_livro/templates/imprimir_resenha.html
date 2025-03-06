@@ -41,17 +41,20 @@
             /* Inclui o padding na altura total */
             padding: 5mm;
             /* Adiciona um padding interno */
+            /* background-color: antiquewhite; */
         }
 
         .header h1 {
-            margin: 0;
+            margin: -5mm;
             font-size: 24px;
         }
 
         .header table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10mm;
+            margin-top: 5mm;
+            margin-bottom: 5mm;
+            /* background-color: aqua; */
         }
 
         .header table,
@@ -66,31 +69,23 @@
             text-align: left;
         }
 
-
-
-        .footer {
-            text-align: center;
-            position: absolute;
-            bottom: 20mm;
-            width: 100%;
-        }
-
-        .footer .page-number:after {
-            content: counter(page);
-        }
-
         .lines {
-            /* height: 100%; */
-            height: calc(100% - 15mm);
+            height: 100%;
+            /* height: calc(100% - 60mm); */
+            width: 210mm;
+            height: 297mm;
+            text-align: center;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             gap: 8mm;
+            /* background-color: aqua; */
         }
 
         /* Linha inferior */
         .line {
             flex: none;
+            width: 100%;
             border-bottom: 1px solid #000;
             margin-bottom: 5mm;
         }
@@ -129,9 +124,7 @@
                 {% endfor %}
             </div>
         </div>
-        <!-- <div class="footer">
-            <p class="page-number">Página </p>
-        </div> -->
+
     </div>
     <div class="page">
         <div>
@@ -141,9 +134,7 @@
                 {% endfor %}
             </div>
         </div>
-        <!-- <div class="footer">
-            <p class="page-number">Página </p>
-        </div> -->
+
     </div>
     {% endfor %}
 </body>

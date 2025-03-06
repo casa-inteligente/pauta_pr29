@@ -9,7 +9,7 @@ def imprimir_resenha(request, aluno_id):
     aluno = get_object_or_404(Aluno.objects.using('resenha_livro'), id=aluno_id)
     resenhas = ResenhaLivro.objects.using('resenha_livro').filter(aluno=aluno)
     
-    linhas_por_pagina = 21  # Altura disponível dividido pelo espaçamento (297mm - margens e header)
+    linhas_por_pagina = 23  # Altura disponível dividido pelo espaçamento (297mm - margens e header)
     linhas_back_por_pagina = 29
     linhas = range(linhas_por_pagina)
     linhas_back = range(linhas_back_por_pagina)
