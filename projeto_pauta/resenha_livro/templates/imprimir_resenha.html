@@ -95,23 +95,29 @@
         @media print {
             @page {
                 size: A4;
-                /* Define o tamanho da página */
-                margin: 0;
-                /* Remove margem ao imprimir */
+                margin: 1.5cm, 2cm;
+                /* Remove todas as margens */
+                page-break-after: always;
             }
 
-            .page {
-                size: A4;
-                margin: 0;
+            body {
+                margin: 2cm 4.5cm;
                 padding: 0;
                 width: 100%;
                 height: 100%;
             }
-        }
 
-        .page-break {
-            page-break-before: always;
-        }
+            .page {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
     </style>
 </head>
 
