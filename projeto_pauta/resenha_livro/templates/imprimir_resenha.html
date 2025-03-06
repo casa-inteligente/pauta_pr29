@@ -51,7 +51,8 @@
         }
 
         .header table {
-            width: 100%;
+            /* width: 100%; */
+            width: 240mm;
             border-collapse: collapse;
             margin-top: 5mm;
             margin-bottom: 5mm;
@@ -73,15 +74,16 @@
         .lines {
             height: 100%;
             /* height: calc(100% - 60mm); */
-            width: 210mm;
-            height: 297mm;
+            width: 250mm;
+            /* Reajustar */
+
             text-align: center;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             gap: 5mm;
-            /* border: 1px solid #000; */
-            /* background-color: aqua; */
+            border: 1px solid #000;
+
         }
 
         /* Linha inferior */
@@ -90,34 +92,36 @@
             width: 100%;
             border-bottom: 1px solid #000;
             margin-bottom: 5mm;
+
         }
 
         @media print {
             @page {
                 size: A4;
-                margin: 1.5cm, 2cm;
-                /* Remove todas as margens */
+                margin: 1.5cm, 1cm;
                 page-break-after: always;
             }
 
             body {
-                margin: 2cm 4.5cm;
+                margin: 2cm 1cm;
                 padding: 0;
                 width: 100%;
                 height: 100%;
             }
 
             .page {
-                width: 100%;
-                height: 100%;
+                width: 210mm;
+                height: 297mm;
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
+
             }
 
             .page-break {
                 page-break-before: always;
             }
+        }
     </style>
 </head>
 
@@ -135,7 +139,7 @@
                     <td>Período de Leitura: {{ resenha.periodoLeitura.intervalo_leitura }}</td>
                 </tr>
                 <tr>
-                    <td>Local: CEJA/Ud Presídio de Maravilha</td>
+                    <td>Local: CEJA/Ud Presídio Regional de Maravilha</td>
                     <td>Professor(a): {{ resenha.nomeProfessor }}</td>
                 </tr>
                 <tr>
@@ -149,16 +153,6 @@
         <div>
             <div class="lines">
                 {% for i in linhas %}
-                <div class="line"></div>
-                {% endfor %}
-            </div>
-        </div>
-
-    </div>
-    <div class="page">
-        <div>
-            <div class="lines">
-                {% for i in linhas_back %}
                 <div class="line"></div>
                 {% endfor %}
             </div>
