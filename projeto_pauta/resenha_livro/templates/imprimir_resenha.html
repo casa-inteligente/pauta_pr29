@@ -23,6 +23,7 @@
             box-sizing: border-box;
             page-break-after: always;
             /* border: 1px solid #000; */
+            /* background-color: rgb(90, 45, 133); */
         }
 
         .header {
@@ -78,7 +79,8 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 8mm;
+            gap: 5mm;
+            /* border: 1px solid #000; */
             /* background-color: aqua; */
         }
 
@@ -88,6 +90,27 @@
             width: 100%;
             border-bottom: 1px solid #000;
             margin-bottom: 5mm;
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                /* Define o tamanho da página */
+                margin: 0;
+                /* Remove margem ao imprimir */
+            }
+
+            .page {
+                size: A4;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        .page-break {
+            page-break-before: always;
         }
     </style>
 </head>
