@@ -11,22 +11,40 @@ body {
     box-sizing: border-box;
     page-break-after: always;
     /* border: 1px solid #000; */
+    /* background-color: rgb(90, 45, 133); */
 }
 
 .header {
+    width: 210mm;
+    height: 297mm;
     text-align: center;
-    margin-bottom: 20mm;
+    height: 50mm;
+    /* Defina uma altura fixa para o cabeçalho */
+    margin-bottom: 10mm;
+    /* Ajuste o espaço entre o cabeçalho e o conteúdo */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* Centraliza os itens verticalmente */
+    box-sizing: border-box;
+    /* Inclui o padding na altura total */
+    padding: 5mm;
+    /* Adiciona um padding interno */
+    /* background-color: antiquewhite; */
 }
 
 .header h1 {
-    margin: 0;
+    margin: -5mm;
     font-size: 24px;
 }
 
 .header table {
-    width: 100%;
+    /* width: 100%; */
+    width: 240mm;
     border-collapse: collapse;
-    margin-top: 10mm;
+    margin-top: 5mm;
+    margin-bottom: 5mm;
+    /* background-color: aqua; */
 }
 
 .header table,
@@ -41,27 +59,54 @@ body {
     text-align: left;
 }
 
-
-
-.footer {
-    text-align: center;
-    position: absolute;
-    bottom: 20mm;
-    width: 100%;
-}
-
-.footer .page-number:after {
-    content: counter(page);
-}
-
 .lines {
     height: 100%;
+    /* height: calc(100% - 60mm); */
+    width: 250mm;
+    /* Reajustar */
+
+    text-align: center;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    gap: 5mm;
+    border: 1px solid #000;
+
 }
 
+/* Linha inferior */
 .line {
+    flex: none;
+    width: 100%;
     border-bottom: 1px solid #000;
     margin-bottom: 5mm;
+
+}
+
+@media print {
+    @page {
+        size: A4;
+        margin: 1.5cm, 1cm;
+        page-break-after: always;
+    }
+
+    body {
+        margin: 2cm 1cm;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .page {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+
+    }
+
+    .page-break {
+        page-break-before: always;
+    }
 }
