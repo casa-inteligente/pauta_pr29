@@ -54,3 +54,40 @@
 </body>
 
 </html>
+
+
+
+
+<!--
+<h1>Listar Alunos</h1>
+    {% for periodo, alunos in alunos_por_periodo.items %}
+        <h2>{{ periodo.intervalo_leitura }} - {{ periodo.data_resenha|date:"d/m/Y" }}</h2>
+        <button type="button" class="btn btn-sm">
+            <a href="{% url 'resenha_livro:imprimir_todos_periodo' periodo.id %}" class="text-white text-decoration-none">Imprimir Todos</a>
+        </button>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome do Aluno</th>
+                    <th>Turma</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aluno in alunos %}
+                <tr>
+                    <td>{{ aluno.nome }}</td>
+                    <td>{{ aluno.turma.nome }}</td>
+                    <td>
+                        <a href="{% url 'resenha_livro:imprimir_resenha' aluno.id %}">Gerar Folha de Resenha</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+
+
+
+
+-->
