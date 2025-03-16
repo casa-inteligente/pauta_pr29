@@ -6,10 +6,10 @@ from django.conf import settings
 
 def listar_alunos(request):
     alunos = Aluno.objects.using('resenha_livro').all()
-    static_path = static('resenha_livro/css/listar_alunos.css')
-    static_path = static('resenha_livro/css/listar_alunos.css')
-    full_static_path = os.path.join(settings.BASE_DIR, 'staticfiles', 'resenha_livro', 'css', 'listar_alunos.css')
-    print(f'O caminho da folha é:\t{full_static_path}')
+    # static_path = static('resenha_livro/css/listar_alunos.css')
+    # static_path = static('resenha_livro/css/listar_alunos.css')
+    # full_static_path = os.path.join(settings.BASE_DIR, 'staticfiles', 'resenha_livro', 'css', 'listar_alunos.css')
+    # print(f'O caminho da folha é:\t{full_static_path}')
     return render(request, 'listar_alunos.html', {'alunos': alunos})
 
 def imprimir_resenha(request, aluno_id):
