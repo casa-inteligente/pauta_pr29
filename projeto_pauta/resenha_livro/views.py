@@ -1,7 +1,8 @@
 import os
 from django.templatetags.static import static
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Aluno, ResenhaLivro
+from .forms import ResenhaLivroForm
 from django.conf import settings
 
 def listar_alunos(request):
@@ -24,5 +25,23 @@ def imprimir_resenha(request, aluno_id):
     })
 
 
-def adicionar_resenha():
-    pass
+def adicionar_resenha(request):
+    if request.method == 'POST':
+        form = ResenhaLivroForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('resenha_livro:listar_alunos')
+    else:
+        form = ResenhaLivroForm()
+    return render(request, 'adicionar_resenha.html', {'form': form})
+
+def editar_resenha(request, resenha_id):
+    resenha = get_object_or_404(ResenhaLivro.objects.using('resenha_livro'), id=resenha_id)
+    if request.method == 'POST':
+        form = ResenhaLivroForm(request.POST, instance=resenha)
+        if form.is_valid():
+            form.save()
+            return redirect('resenha_livro:listar_alunos')
+    else:
+        form = ResenhaLivroForm(instance=resenha)
+    return render(request, 'editar_resenha.html', {'form': form})
