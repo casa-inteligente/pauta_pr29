@@ -65,28 +65,42 @@ def gerar_todas_resenhas(request, periodo_id):
 
     # Adicionar as resenhas ao PDF
     for resenha in resenhas:
-        # Cabeçalho
+        # Centralizar o título
         pdf.setFont("Helvetica-Bold", 16)
-        pdf.drawString(50, altura - 50, "PROJETO REMIÇÃO PELA LEITURA")
+        titulo = "PROJETO REMIÇÃO PELA LEITURA"
+        pdf.drawCentredString(largura / 2, altura - 50, titulo)
 
-        # Tabela do cabeçalho
+        # Tabela do cabeçalho com linhas laterais
         pdf.setFont("Helvetica", 12)
         y = altura - 100
-        pdf.drawString(50, y, f"Aluno: {resenha.aluno.nome}")
-        pdf.drawString(300, y, f"Data da Resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}")
+        margem_esquerda = 50
+        margem_direita = largura - 50
+
+        # Desenhar as linhas laterais da tabela
+        pdf.line(margem_esquerda, y + 20, margem_direita, y + 20)  # Linha superior
+        pdf.line(margem_esquerda, y - 80, margem_direita, y - 80)  # Linha inferior
+        pdf.line(margem_esquerda, y + 20, margem_esquerda, y - 80)  # Linha esquerda
+        pdf.line(margem_direita, y + 20, margem_direita, y - 80)  # Linha direita
+
+        # Preencher os dados na tabela
+        pdf.drawString(margem_esquerda + 10, y, f"Aluno: {resenha.aluno.nome}")
+        pdf.drawString(margem_direita - 250, y, f"Data da Resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}")
         y -= 20
-        pdf.drawString(50, y, f"Período de Leitura: {resenha.periodoLeitura.intervalo_leitura}")
-        pdf.drawString(300, y, "Local: CEJA/Ud Presídio Regional de Maravilha")
+        pdf.drawString(margem_esquerda + 10, y, f"Período de Leitura: {resenha.periodoLeitura.intervalo_leitura}")
+        pdf.drawString(margem_direita - 250, y, "Local: CEJA/Ud Presídio Regional de Maravilha")
         y -= 20
-        pdf.drawString(50, y, f"Professor(a): {resenha.nomeProfessor}")
+        pdf.drawString(margem_esquerda + 10, y, f"Professor(a): {resenha.nomeProfessor}")
         y -= 20
-        pdf.drawString(50, y, f"Livro: {resenha.nomelivro}")
-        pdf.drawString(300, y, f"Autor: {resenha.nomeAutor}")
+        pdf.drawString(margem_esquerda + 10, y, f"Livro:")
+        pdf.drawString(margem_direita - 250, y, f"{resenha.nomelivro}")
+        y -= 20
+        pdf.drawString(margem_esquerda + 10, y, f"Autor:")
+        pdf.drawString(margem_direita - 250, y, f"{resenha.nomeAutor}")
 
         # Linhas para escrita (frente da folha)
         y -= 40
         for _ in range(20):  # 20 linhas por página
-            pdf.line(50, y, largura - 50, y)
+            pdf.line(margem_esquerda, y, margem_direita, y)
             y -= 20
             if y < 50:  # Verificar se a página precisa ser trocada
                 pdf.showPage()
@@ -100,7 +114,7 @@ def gerar_todas_resenhas(request, periodo_id):
         # Linhas para escrita (verso da folha)
         y = altura - 50
         for _ in range(25):  # 25 linhas no verso
-            pdf.line(50, y, largura - 50, y)
+            pdf.line(margem_esquerda, y, margem_direita, y)
             y -= 20
             if y < 50:  # Verificar se a página precisa ser trocada
                 pdf.showPage()
