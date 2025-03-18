@@ -15,6 +15,7 @@ import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# print(f'o Dir é:\t {BASE_DIR}')
 
 #Variaveis de ambiente para login
 LOGIN_URL = 'login'
@@ -31,10 +32,10 @@ LOGOUT_REDIRECT_URL = 'home'
 SECRET_KEY = "django-insecure-pf=m^iio!47d@@%(%w4(-ef&cistro&@sil29+7_ao6fj22sok"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False 
-#DEBUG = True
+#DEBUG = False 
+DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '10.40.22.165']
+ALLOWED_HOSTS = ['127.0.0.1', '10.40.22.110']
 
 
 # Application definition
@@ -75,7 +76,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
-    "http://10.40.22.165:8000"
+    "http://10.40.22.110:8000"
     # Adicione outras origens permitidas aqui
 ]
 
@@ -120,6 +121,7 @@ DATABASES = {
         'USER': 'policiapenal',
         'PASSWORD': 'pa1debatata',
         'HOST': 'localhost', #IP da aaplicação
+        #'HOST': '10.40.22.165', #IP da aaplicação
         'PORT': '5432', #Porta padrão
     },
 }
@@ -167,7 +169,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'projeto_pauta/static'),
@@ -175,6 +177,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'relação_detentos/static'),
     os.path.join(BASE_DIR, 'resenha_livro/static')
 ]
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

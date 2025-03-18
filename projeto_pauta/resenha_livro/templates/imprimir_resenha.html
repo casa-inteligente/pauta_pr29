@@ -4,10 +4,126 @@
 
 <head>
     <meta charset="UTF-8">
+    <!-- <meta name="viewport"> -->
     <title>Folha Resenha</title>
     <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
-    <link rel="stylesheet" href="{% static 'css/imprimir_resenha.css' %}">
+    <link rel="stylesheet" href="{% static 'resenha_livro/css/imprimir_resenha.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 20mm;
+            box-sizing: border-box;
+            page-break-after: always;
+            /* border: 1px solid #000; */
+            /* background-color: rgb(90, 45, 133); */
+        }
+
+        .header {
+            width: 210mm;
+            height: 297mm;
+            text-align: center;
+            height: 50mm;
+            /* Defina uma altura fixa para o cabeçalho */
+            margin-bottom: 10mm;
+            /* Ajuste o espaço entre o cabeçalho e o conteúdo */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* Centraliza os itens verticalmente */
+            box-sizing: border-box;
+            /* Inclui o padding na altura total */
+            padding: 5mm;
+            /* Adiciona um padding interno */
+            /* background-color: antiquewhite; */
+        }
+
+        .header h1 {
+            margin: -5mm;
+            font-size: 24px;
+        }
+
+        .header table {
+            /* width: 100%; */
+            width: 240mm;
+            border-collapse: collapse;
+            margin-top: 5mm;
+            margin-bottom: 5mm;
+            /* background-color: aqua; */
+        }
+
+        .header table,
+        .header th,
+        .header td {
+            border: 1px solid black;
+        }
+
+        .header th,
+        .header td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        .lines {
+            height: 100%;
+            /* height: calc(100% - 60mm); */
+            width: 250mm;
+            /* Reajustar */
+
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 5mm;
+            border: 1px solid #000;
+
+        }
+
+        /* Linha inferior */
+        .line {
+            flex: none;
+            width: 100%;
+            border-bottom: 1px solid #000;
+            margin-bottom: 5mm;
+
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 1.5cm, 1cm;
+                page-break-after: always;
+            }
+
+            body {
+                margin: 2cm 1cm;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            .page {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -24,14 +140,16 @@
                     <td>Período de Leitura: {{ resenha.periodoLeitura.intervalo_leitura }}</td>
                 </tr>
                 <tr>
-                    <td>Local: CEJA/Ud Presídio de Maravilha</td>
+                    <td>Local: CEJA/Ud Presídio Regional de Maravilha</td>
                     <td>Professor(a): {{ resenha.nomeProfessor }}</td>
                 </tr>
                 <tr>
                     <td class="text-center" colspan="2">{{ resenha.nomelivro }}</td>
+                    <!-- <td class=" " colspan="2">. </td> -->
                 </tr>
                 <tr>
-                    <td colspan="2">({{ resenha.nomeAutor }})</td>
+                    <!-- <td colspan="2">. </td> -->
+                    <td colspan="2">{{ resenha.nomeAutor }}</td>
                 </tr>
             </table>
         </div>
@@ -42,21 +160,7 @@
                 {% endfor %}
             </div>
         </div>
-        <!-- <div class="footer">
-            <p class="page-number">Página </p>
-        </div> -->
-    </div>
-    <div class="page">
-        <div>
-            <div class="lines">
-                {% for i in linhas_back %}
-                <div class="line"></div>
-                {% endfor %}
-            </div>
-        </div>
-        <!-- <div class="footer">
-            <p class="page-number">Página </p>
-        </div> -->
+
     </div>
     {% endfor %}
 </body>

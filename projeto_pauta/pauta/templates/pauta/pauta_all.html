@@ -9,7 +9,144 @@
     <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
     <!--adiciona uma imagem na aba do navegador-->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'css/style_pauta_all.css' %}">
+    <link rel="stylesheet" href="{% static 'pauta/css/style_pauta_all.css' %}">
+    <style>
+        /* Destinado a estilização do template pauta_all */
+        body {
+            padding-top: 80px;
+            padding-bottom: 60px;
+        }
+
+        * {
+            margin: 0;
+            /* border: 0; */
+            padding: 0;
+        }
+
+        /* Seta para o topo do site */
+        #topo {
+            position: fixed;
+            right: 10px;
+            bottom: 45px;
+        }
+
+        .header {
+            background-color: #343a40;
+            color: white;
+            padding: 5px 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        .insercao {
+            position: sticky;
+            top: 80px;
+            right: 20px;
+            /* background-color: rgb(255, 255, 255); */
+            width: 300px;
+            height: calc(100vh - 80px);
+        }
+
+        .content {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .col {
+            width: 100%;
+        }
+
+        .table-container {
+            margin: 20px 0;
+        }
+
+        .btn-voltar {
+            margin: 20px 0;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        table,
+        th,
+        td {
+            border: 2px solid rgb(5, 5, 5);
+        }
+
+        .print-info {
+            display: none;
+        }
+
+        @media print {
+            @page {
+                size: portrait;
+                margin: 0.5cm;
+            }
+
+            body {
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+
+            .header,
+            .footer {
+                position: static;
+            }
+
+            .btn-container {
+                display: none;
+            }
+
+            table,
+            th,
+            td,
+            tr {
+                border: 2px solid rgb(5, 5, 5);
+                border-collapse: collapse;
+                line-height: 0.8;
+            }
+
+            td {
+                font-size: 11pt;
+            }
+
+            .remo_print {
+                display: none;
+            }
+
+            /* Remove o icone para cima */
+            #topo * {
+                display: none;
+            }
+
+            .print-info {
+                display: block;
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                width: 100%;
+                font-size: 12px;
+                color: black;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -25,15 +162,15 @@
         </button> -->
         <button type="button" class="btn btn-sm">
             <a href="{% url 'admin:index' %}" class="text-white text-decoration-none"><img
-                    src="{% static 'img/login.png' %}" height="20" alt="Login"></a>
+                    src="{% static 'pauta/img/login.png' %}" height="20" alt="Login"></a>
         </button>
         <button type="button" class="btn btn-sm">
             <a href="{% url 'relação_detentos:relacao_list' %}" class="text-white text-decoration-none"><img
-                    src="{% static 'img/skill.png' %}" height="20" alt="relação"></a>
+                    src="{% static 'pauta/img/skill.png' %}" height="20" alt="relação"></a>
         </button>
         <button type="button" class="btn btn-sm">
             <a href="{% url 'pauta:index_7' %}" class="text-white text-decoration-none"><img
-                    src="{% static 'img/age-restriction-seven.png' %}" height="20" alt="seven_day"></a>
+                    src="{% static 'pauta/img/age-restriction-seven.png' %}" height="20" alt="seven_day"></a>
         </button>
 
         <button type="button" class="btn btn-sm btn-info">
@@ -42,8 +179,8 @@
         </button>
 
 
-        <button type="button" class="btn btn-sm" onclick="window.print()"><img src="{% static 'img/printer.png' %}"
-                height="20" alt="print"></button>
+        <button type="button" class="btn btn-sm" onclick="window.print()"><img
+                src="{% static 'pauta/img/printer.png' %}" height="20" alt="print"></button>
     </div>
 
     <div class="container content">
