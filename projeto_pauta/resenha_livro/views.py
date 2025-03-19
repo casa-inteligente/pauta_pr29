@@ -110,11 +110,14 @@ def gerar_todas_resenhas(request, periodo_id):
         #pdf.drawString(margem_esquerda + 10, y, f"Autor:")
         pdf.drawString(margem_esquerda + 15, y, f"{resenha.nomeAutor}")
 
+
+        #ditancia entre linhas
+        size_lines = 15
         # Linhas para escrita (frente da folha)
         y -= 40
-        for _ in range(29):  # 20 linhas por página
+        for _ in range(28):  # 20 linhas por página
             pdf.line(margem_esquerda, y, margem_direita, y)
-            y -= 20
+            y -= size_lines
             if y < 50:  # Verificar se a página precisa ser trocada
                 pdf.showPage()
                 pdf.setFont("Helvetica", 12)
@@ -131,7 +134,7 @@ def gerar_todas_resenhas(request, periodo_id):
             pdf.setLineWidth(0.5)#Define a espessura da linha
             pdf.setStrokeColorRGB(0, 0, 0, 0.7)#Define a cor da linhas
             
-            y -= 20
+            y -= size_lines
             if y < 50:  # Verificar se a página precisa ser trocada
                 pdf.showPage()
                 pdf.setFont("Helvetica", 12)
