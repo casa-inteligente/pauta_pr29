@@ -61,12 +61,17 @@ def gerar_todas_resenhas(request, periodo_id):
 
     # Configurar o canvas do PDF
     pdf = canvas.Canvas(response, pagesize=A4)
+    pdf.setLineWidth(0.5)#Define a espessura da linha
+    pdf.setStrokeColorRGB(0, 0, 0, 0.7)#Define a cor da linhas
+    pdf.setAuthor("MRLTech")
     largura, altura = A4
 
     # Adicionar as resenhas ao PDF
     for resenha in resenhas:
         # Centralizar o título
         pdf.setFont("Helvetica-Bold", 16)
+        pdf.setLineWidth(0.5)#Define a espessura da linha
+        pdf.setStrokeColorRGB(0, 0, 0, 0.7)#Define a cor da linhas
         titulo = "PROJETO REMIÇÃO PELA LEITURA"
         pdf.drawCentredString(largura / 2, altura - 50, titulo)
 
@@ -78,28 +83,36 @@ def gerar_todas_resenhas(request, periodo_id):
 
         # Desenhar as linhas laterais da tabela
         pdf.line(margem_esquerda, y + 20, margem_direita, y + 20)  # Linha superior
-        pdf.line(margem_esquerda, y - 80, margem_direita, y - 80)  # Linha inferior
-        pdf.line(margem_esquerda, y + 20, margem_esquerda, y - 80)  # Linha esquerda
-        pdf.line(margem_direita, y + 20, margem_direita, y - 80)  # Linha direita
+        pdf.line(margem_esquerda, y - 8, margem_direita, y - 8)  # Linha professor
+        pdf.line(margem_esquerda, y - 25, margem_direita, y - 25)  # Linha professor
+        pdf.line(margem_esquerda, y - 45, margem_direita, y - 45)  # Linha professor
+        pdf.line(margem_esquerda, y - 65, margem_direita, y - 65)  # Linha autor/obra
+        pdf.line(margem_esquerda, y - 85, margem_direita, y - 85)  # Linha inferior
+
+        pdf.line(margem_esquerda + 280 , y - 8, margem_esquerda + 280, y - 45)  # Linha divisoria
+        pdf.line(margem_esquerda, y + 20, margem_esquerda, y - 85)  # Linha esquerda
+        pdf.line(margem_direita, y + 20, margem_direita, y - 85)  # Linha direita
 
         # Preencher os dados na tabela
         pdf.drawString(margem_esquerda + 10, y, f"Aluno: {resenha.aluno.nome}")
-        pdf.drawString(margem_direita - 250, y, f"Data da Resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}")
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, f"Período de Leitura: {resenha.periodoLeitura.intervalo_leitura}")
-        pdf.drawString(margem_direita - 250, y, "Local: CEJA/Ud Presídio Regional de Maravilha")
+        pdf.drawString(margem_esquerda + 10, y, f"Data da Resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}")
+        pdf.drawString(margem_direita - 200, y, f"Período de Leitura: {resenha.periodoLeitura.intervalo_leitura}")
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, f"Professor(a): {resenha.nomeProfessor}")
+        pdf.drawString(margem_esquerda + 10, y, 'Local: CEJA/Ud Presídio Regional de Maravilha') 
+        pdf.drawString(margem_direita - 200, y, f"Professor(a): {resenha.nomeProfessor}")
+
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, f"Livro:")
-        pdf.drawString(margem_direita - 250, y, f"{resenha.nomelivro}")
+        #pdf.drawString(margem_esquerda + 10, y, f"Livro:")
+        pdf.drawCentredString(margem_direita - 250, y, f"{resenha.nomelivro}")
+        #pdf.drawString(margem_direita - 250, y, f"{resenha.nomelivro}")
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, f"Autor:")
-        pdf.drawString(margem_direita - 250, y, f"{resenha.nomeAutor}")
+        #pdf.drawString(margem_esquerda + 10, y, f"Autor:")
+        pdf.drawString(margem_esquerda + 15, y, f"{resenha.nomeAutor}")
 
         # Linhas para escrita (frente da folha)
         y -= 40
-        for _ in range(20):  # 20 linhas por página
+        for _ in range(29):  # 20 linhas por página
             pdf.line(margem_esquerda, y, margem_direita, y)
             y -= 20
             if y < 50:  # Verificar se a página precisa ser trocada
@@ -115,6 +128,9 @@ def gerar_todas_resenhas(request, periodo_id):
         y = altura - 50
         for _ in range(25):  # 25 linhas no verso
             pdf.line(margem_esquerda, y, margem_direita, y)
+            pdf.setLineWidth(0.5)#Define a espessura da linha
+            pdf.setStrokeColorRGB(0, 0, 0, 0.7)#Define a cor da linhas
+            
             y -= 20
             if y < 50:  # Verificar se a página precisa ser trocada
                 pdf.showPage()
