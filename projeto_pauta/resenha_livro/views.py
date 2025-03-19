@@ -61,6 +61,8 @@ def gerar_todas_resenhas(request, periodo_id):
 
     # Configurar o canvas do PDF
     pdf = canvas.Canvas(response, pagesize=A4)
+    pdf.setLineWidth(0.5)#Define a espessura da linha
+    pdf.setStrokeColorRGB(0, 0, 0, 0.7)#Define a cor da linhas
     largura, altura = A4
 
     # Adicionar as resenhas ao PDF
@@ -79,6 +81,8 @@ def gerar_todas_resenhas(request, periodo_id):
         # Desenhar as linhas laterais da tabela
         pdf.line(margem_esquerda, y + 20, margem_direita, y + 20)  # Linha superior
         pdf.line(margem_esquerda, y - 80, margem_direita, y - 80)  # Linha inferior
+
+        pdf.line(margem_esquerda, y + 40, margem_esquerda, y - 80)  # Linha divisoria
         pdf.line(margem_esquerda, y + 20, margem_esquerda, y - 80)  # Linha esquerda
         pdf.line(margem_direita, y + 20, margem_direita, y - 80)  # Linha direita
 
@@ -91,15 +95,16 @@ def gerar_todas_resenhas(request, periodo_id):
         y -= 20
         pdf.drawString(margem_esquerda + 10, y, f"Professor(a): {resenha.nomeProfessor}")
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, f"Livro:")
-        pdf.drawString(margem_direita - 250, y, f"{resenha.nomelivro}")
+        #pdf.drawString(margem_esquerda + 10, y, f"Livro:")
+        pdf.drawCentredString(margem_direita - 250, y, f"{resenha.nomelivro}")
+        #pdf.drawString(margem_direita - 250, y, f"{resenha.nomelivro}")
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, f"Autor:")
-        pdf.drawString(margem_direita - 250, y, f"{resenha.nomeAutor}")
+        #pdf.drawString(margem_esquerda + 10, y, f"Autor:")
+        pdf.drawString(margem_esquerda + 15, y, f"{resenha.nomeAutor}")
 
         # Linhas para escrita (frente da folha)
         y -= 40
-        for _ in range(20):  # 20 linhas por página
+        for _ in range(29):  # 20 linhas por página
             pdf.line(margem_esquerda, y, margem_direita, y)
             y -= 20
             if y < 50:  # Verificar se a página precisa ser trocada
