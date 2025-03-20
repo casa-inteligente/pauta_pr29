@@ -112,9 +112,9 @@ def gerar_todas_resenhas(request, periodo_id):
 
 
         #ditancia entre linhas
-        size_lines = 15
+        size_lines = 18
         #quantidade de linhas na primeira folha
-        qtd_linha_1folha = 37
+        qtd_linha_1folha = 31
         # Linhas para escrita (frente da folha)
         y -= 40
         # Desenhar a linha vertical da esquerda
@@ -139,13 +139,13 @@ def gerar_todas_resenhas(request, periodo_id):
         y = altura - 50
 
         #quantidade de linhas na segunda folha
-        qtd_linha_2folha = 49
+        qtd_linha_2folha = 40
         # Desenhar a linha vertical da esquerda
         pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_2folha -1)))  # Linha esquerda
         # Desenhar a linha vertical da direita
         pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_2folha -1)))  # Linha direita
 
-        for _ in range(qtd_linha_2folha):  # 49 linhas no verso
+        for _ in range(qtd_linha_2folha):  # qtd linhas no verso
             pdf.line(margem_esquerda, y, margem_direita, y)
             pdf.setLineWidth(0.5)#Define a espessura da linha
             pdf.setStrokeColorRGB(0, 0, 0, 0.7)#Define a cor da linhas
