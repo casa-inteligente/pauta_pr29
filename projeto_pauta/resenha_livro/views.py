@@ -113,11 +113,19 @@ def gerar_todas_resenhas(request, periodo_id):
 
         #ditancia entre linhas
         size_lines = 15
+        #quantidade de linhas na primeira folha
+        qtd_linha_1folha = 37
         # Linhas para escrita (frente da folha)
         y -= 40
-        for _ in range(37):  # 20 linhas por página
+        # Desenhar a linha vertical da esquerda
+        pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_1folha -1)))  # Linha esquerda
+        # Desenhar a linha vertical da direita
+        pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_1folha -1)))  # Linha direita
+
+        for _ in range(qtd_linha_1folha):  # 20 linhas por página
             pdf.line(margem_esquerda, y, margem_direita, y)
             y -= size_lines
+
             if y < 50:  # Verificar se a página precisa ser trocada
                 pdf.showPage()
                 pdf.setFont("Helvetica", 12)
@@ -129,7 +137,15 @@ def gerar_todas_resenhas(request, periodo_id):
 
         # Linhas para escrita (verso da folha)
         y = altura - 50
-        for _ in range(49):  # 49 linhas no verso
+
+        #quantidade de linhas na segunda folha
+        qtd_linha_2folha = 49
+        # Desenhar a linha vertical da esquerda
+        pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_2folha -1)))  # Linha esquerda
+        # Desenhar a linha vertical da direita
+        pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_2folha -1)))  # Linha direita
+
+        for _ in range(qtd_linha_2folha):  # 49 linhas no verso
             pdf.line(margem_esquerda, y, margem_direita, y)
             pdf.setLineWidth(0.5)#Define a espessura da linha
             pdf.setStrokeColorRGB(0, 0, 0, 0.7)#Define a cor da linhas
