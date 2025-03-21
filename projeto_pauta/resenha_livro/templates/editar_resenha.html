@@ -7,17 +7,61 @@
     <title>Editar Resenha de Livro</title>
     <link rel="stylesheet" href="{% static 'resenha_livro/css/style.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .header {
+            background-color: #343a40;
+            color: white;
+            padding: 5px 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        .class1 {
+            margin-top: 80px;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
+
+    <!-- Cabeçalho -->
+    <header class="header">
+        <div class="container">
+            <h2 class="text-center">Presídio Regional de Maravilha </h2>
+        </div>
+    </header>
+
+    <div class="container class1">
         <h1>Editar Resenha de Livro</h1>
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit" class="btn btn-primary">Salvar</button>
+            <button class="btn btn-voltar ">Voltar</button>
+
         </form>
+        <!-- <button>Voltar</button> -->
+
     </div>
+
+    <!-- Rodapé -->
+    <footer class="footer">
+        <div class="container">
+            <p class="mb-0">2025 Presídio Regional de Maravilha &#8211; Todos os direitos reservados</p>
+        </div>
+    </footer>
 </body>
 
 </html>
