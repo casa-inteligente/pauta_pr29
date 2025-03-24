@@ -1,5 +1,6 @@
 from django import forms
 from .models import Pauta
+from bleach import clean
 
 class PautaForm(forms.ModelForm):
     class Meta:
@@ -11,3 +12,9 @@ class PautaForm(forms.ModelForm):
             'intervalo_repeticao' : forms.NumberInput(attrs={'min': 1, 'placeholder': 'Dias'}),
             'numero_repeticoes' : forms.NumberInput(attrs={'min': 1, 'placeholder': 'Número de Repetições'}),
         }
+
+    def clean_situacao(self):
+        value = self.cleaned_data['situacao']
+        allowed_tags = ['p', 'b', 'i', 'u', 'a', 'ul', 'li', 'br']  # Tags HTML permitidas
+        allowed_attrs = {'a': ['href', 'target']}  # Atributos permitidos
+        return clean(value, tags=allowed_tags, attributes=allowed_attrs)

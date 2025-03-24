@@ -1,11 +1,12 @@
 from django.db import models
+from django_summernote.fields import SummernoteTextField
 
 # Create your models here.
 class Pauta(models.Model):
     data = models.DateField('Data*')
     hora = models.TimeField('Hora*')
     nome = models.CharField('Nome*', max_length=200)
-    situacao = models.TextField('Situação*')
+    situacao = SummernoteTextField('Situação*')
     #link = models.URLField('Link', null=True, blank=True)
     intervalo_repeticao = models.IntegerField("Intervalo de repetição em DIAS", null=True, blank=True)
     numero_repeticoes = models.IntegerField("Número de repetições", null=True, blank=True)

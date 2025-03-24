@@ -4,6 +4,7 @@ from .models import Pauta
 from .forms import PautaForm
 from django.conf.locale.pt_BR import formats as pt_BR_formats
 from django.utils import timezone
+from django_summernote.admin import SummernoteModelAdmin
 from datetime import timedelta
 import datetime
 
@@ -53,12 +54,13 @@ class AnoAnteriorFilter(admin.SimpleListFilter):
 
 
 @admin.register(Pauta)
-class PautaAdmin(admin.ModelAdmin):
+class PautaAdmin(SummernoteModelAdmin):
     form = PautaForm
     list_display = ('data_formatada', 'hora_formatada', 'nome', 'situacao')
     search_fields = ('nome', 'data', 'situacao')
     list_filter = ('data', AnoAnteriorFilter, Proximos7DiasFilter, 'nome')
     ordering = ('data', 'hora')
+    summernote_fields = ('situacao',) #Aplica o editor no campo
     change_form_template = 'admin/pauta/change_form.html'  # Especifica o template personalizado
 
     # Cria condição para repetição

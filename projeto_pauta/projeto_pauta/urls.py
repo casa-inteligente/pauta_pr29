@@ -29,6 +29,7 @@ urlpatterns = [
     path('resenha_livro/', include('resenha_livro.urls')), #Adiciona relação de livros
     
     #Interfaces administrativas
+    path('summernote/', include('django_summernote.urls')), #Editor de texto
     path('admin/', admin.site.urls),
     path('login/', auth_views.LoginView.as_view(), name='login'),  # URL de login
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),  # URL de logout

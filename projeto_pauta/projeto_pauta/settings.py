@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions", # Controle de seções
     "django.contrib.messages",
+    'django_summernote', #Editor de texto
     "django.contrib.staticfiles", # Arquivos staticos
     'pauta', #App pauta digital
     'corsheaders', # Para acesso cruzado
@@ -75,6 +76,7 @@ MIDDLEWARE = [
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Para futuro (django-axes) limita as tentativas de login
+# para futuro (django-otp) au0tentificações em multifatores
 
 ##ADICIONADO permissão cruzada
 CORS_ALLOW_ALL_ORIGINS = True
@@ -165,12 +167,17 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "pt-br"
 
-TIME_ZONE = "America/Sao_paulo"
+TIME_ZONE = "America/Sao_Paulo"
 
 USE_I18N = True
 
 USE_TZ = True
 
+#linguagem do summernote
+SUMMERNOTE_CONFIG = {
+    'lang': 'pt-BR',
+    #'disable_cleaner': True,
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
