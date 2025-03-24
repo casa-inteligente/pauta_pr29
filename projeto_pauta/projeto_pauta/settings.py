@@ -37,6 +37,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '10.40.22.110']
 
+# Algumas configuraçãoes de segurança a mais
+X_FRAME_OPTIONS = 'DENY'
+
+
 
 # Application definition
 
@@ -69,6 +73,8 @@ MIDDLEWARE = [
 ## Configura que a seção durará até ser fechado o navegador
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Para futuro (django-axes) limita as tentativas de login
 
 ##ADICIONADO permissão cruzada
 CORS_ALLOW_ALL_ORIGINS = True
