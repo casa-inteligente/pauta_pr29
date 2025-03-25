@@ -1,4 +1,4 @@
-/* Destinado a estilização do template pauta_all */
+/* Destinado a estilização do template pauta_all.css */
 body {
     padding-top: 80px;
     padding-bottom: 60px;
@@ -31,19 +31,29 @@ body {
     background-color: #343a40;
     color: white;
     padding: 10px 0;
-    position: fixed;
+    position: relative;
+    margin-top: 50px;
     bottom: 0;
     width: 100%;
     text-align: center;
+}
+
+/* Para limitar o summernote */
+.form-situacao .note-editor {
+    max-height: 200px;
+    max-width: 50%;
+    overflow: auto;
 }
 
 .insercao {
     position: sticky;
     top: 80px;
     right: 20px;
+    /* bottom: 100px; */
     /* background-color: rgb(255, 255, 255); */
     width: 300px;
     height: calc(100vh - 80px);
+    /* margin-bottom: 80px; */
 }
 
 .content {

@@ -176,6 +176,10 @@ USE_TZ = True
 #linguagem do summernote
 SUMMERNOTE_CONFIG = {
     'lang': 'pt-BR',
+    'summernote':   {
+        'width': '100%',
+        'height':   '300px',
+    },
     #'disable_cleaner': True,
 }
 
