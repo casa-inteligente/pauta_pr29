@@ -179,7 +179,9 @@ SUMMERNOTE_CONFIG = {
     'summernote':   {
         'width': '100%',
         'height':   '300px',
+        'defaultFontSize':  '12pt',
     },
+    
     #'disable_cleaner': True,
 }
 
