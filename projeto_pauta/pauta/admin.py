@@ -71,22 +71,23 @@ class PautaAdmin(SummernoteModelAdmin):
             if original_obj:
                 obj.data = original_obj.data  # Mantém a data original se ela não foi alterada explicitament
 
-        super().save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change) #Chama o modelo para salvar e importa da classe pai
         if obj.intervalo_repeticao and obj.numero_repeticoes:
             data_atual = obj.data
             #print(obj.intervalo_repeticao)
 
             for i in range(1, obj.numero_repeticoes):
-                if obj.intervalo_repeticao == 30:
-                    data_atual += relativedelta(weeks=4)
-                elif obj.intervalo_repeticao == 15:
-                    data_atual += relativedelta(weeks=2)
-                elif obj.intervalo_repeticao == 21:
-                    data_atual += relativedelta(weeks=3)
-                elif obj.intervalo_repeticao == 7:
-                    data_atual += relativedelta(weeks=1)
-                else:
-                    data_atual += relativedelta(days=obj.intervalo_repeticao)
+                data_atual += relativedelta(days=obj.intervalo_repeticao)
+                # if obj.intervalo_repeticao == 30:
+                #     data_atual += relativedelta(weeks=4)
+                # elif obj.intervalo_repeticao == 15:
+                #     data_atual += relativedelta(weeks=2)
+                # elif obj.intervalo_repeticao == 21:
+                #     data_atual += relativedelta(weeks=3)
+                # elif obj.intervalo_repeticao == 7:
+                #     data_atual += relativedelta(weeks=1)
+                # else:
+                #     data_atual += relativedelta(days=obj.intervalo_repeticao)
                 
                 Pauta.objects.create(
                     data=data_atual,
