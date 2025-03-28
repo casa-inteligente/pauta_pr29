@@ -15,6 +15,14 @@ class PautaForm(forms.ModelForm):
 
     def clean_situacao(self):
         value = self.cleaned_data['situacao']
-        allowed_tags = ['p', 'b', 'i', 'u', 'a', 'ul', 'li', 'br']  # Tags HTML permitidas
-        allowed_attrs = {'a': ['href', 'target']}  # Atributos permitidos
+        allowed_tags = [
+            'p', 'b', 'i', 'u', 'a', 'ul', 'li', 'br', 'span', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'font', 'color'
+        ]  # Tags HTML permitidas
+        allowed_attrs = {
+            'a': ['href', 'target'],
+            'span': ['style'],  # Permitir estilos inline para coloração
+            'table': ['border', 'cellpadding', 'cellspacing'],  # Atributos para tabelas
+            'th': ['colspan', 'rowspan'],  # Atributos para células de cabeçalho
+            'td': ['colspan', 'rowspan'],  # Atributos para células de tabela
+        }   
         return clean(value, tags=allowed_tags, attributes=allowed_attrs)
