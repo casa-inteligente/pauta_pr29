@@ -22,6 +22,7 @@
         {% for periodo, alunos in alunos_por_periodo.items %}
         <div class="d-flex align-items-center justify-content-between mt-4">
             <h2>Período de Leitura: {{ periodo.intervalo_leitura }} - {{ periodo.data_resenha|date:"d/m/Y" }}</h2>
+            <!-- Botão para gerar todas as folhas e salvar em .pdf -->
             <a href="{% url 'resenha_livro:gerar_todas_resenhas' periodo.id %}" class="btn btn-info">Gerar Todas as
                 Folhas</a>
         </div>
