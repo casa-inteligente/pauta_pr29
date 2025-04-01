@@ -43,6 +43,7 @@ body {
     max-height: 200px;
     max-width: 50%;
     overflow: auto;
+    /* font-size: 12pt; */
 }
 
 .insercao {
@@ -53,7 +54,7 @@ body {
     /* background-color: rgb(255, 255, 255); */
     width: 300px;
     height: calc(100vh - 80px);
-    /* margin-bottom: 80px; */
+    margin-bottom: 80px;
 }
 
 .content {

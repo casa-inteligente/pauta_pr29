@@ -1,9 +1,10 @@
 import os
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.templatetags.static import static
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Aluno, ResenhaLivro, PeriodoLeitura
-from .forms import ResenhaLivroForm
+#from django.contrib.auth.decorators import login_required
+from .forms import ResenhaLivroForm, AlunoForm
 from django.conf import settings
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -162,3 +163,16 @@ def gerar_todas_resenhas(request, periodo_id):
     # Finalizar o PDF
     pdf.save()
     return response
+
+
+def adicionar_aluno_popup(request):
+    if request.method == 'POST':
+        form = AlunoForm(request.POST)
+        if form.is_valid():
+            aluno = form.save()
+            # Retornar o ID do aluno recém-criado para o popup
+            return JsonResponse({'id': aluno.id, 'nome': aluno.nome})
+    else:
+        form = AlunoForm()
+
+    return render(request, 'adicionar_aluno_popup.html', {'form': form})

@@ -13,6 +13,7 @@ class PeriodoLeituraAdmin(admin.ModelAdmin):
 class TurmaAdmin(admin.ModelAdmin):
     list_display = ('nome',)
 
+
 @admin.register(Aluno)
 class AlunoAdmin(admin.ModelAdmin):
     list_display = ('nome', 'turma')
