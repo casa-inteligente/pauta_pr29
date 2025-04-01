@@ -19,8 +19,19 @@
         </form>
         <button class="btn">
             <a href="{% url 'resenha_livro:listar_alunos' %}"> Voltar</a>
-        </button>
+        </button> <br>
+        <!-- Botão para abrir o popup de adicionar aluno -->
+        <button class="btn btn-secondary btn-sm" onclick="openPopup()">Adicionar Aluno</button>
+
     </div>
+    <script>
+        // Função para abrir o popup de adicionar aluno
+        function openPopup() {
+            const popupUrl = "{% url 'resenha_livro:adicionar_aluno_popup' %}";
+            const popupWindow = window.open(popupUrl, "Adicionar Aluno", "width=100,height=200,resizable=yes,scrollbars=yes");
+            popupWindow.focus();
+        }
+    </script>
 
 </body>
 

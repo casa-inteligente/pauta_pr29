@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Adicionar Aluno</title>
+    <link rel="stylesheet" href="{% static 'resenha_livro/css/style.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Adicionar Aluno</h1>
+        <form method="post" id="alunoForm">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <button class="btn btn-voltar">Voltar</button>
+        </form>
+    </div>
+
+    <script>
+        // Enviar o formulário via AJAX
+        document.getElementById('alunoForm').onsubmit = function (event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.id) {
+                        // Fechar o popup e atualizar o campo no formulário principal
+                        window.opener.postMessage(data, '*');
+                        window.close();
+                    }
+                });
+        };
+    </script>
+</body>
+
+</html>

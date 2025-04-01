@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import listar_alunos, imprimir_resenha, adicionar_resenha, editar_resenha, gerar_todas_resenhas
+from .views import listar_alunos, imprimir_resenha, adicionar_resenha, editar_resenha, gerar_todas_resenhas, adicionar_aluno_popup
 
 app_name = 'resenha_livro'
 
@@ -9,5 +9,6 @@ urlpatterns = [
     path('adicionar_resenha/', adicionar_resenha, name='adicionar_resenha'),
     path('editar_resenha/<int:resenha_id>/', editar_resenha, name='editar_resenha'),
     path('gerar_todas_resenhas/<int:periodo_id>/', gerar_todas_resenhas, name='gerar_todas_resenhas'),
+    path('adicionar_aluno_popup/', adicionar_aluno_popup, name='adicionar_aluno_popup'),
     # Outras URLs...
 ]
