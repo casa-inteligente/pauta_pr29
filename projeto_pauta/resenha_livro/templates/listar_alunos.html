@@ -36,16 +36,18 @@
             </thead>
             <tbody>
                 {% for aluno in alunos %}
+                {% for resenha in aluno.resenhas.all %}
                 <tr>
                     <td>{{ aluno.nome }}</td>
                     <td>{{ aluno.turma.nome }}</td>
                     <td>
                         <a href="{% url 'resenha_livro:imprimir_resenha' aluno.id %}"
                             class="btn btn-primary btn-sm">Gerar Folha de Resenha</a>
-                        <a href="{% url 'resenha_livro:editar_resenha' aluno.id %}"
+                        <a href="{% url 'resenha_livro:editar_resenha' resenha.id %}"
                             class="btn btn-warning btn-sm">Editar Resenha</a>
                     </td>
                 </tr>
+                {% endfor %}
                 {% endfor %}
             </tbody>
         </table>
@@ -57,4 +59,4 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
-</html>
+</html>cd

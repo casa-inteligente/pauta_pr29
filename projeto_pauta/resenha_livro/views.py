@@ -3,6 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.templatetags.static import static
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Aluno, ResenhaLivro, PeriodoLeitura
+from .forms import ResenhaLivroForm
 #from django.contrib.auth.decorators import login_required
 from .forms import ResenhaLivroForm, AlunoForm
 from django.conf import settings
@@ -41,7 +42,7 @@ def adicionar_resenha(request):
     return render(request, 'adicionar_resenha.html', {'form': form})
 
 def editar_resenha(request, resenha_id):
-    resenha = get_object_or_404(ResenhaLivro.objects.using('resenha_livro'), id=resenha_id)
+    resenha = get_object_or_404(ResenhaLivro, id=resenha_id)
     if request.method == 'POST':
         form = ResenhaLivroForm(request.POST, instance=resenha)
         if form.is_valid():
