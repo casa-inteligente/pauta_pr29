@@ -52,6 +52,13 @@ def editar_resenha(request, resenha_id):
         form = ResenhaLivroForm(instance=resenha)
     return render(request, 'editar_resenha.html', {'form': form})
 
+
+def excluir_resenha(request, resenha_id):
+    resenha = get_object_or_404(ResenhaLivro, id=resenha_id)
+    resenha.delete()
+    return redirect('resenha_livro:listar_alunos')
+
+
 def gerar_todas_resenhas(request, periodo_id):
     # Obter o período de leitura
     periodo = get_object_or_404(PeriodoLeitura, id=periodo_id)

@@ -45,6 +45,8 @@
                             class="btn btn-primary btn-sm">Gerar Folha de Resenha</a>
                         <a href="{% url 'resenha_livro:editar_resenha' resenha.id %}"
                             class="btn btn-warning btn-sm">Editar Resenha</a>
+                        <a href="{% url 'resenha_livro:excluir_resenha' resenha.id %}" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Tem certeza que deseja excluir esta resenha?');">Excluir</a>
                     </td>
                 </tr>
                 {% endfor %}
