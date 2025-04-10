@@ -1,3 +1,5 @@
+<!-- Documento para renderizar as resenhas por turma e periodo -->
+
 {% load static %}
 
 <!DOCTYPE html>
@@ -22,6 +24,9 @@
         {% for periodo, resenhas in resenhas_por_periodo.items %}
         <div class="mt-4">
             <h2>Período de Leitura: {{ periodo.intervalo_leitura }} - {{ periodo.data_resenha|date:"d/m/Y" }}</h2>
+            <a href="{% url 'resenha_livro:gerar_todas_resenhas' periodo.id %}" class="btn btn-success btn-sm">
+                Gerar PDF de Todas as Resenhas
+            </a>
             <table class="table table-striped mt-3">
                 <thead>
                     <tr>
