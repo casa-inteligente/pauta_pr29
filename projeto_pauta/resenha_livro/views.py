@@ -2,6 +2,7 @@ import os
 from django.http import HttpResponse, JsonResponse
 from django.templatetags.static import static
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.http import require_POST
 from .models import Aluno, ResenhaLivro, PeriodoLeitura
 from .forms import ResenhaLivroForm
 #from django.contrib.auth.decorators import login_required
@@ -177,7 +178,7 @@ def gerar_todas_resenhas(request, periodo_id):
     pdf.save()
     return response
 
-
+#@require_POST
 def adicionar_aluno_popup(request):     
     """Adicionar um novo aluno através de um popup."""
     if request.method == 'POST':
