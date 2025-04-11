@@ -3,7 +3,9 @@ from .models import ResenhaLivro, PeriodoLeitura, Turma, Aluno
 
 @admin.register(ResenhaLivro)
 class ResenhaAdmin(admin.ModelAdmin):
-    list_display = ('aluno', 'nomelivro', 'nomeAutor', 'periodoLeitura', 'dataResenha', 'nomeProfessor')
+    list_display = ('aluno', 'nomelivro', 'nomeAutor', 'periodoLeitura', 'format_data_resenha', 'nomeProfessor')
+    list_filter = ('aluno',)
+    search_fields = ('nomelivro', 'nomeAutor', 'nomeProfessor')
 
 @admin.register(PeriodoLeitura)
 class PeriodoLeituraAdmin(admin.ModelAdmin):
