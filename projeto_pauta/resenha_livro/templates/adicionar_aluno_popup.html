@@ -28,6 +28,11 @@
             const formData = new FormData(form);
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
+
+            // Selecionar o botão de envio
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true; // Desabilitar o botão
+
             fetch(form.action, {
                 method: 'POST',
                 body: formData,
