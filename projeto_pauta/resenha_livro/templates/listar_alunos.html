@@ -45,7 +45,7 @@
                         <td>{{ resenha.nomelivro }}</td>
                         <td>{{ resenha.nomeAutor }}</td>
                         <td>
-                            <a href="{% url 'resenha_livro:imprimir_resenha' resenha.aluno.id %}"
+                            <a href="{% url 'resenha_livro:imprimir_resenha' resenha.aluno.id resenha.periodoLeitura.id %}"
                                 class="btn btn-primary btn-sm">Gerar Folha</a>
                             <a href="{% url 'resenha_livro:editar_resenha' resenha.id %}"
                                 class="btn btn-warning btn-sm">Editar</a>

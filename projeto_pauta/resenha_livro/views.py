@@ -20,11 +20,12 @@ def listar_alunos(request):
     }
     return render(request, 'listar_alunos.html', {'resenhas_por_periodo': resenhas_por_periodo})
 
-def imprimir_resenha(request, aluno_id):
+def imprimir_resenha(request, aluno_id, periodo_id):
     """Renderiza a página para imprimir a resenha do aluno."""
     aluno = get_object_or_404(Aluno.objects.using('resenha_livro'), id=aluno_id)
-    resenhas = ResenhaLivro.objects.using('resenha_livro').filter(aluno=aluno)
-    linhas = range(50)
+    periodo = get_object_or_404(PeriodoLeitura, id=periodo_id)
+    resenhas = ResenhaLivro.objects.using('resenha_livro').filter(aluno=aluno, periodoLeitura=periodo)
+    linhas = range(68)
     
     return render(request, 'imprimir_resenha.html', {
         'aluno': aluno,
