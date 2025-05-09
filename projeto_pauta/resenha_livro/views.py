@@ -18,7 +18,9 @@ def listar_alunos(request):
         periodo: ResenhaLivro.objects.filter(periodoLeitura=periodo).select_related('aluno', 'periodoLeitura')
         for periodo in periodos
     }
-    return render(request, 'listar_alunos.html', {'resenhas_por_periodo': resenhas_por_periodo})
+    return render(request, 'listar_alunos.html', {'resenhas_por_periodo': resenhas_por_periodo,
+                                                  'titulo': 'Listar Alunos',
+                                                  })
 
 def imprimir_resenha(request, aluno_id, periodo_id):
     """Renderiza a página para imprimir a resenha do aluno."""
@@ -28,6 +30,7 @@ def imprimir_resenha(request, aluno_id, periodo_id):
     linhas = range(68)
     
     return render(request, 'imprimir_resenha.html', {
+        'titulo': 'Imprimir Resenha',
         'aluno': aluno,
         'resenhas': resenhas,
         'linhas': linhas,
@@ -43,7 +46,9 @@ def adicionar_resenha(request):
             return redirect('resenha_livro:listar_alunos')
     else:
         form = ResenhaLivroForm()
-    return render(request, 'adicionar_resenha.html', {'form': form})
+    return render(request, 'adicionar_resenha.html', {'form': form,
+                                                      'titulo': 'Adicionar Resenha',
+                                                      })
 
 def editar_resenha(request, resenha_id):
     """Editar uma resenha existente."""
@@ -55,8 +60,9 @@ def editar_resenha(request, resenha_id):
             return redirect('resenha_livro:listar_alunos')
     else:
         form = ResenhaLivroForm(instance=resenha)
-    return render(request, 'editar_resenha.html', {'form': form})
-
+    return render(request, 'editar_resenha.html', {'form': form,
+                                                   'titulo': 'Editar Resenha',
+                                                   })
 
 def excluir_resenha(request, resenha_id):
     """Excluir uma resenha existente."""
@@ -191,4 +197,6 @@ def adicionar_aluno_popup(request):
     else:
         form = AlunoForm()
 
-    return render(request, 'adicionar_aluno_popup.html', {'form': form})
+    return render(request, 'adicionar_aluno_popup.html', {'form': form,
+                                                          'titulo': 'Adicionar Aluno',
+                                                          })
