@@ -31,7 +31,16 @@ class PeriodoLeitura(models.Model):
 class Aluno(models.Model):
     """Modelo para aluno"""
     nome = models.CharField('Nome do Aluno:', max_length=100, blank=False, null=False)
-    turma = models.ForeignKey(Turma, on_delete=models.CASCADE, related_name='alunos')
+    turma = models.ForeignKey(
+        Turma, 
+        on_delete=models.CASCADE, 
+        related_name='alunos'
+    )
+    matricula = models.CharField(
+        'Matrícula:', 
+        max_length=20, 
+        unique=True, blank=False, null=True
+    )
 
     class Meta:
         verbose_name = 'aluno'
