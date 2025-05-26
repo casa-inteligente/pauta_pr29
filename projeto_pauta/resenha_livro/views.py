@@ -193,7 +193,7 @@ def adicionar_aluno_popup(request):
         if form.is_valid():
             aluno = form.save()
             # Retornar o ID do aluno recém-criado para o popup
-            return JsonResponse({'id': aluno.id, 'nome': aluno.nome})
+            return JsonResponse({'id': aluno.id, 'nome': aluno.nome, 'matricula': aluno.matricula})
     else:
         form = AlunoForm()
 
