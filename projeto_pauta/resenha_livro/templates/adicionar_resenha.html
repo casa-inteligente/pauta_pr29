@@ -4,14 +4,14 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Adicionar Resenha de Livro</title>
+    <title>{{ titulo }}</title>
     <link rel="stylesheet" href="{% static 'resenha_livro/css/style.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 
 <body>
     <div class="container">
-        <h1>Adicionar Resenha de Livro</h1>
+        <h1>{{ titulo }}</h1>
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
