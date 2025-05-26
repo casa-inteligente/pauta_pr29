@@ -9,7 +9,7 @@ class ResenhaLivroForm(forms.ModelForm):
 class AlunoForm(forms.ModelForm):
     class Meta:
         model= Aluno
-        fields = ['nome', 'turma']
+        fields = ['nome', 'turma', 'matricula']
 
 class PeriodoLeituraForm(forms.ModelForm):
     class Meta:

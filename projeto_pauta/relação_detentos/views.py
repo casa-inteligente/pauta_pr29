@@ -75,7 +75,7 @@ def relacao_list(request):
         When(regime='SA', then=Value(4)),
     )
 
-    relacoes = Relacao.objetos.all().annotate(
+    relacoes = Relacao.objects.all().annotate(
         regime_order=regime_order
     ).order_by('regime_order', 'previsao_saida', 'local_alocacao', 'nome')
 
@@ -174,7 +174,7 @@ def salvar_alteracoes(request):
 
 
 # '''
-#     Processa o relatorio 1.8 e atualiza o banco de dados
+#     Processa o relatorio 1.9 e atualiza o banco de dados
 # '''
 
 

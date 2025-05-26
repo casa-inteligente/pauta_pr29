@@ -19,7 +19,8 @@ def map_local_alocacao(value):
         'A': 'F',
         'C': 'F',
         'B': 'SA',
-        'D': 'SA'
+        'D': 'SA',
+        'E': 'SA',
     }
     return mapping.get(value, 'F')
 
@@ -139,14 +140,14 @@ def process_regime_pdf(file_path):
     
 
     tabelas_all = tb.read_pdf(file_path, pages='all')
-    print(f'A quantidade de tabelas é:\t{len(tabelas_all)}')
+    #print(f'A quantidade de tabelas é:\t{len(tabelas_all)}')
 
     tabela_completa = pd.DataFrame()
 
     for tabela_page in tabelas_all[:-1]:  # Ignorar a última tabela
         tabela_completa = pd.concat([tabela_completa, tabela_page], ignore_index=True)
 
-    print(tabela_completa)
+    #print(tabela_completa)
     """
     Realiza a extração de dados do pdf com a biblioteca pdfplumber
     """

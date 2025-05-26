@@ -23,39 +23,51 @@
 
         {% for periodo, resenhas in resenhas_por_periodo.items %}
         <div class="mt-4">
-            <h2>Período de Leitura: {{ periodo.intervalo_leitura }} - {{ periodo.data_resenha|date:"d/m/Y" }}</h2>
-            <a href="{% url 'resenha_livro:gerar_todas_resenhas' periodo.id %}" class="btn btn-success btn-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Período de Leitura: {{ periodo.intervalo_leitura }} -
+                    {{ periodo.data_resenha|date:"d/m/Y" }}
+                </h2>
+                <button class="btn btn-link" type="button" data-toggle="collapse"
+                    data-target="#periodo{{ forloop.counter }}" aria-expanded="false"
+                    aria-controls="periodo{{ forloop.counter }}">
+                    Mostrar/Ocultar
+                </button>
+            </div>
+            <a href="{% url 'resenha_livro:gerar_todas_resenhas' periodo.id %}" class="btn btn-success btn-sm mt-2">
                 Gerar PDF de Todas as Resenhas
             </a>
-            <table class="table table-striped mt-3">
-                <thead>
-                    <tr>
-                        <th>Nome do Aluno</th>
-                        <th>Turma</th>
-                        <th>Livro</th>
-                        <th>Autor</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for resenha in resenhas %}
-                    <tr>
-                        <td>{{ resenha.aluno.nome }}</td>
-                        <td>{{ resenha.aluno.turma.nome }}</td>
-                        <td>{{ resenha.nomelivro }}</td>
-                        <td>{{ resenha.nomeAutor }}</td>
-                        <td>
-                            <a href="{% url 'resenha_livro:imprimir_resenha' resenha.aluno.id resenha.periodoLeitura.id %}"
-                                class="btn btn-primary btn-sm">Gerar Folha</a>
-                            <a href="{% url 'resenha_livro:editar_resenha' resenha.id %}"
-                                class="btn btn-warning btn-sm">Editar</a>
-                            <a href="{% url 'resenha_livro:excluir_resenha' resenha.id %}" class="btn btn-danger btn-sm"
-                                onclick="return confirm('Tem certeza que deseja excluir esta resenha?');">Excluir</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="collapse" id="periodo{{ forloop.counter }}">
+                <table class="table table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>Nome do Aluno</th>
+                            <th>Turma</th>
+                            <th>Livro</th>
+                            <th>Autor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resenha in resenhas %}
+                        <tr>
+                            <td>{{ resenha.aluno.nome }}</td>
+                            <td>{{ resenha.aluno.turma.nome }}</td>
+                            <td>{{ resenha.nomelivro }}</td>
+                            <td>{{ resenha.nomeAutor }}</td>
+                            <td>
+                                <a href="{% url 'resenha_livro:imprimir_resenha' resenha.aluno.id resenha.periodoLeitura.id %}"
+                                    class="btn btn-primary btn-sm">Gerar Folha</a>
+                                <a href="{% url 'resenha_livro:editar_resenha' resenha.id %}"
+                                    class="btn btn-warning btn-sm">Editar</a>
+                                <a href="{% url 'resenha_livro:excluir_resenha' resenha.id %}"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Tem certeza que deseja excluir esta resenha?');">Excluir</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
         {% endfor %}
     </div>
