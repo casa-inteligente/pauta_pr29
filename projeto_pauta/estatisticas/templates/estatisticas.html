@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container mt-4">
+        <h1>{{ titulo }}</h1>
+        <p>{{ nome_unidade }}</p>
+        <p>Última atualização: {{ data_atualizado }}</p>
+
+        <div class="row">
+            <!-- Card Regimes -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">Regimes</div>
+                    <div class="card-body">
+                        <canvas id="regimesChart" height="400" width="600"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!-- Card Local de Alocação -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">Local de Alocação</div>
+                    <div class="card-body">
+                        <canvas id="alocacoesChart" height="400" width="600"> {{ alocacoes|safe }}</canvas>
+                    </div>
+                </div>
+            </div>
+            <!-- Card Artigos -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">Artigos</div>
+                    <div class="card-body">
+                        <canvas id="artigosChart" height="400" width="600"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!-- Card Comarcas -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">Comarcas</div>
+                    <div class="card-body">
+                        <canvas id="comarcasChart" height="400" width="600"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados vindos do contexto Django
+        const regimes = {{ regimes| safe }};
+        console.log("Regimes:", regimes);
+        console.log(regimes);
+        const alocacoes = {{ alocacoes| safe }};
+        console.log(alocacoes);
+        const artigos = {{ artigos| safe }};
+        console.log(artigos);
+        const comarcas = {{ comarcas| safe }};
+        console.log(comarcas);
+
+        // Regimes
+        const regimesLabels = regimes.map(item => item.regime);
+        const regimesData = regimes.map(item => item.quantidade);
+
+        // Local de Alocação
+        const alocacoesLabels = alocacoes.map(item => item.local_alocacao);
+        const alocacoesData = alocacoes.map(item => item.quantidade);
+
+        // Artigos
+        const artigosLabels = artigos.map(item => item.artigo);
+        const artigosData = artigos.map(item => item.quantidade);
+
+        // Comarcas
+        const comarcasLabels = comarcas.map(item => item.comarca);
+        const comarcasData = comarcas.map(item => item.quantidade);
+
+        // Gráfico de regimes
+        new Chart(document.getElementById('regimesChart'), {
+            type: 'bar',
+            data: {
+                labels: regimesLabels,
+                datasets: [{
+                    label: 'Quantidade',
+                    data: regimesData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                }]
+            }
+        });
+
+        // Gráfico de alocação
+        new Chart(document.getElementById('alocacoesChart'), {
+            type: 'bar',
+            data: {
+                labels: alocacoesLabels,
+                datasets: [{
+                    label: 'Quantidade',
+                    data: alocacoesData,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                }]
+            }
+        });
+
+        // Gráfico de artigos
+        new Chart(document.getElementById('artigosChart'), {
+            type: 'bar',
+            data: {
+                labels: artigosLabels,
+                datasets: [{
+                    label: 'Quantidade',
+                    data: artigosData,
+                    backgroundColor: 'rgba(255, 206, 86, 0.5)'
+                }]
+            }
+        });
+
+        // Gráfico de comarcas
+        new Chart(document.getElementById('comarcasChart'), {
+            type: 'bar',
+            data: {
+                labels: comarcasLabels,
+                datasets: [{
+                    label: 'Quantidade',
+                    data: comarcasData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)'
+                }]
+            }
+        });
+    </script>
+</body>
+
+</html>

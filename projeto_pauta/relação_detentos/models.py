@@ -31,19 +31,82 @@ class Relacao(models.Model):
         ('SA', 'Semiaberto'),
         ('TOR', 'Domiciliar')
     )
-    IPEN = models.PositiveIntegerField('iPEN', blank=False, null=False)
-    nome = models.CharField('Nome', max_length=150 , blank=False, null=False)
-    comarca = models.CharField('Comarca', max_length=50, default='-', null=True, blank=True)
-    artigo = models.CharField('Artigos', max_length=15)
-    ingresso = models.DateField('Ingresso', blank=True, null=True,)
-    regime = models.CharField('Regime',max_length=3, choices=campo_regime, blank=True, null=True)
-    pena = models.CharField('Pena', max_length=30, blank=True, null=True, default='-')
-    previsao_saida = models.DateField('Previsão saída', blank=True, null=True, default=None)
-    local_alocacao = models.CharField('Local da alocação', choices=alocacao_local, default='F', max_length=3)
-    observacoes = models.CharField('Observações', max_length=150, blank=True, null=True, default='-')
-    atualizado = models.DateField('Atualizado', default=timezone.now)
-    trampo_empresa = models.CharField('Convênio',max_length=15, choices=empresas_conveniadas, default=None, blank=True, null=True)
-    observacoes_trabalho = models.CharField('Observações', max_length=50, blank=True, null=True)
+    IPEN = models.PositiveIntegerField(
+        verbose_name='iPEN', 
+        blank=False, null=False
+    )
+    nome = models.CharField(
+        verbose_name='Nome',
+        max_length=150, 
+        blank=False, null=False
+    )
+    comarca = models.CharField(
+        verbose_name='Comarca',
+        max_length=50,
+        default='-',
+        null=True,
+        blank=True
+    )
+    artigo = models.CharField(
+        verbose_name='Artigos',
+        max_length=15
+    )
+    ingresso = models.DateField(
+        verbose_name='Ingresso',
+        blank=True,
+        null=True
+    )
+    regime = models.CharField(
+        verbose_name='Regime',
+        max_length=3,
+        choices=campo_regime,
+        blank=True,
+        null=True
+    )
+    pena = models.CharField(
+        verbose_name='Pena',
+        max_length=30,
+        blank=True,
+        null=True,
+        default='-'
+    )
+    previsao_saida = models.DateField(
+        verbose_name='Previsão saída',
+        blank=True,
+        null=True,
+        default=None
+    )
+    local_alocacao = models.CharField(
+        verbose_name='Local da alocação',
+        choices=alocacao_local,
+        default='F',
+        max_length=3
+    )
+    observacoes = models.CharField(
+        verbose_name='Observações',
+        max_length=150,
+        blank=True,
+        null=True,
+        default='-'
+    )
+    atualizado = models.DateField(
+        verbose_name='Atualizado',
+        default=timezone.now
+    )
+    trampo_empresa = models.CharField(
+        verbose_name='Convênio',
+        max_length=15,
+        choices=empresas_conveniadas,
+        default=None,
+        blank=True,
+        null=True
+    )
+    observacoes_trabalho = models.CharField(
+        verbose_name='Observações',
+        max_length=50,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return self.nome
