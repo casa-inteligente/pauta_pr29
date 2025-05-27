@@ -14,40 +14,46 @@
         <p>{{ nome_unidade }}</p>
         <p>Última atualização: {{ data_atualizado }}</p>
 
+        <!-- Gráfico Regimes -->
         <div class="row">
-            <!-- Card Regimes -->
-            <div class="col-md-6">
+            <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header">Regimes</div>
                     <div class="card-body">
-                        <canvas id="regimesChart" height="400" width="600"></canvas>
+                        <canvas id="regimesChart" height="100"></canvas>
                     </div>
                 </div>
             </div>
-            <!-- Card Local de Alocação -->
-            <div class="col-md-6">
+        </div>
+        <!-- Gráfico Local de Alocação -->
+        <div class="row">
+            <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header">Local de Alocação</div>
                     <div class="card-body">
-                        <canvas id="alocacoesChart" height="400" width="600"> {{ alocacoes|safe }}</canvas>
+                        <canvas id="alocacoesChart" height="100"></canvas>
                     </div>
                 </div>
             </div>
-            <!-- Card Artigos -->
-            <div class="col-md-6">
+        </div>
+        <!-- Gráfico Artigos -->
+        <div class="row">
+            <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header">Artigos</div>
                     <div class="card-body">
-                        <canvas id="artigosChart" height="400" width="600"></canvas>
+                        <canvas id="artigosChart" height="100"></canvas>
                     </div>
                 </div>
             </div>
-            <!-- Card Comarcas -->
-            <div class="col-md-6">
+        </div>
+        <!-- Gráfico Comarcas -->
+        <div class="row">
+            <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-header">Comarcas</div>
                     <div class="card-body">
-                        <canvas id="comarcasChart" height="400" width="600"></canvas>
+                        <canvas id="comarcasChart" height="100"></canvas>
                     </div>
                 </div>
             </div>
@@ -55,32 +61,42 @@
     </div>
 
     <script>
+        // Função para gerar cor aleatória
+        function randomColor(alpha = 0.5) {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return `rgba(${r},${g},${b},${alpha})`;
+        }
+        function randomColorsArray(length, alpha = 0.5) {
+            return Array.from({ length }, () => randomColor(alpha));
+        }
+
         // Dados vindos do contexto Django
         const regimes = {{ regimes| safe }};
-        console.log("Regimes:", regimes);
-        console.log(regimes);
         const alocacoes = {{ alocacoes| safe }};
-        console.log(alocacoes);
         const artigos = {{ artigos| safe }};
-        console.log(artigos);
         const comarcas = {{ comarcas| safe }};
-        console.log(comarcas);
 
         // Regimes
         const regimesLabels = regimes.map(item => item.regime);
         const regimesData = regimes.map(item => item.quantidade);
+        const regimesColors = randomColorsArray(regimesLabels.length);
 
         // Local de Alocação
         const alocacoesLabels = alocacoes.map(item => item.local_alocacao);
         const alocacoesData = alocacoes.map(item => item.quantidade);
+        const alocacoesColors = randomColorsArray(alocacoesLabels.length);
 
         // Artigos
-        const artigosLabels = artigos.map(item => item.artigo);
+        const artigosLabels = artigos.map(item => item.artigo.length > 20 ? item.artigo.substring(0, 20) + '...' : item.artigo);
         const artigosData = artigos.map(item => item.quantidade);
+        const artigosColors = randomColorsArray(artigosLabels.length);
 
         // Comarcas
         const comarcasLabels = comarcas.map(item => item.comarca);
         const comarcasData = comarcas.map(item => item.quantidade);
+        const comarcasColors = randomColorsArray(comarcasLabels.length);
 
         // Gráfico de regimes
         new Chart(document.getElementById('regimesChart'), {
@@ -90,7 +106,7 @@
                 datasets: [{
                     label: 'Quantidade',
                     data: regimesData,
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                    backgroundColor: regimesColors
                 }]
             }
         });
@@ -103,7 +119,7 @@
                 datasets: [{
                     label: 'Quantidade',
                     data: alocacoesData,
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                    backgroundColor: alocacoesColors
                 }]
             }
         });
@@ -116,7 +132,7 @@
                 datasets: [{
                     label: 'Quantidade',
                     data: artigosData,
-                    backgroundColor: 'rgba(255, 206, 86, 0.5)'
+                    backgroundColor: artigosColors
                 }]
             }
         });
@@ -129,7 +145,7 @@
                 datasets: [{
                     label: 'Quantidade',
                     data: comarcasData,
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)'
+                    backgroundColor: comarcasColors
                 }]
             }
         });
