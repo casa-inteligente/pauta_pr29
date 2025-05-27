@@ -27,6 +27,7 @@ urlpatterns = [
     path('relacoes/', include('relação_detentos.urls')), #adiciona relação de detentos
     path('home', views.home, name='home'),
     path('resenha_livro/', include('resenha_livro.urls')), #Adiciona relação de livros
+    path('estatisticas/', include('estatisticas.urls')), #Adiciona estatísticas
     
     #Interfaces administrativas
     path('summernote/', include('django_summernote.urls')), #Editor de texto

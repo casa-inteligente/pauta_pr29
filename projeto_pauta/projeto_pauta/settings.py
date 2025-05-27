@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'dbbackup', #Para realizar backup
     'relação_detentos', #Para o controle dos prazos
     'resenha_livro', #para o controle de resenhas
+    'estatisticas', #para o controle de estatisticas
 ]
 
 MIDDLEWARE = [
@@ -99,6 +100,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'pauta/templates'),
             os.path.join(BASE_DIR, 'relação_detentos/templates'),
             os.path.join(BASE_DIR,  'resenha_livro/templates'),
+            os.path.join(BASE_DIR, 'estatisticas/templates'),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -194,7 +196,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'projeto_pauta/static'),
     os.path.join(BASE_DIR, 'pauta/static'),
     os.path.join(BASE_DIR, 'relação_detentos/static'),
-    os.path.join(BASE_DIR, 'resenha_livro/static')
+    os.path.join(BASE_DIR, 'resenha_livro/static'),
+    os.path.join(BASE_DIR, 'estatisticas/static'),
 ]
 
 
