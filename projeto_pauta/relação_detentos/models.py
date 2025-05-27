@@ -33,7 +33,7 @@ class Relacao(models.Model):
     )
     IPEN = models.PositiveIntegerField('iPEN', blank=False, null=False)
     nome = models.CharField('Nome', max_length=150 , blank=False, null=False)
-    comarca = models.CharField('Comarca', max_length=50)
+    comarca = models.CharField('Comarca', max_length=50, default='-', null=True, blank=True)
     artigo = models.CharField('Artigos', max_length=15)
     ingresso = models.DateField('Ingresso', blank=True, null=True,)
     regime = models.CharField('Regime',max_length=3, choices=campo_regime, blank=True, null=True)
