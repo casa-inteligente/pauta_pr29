@@ -4,6 +4,11 @@ from relação_detentos.models import Relacao
 from collections import defaultdict
 
 def estatisticas_view(request):
+    #Busca quantidades de Internos
+    qtd_fechado = Relacao.objects.filter(local_alocacao='F').count()
+    qtd_semiaberto = Relacao.objects.filter(local_alocacao='SA').count()
+    total_internos = qtd_fechado + qtd_semiaberto
+    qtd_preventiva = Relacao.objects.filter(regime='PRE').count()
     # Artigos: separa, limpa, soma e trata vazios
     artigos_qs = (
         Relacao.objects
@@ -34,7 +39,7 @@ def estatisticas_view(request):
             comarca = 'Não informada'
         comarcas.append({'comarca': comarca, 'quantidade': item['quantidade']})
 
-    # Regimes: soma duplicados e trata vazios
+    # Regimes: soma duplicados, trata vazios e unifica 'F', 'FECHADO', 'PRE', 'PROVISÓRIO'
     regimes_qs = (
         Relacao.objects
         .values('regime')
@@ -43,7 +48,14 @@ def estatisticas_view(request):
     )
     regimes_dict = defaultdict(int)
     for item in regimes_qs:
-        regime = item['regime'] if item['regime'] else 'NÃO INFORMADO'
+        regime = item['regime'] if item['regime'] else 'PROVISÓRIO'
+        regime_upper = regime.strip().upper()
+        # Unifica 'F' e 'FECHADO'
+        if regime_upper in ['F', 'FECHADO']:
+            regime = 'FECHADO'
+        # Unifica 'PRE' e 'PROVISÓRIO'
+        elif regime_upper in ['PRE', 'PROVISÓRIO']:
+            regime = 'PROVISÓRIO'
         regimes_dict[regime] += item['quantidade']
     regimes = [{'regime': k, 'quantidade': v} for k, v in regimes_dict.items()]
 
@@ -65,5 +77,8 @@ def estatisticas_view(request):
         'regimes': list(regimes),
         'alocacoes': list(alocacoes),
         'data_atualizado': data_atualizado,
+        'total_internos': total_internos,
+        'qtd_fechado': qtd_fechado,
+        'qtd_semiaberto': qtd_semiaberto,
     }
     return render(request, 'estatisticas.html', contexto)
