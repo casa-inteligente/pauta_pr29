@@ -43,7 +43,7 @@ class Relacao(models.Model):
     comarca = models.CharField(
         verbose_name='Comarca',
         max_length=50,
-        default='-',
+        default='NI',
         null=True,
         blank=True
     )

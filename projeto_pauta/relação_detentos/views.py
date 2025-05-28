@@ -179,24 +179,19 @@ def salvar_alteracoes(request):
 
 
 def upload_pdf(request):
-    if request.method == 'POST' and request.FILES['pdfFile']:
+    if request.method == 'POST' and request.FILES.get('pdfFile'):
         pdf_file = request.FILES['pdfFile']
         fs = FileSystemStorage()
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
-        #print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
-        added_records = process_pdf(file_path)
-
-        if added_records:
-            message = 'Registros adicionados: ' + ', '.join(added_records)
-            return render(request, 'relacao_list.html', {'message': message})
+        process_pdf(file_path)
 
         return redirect('relação_detentos:relacao_list')
     return render(request, 'relacao_list.html')
 
 def upload_regime_pdf(request):
-    if request.method == 'POST' and request.FILES['regimePdfFile']:
+    if request.method == 'POST' and request.FILES.get('regimePdfFile'):
         pdf_file = request.FILES['regimePdfFile']
         fs = FileSystemStorage()
         filename = fs.save(pdf_file.name, pdf_file)
@@ -204,28 +199,31 @@ def upload_regime_pdf(request):
         #print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
         updated_records = process_regime_pdf(file_path)
+        
 
         if updated_records:
-            message = 'Regimes atualizados: ' + ', '.join(updated_records)
-            return render(request, 'relacao_list.html', {'message': message})
+            message = f'Regimes atualizados: {len(updated_records)}'
+        else:
+            message = 'Nenhum regime foi atualizado.'
 
-        return redirect('relação_detentos:relacao_list')
+        return redirect(f'/relacoes/?message={message}')
     return render(request, 'relacao_list.html')
 
 
 def exctrai_date_exit_view(request):
-    if request.method == 'POST' and request.FILES['progressaoPdfFile']:
+    if request.method == 'POST' and request.FILES.get('progressaoPdfFile'):
         pdf_file = request.FILES['progressaoPdfFile']
         fs = FileSystemStorage()
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
-        #print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
+        # print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
         updated_records = exctrai_date_exit(file_path)
 
         if updated_records:
-            message = 'Regimes atualizados: ' + ', '.join(updated_records)
-            return render(request, 'relacao_list.html', {'message': message})
+            message = f'Regimes atualizados: {len(updated_records)}'
+        else:
+            message = 'Nenhum regime foi atualizado.'
 
-        return redirect('relação_detentos:relacao_list')
+        return redirect(f'/relacoes/?message={message}')
     return render(request, 'relacao_list.html')

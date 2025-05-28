@@ -12,6 +12,12 @@
 </head>
 
 <body>
+
+    {% if request.GET.message %}
+    <script>
+        alert("{{ request.GET.message }}");
+    </script>
+    {% endif %}
     <header id="inicio" class="header">
         <div class="container">
             <h2 class="text-center">Relação de Detentos <span> [{{ qtd_total }}]</span>
