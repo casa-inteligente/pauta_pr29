@@ -3,6 +3,7 @@ from django.db.models import Count
 from relação_detentos.models import Relacao
 from collections import defaultdict
 
+
 def estatisticas_view(request):
     #Busca quantidades de Internos
     qtd_fechado = Relacao.objects.filter(local_alocacao='F').count()
@@ -80,5 +81,6 @@ def estatisticas_view(request):
         'total_internos': total_internos,
         'qtd_fechado': qtd_fechado,
         'qtd_semiaberto': qtd_semiaberto,
+        'user': request.user,
     }
     return render(request, 'estatisticas.html', contexto)
