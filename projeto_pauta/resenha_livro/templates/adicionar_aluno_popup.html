@@ -7,6 +7,11 @@
     <title>{{ titulo }}</title>
     <link rel="stylesheet" href="{% static 'resenha_livro/css/style.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: rgb(241, 238, 232);
+        }
+    </style>
 </head>
 
 <body>
@@ -16,11 +21,17 @@
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit" class="btn btn-primary">Salvar</button>
-            <button class="btn btn-voltar">Voltar</button>
+            <button onclick="window.close()" class="btn btn-voltar">Voltar</button>
         </form>
     </div>
 
     <script>
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                window.close();//Fecha o popup
+            }
+        });
+
         // Enviar o formulário via AJAX
         document.getElementById('alunoForm').onsubmit = function (event) {
             event.preventDefault();

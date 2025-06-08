@@ -109,15 +109,16 @@ class Relacao(models.Model):
     )
 
     def __str__(self):
-        return self.nome
-    
+        return f'{self.IPEN}-{self.nome}'
+
     def save(self, *args, **kwargs):
         if self.regime == 'P':
             self.previsao_saida = None
         super(Relacao, self).save(*args, **kwargs)
     
     class Meta:
-        ordering = ('regime', 'nome')
+        ordering = ('regime', 'nome', 'IPEN')
+        #db_table = 'relacao_detentos'
         verbose_name = 'a relação de detentos'
         verbose_name_plural = 'Relações de Detentos'
     

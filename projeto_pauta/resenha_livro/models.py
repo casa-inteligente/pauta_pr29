@@ -26,7 +26,7 @@ class PeriodoLeitura(models.Model):
         verbose_name_plural = 'Adicionar periodos de leituras'
 
     def __str__(self):
-        return f'{self.turma.nome} - {self.intervalo_leitura} - {self.data_resenha.strftime("%d/%m/%Y")} - {self.aprovada}'
+        return f'{self.turma.nome} - {self.intervalo_leitura}'
 
 class Aluno(models.Model):
     """Modelo para aluno"""
@@ -47,7 +47,10 @@ class Aluno(models.Model):
         verbose_name_plural = 'Adicionar alunos'
 
     def __str__(self):
-        return self.nome
+        if (self.matricula == None):
+            return self.nome
+        else:
+            return f'{self.nome} - {self.matricula}'
 
 class ResenhaLivro(models.Model):
     """Modelo para resenha de livro"""
