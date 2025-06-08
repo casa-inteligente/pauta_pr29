@@ -26,6 +26,12 @@
     </div>
 
     <script>
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                window.close();//Fecha o popup
+            }
+        });
+
         // Enviar o formulário via AJAX
         document.getElementById('alunoForm').onsubmit = function (event) {
             event.preventDefault();
