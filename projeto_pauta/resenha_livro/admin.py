@@ -10,6 +10,7 @@ class ResenhaAdmin(admin.ModelAdmin):
 @admin.register(PeriodoLeitura)
 class PeriodoLeituraAdmin(admin.ModelAdmin):
     list_display = ('turma', 'intervalo_leitura', 'data_resenha')
+    search_fields = ('data_resenha',)
 
 @admin.register(Turma)
 class TurmaAdmin(admin.ModelAdmin):
@@ -18,4 +19,6 @@ class TurmaAdmin(admin.ModelAdmin):
 
 @admin.register(Aluno)
 class AlunoAdmin(admin.ModelAdmin):
+    list_filter = ('nome', )
     list_display = ('nome', 'turma')
+    search_fields = ('nome', )

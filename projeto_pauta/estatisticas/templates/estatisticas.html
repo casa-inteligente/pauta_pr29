@@ -59,11 +59,25 @@
                 <div class="card-header">Artigos</div>
                 <div class="card-body">
                     <canvas id="artigosChart" height="100"></canvas>
-                    <p>*Alguns internos possuem mais do que um artigo associado.</p>
+                    <p>*Alguns internos possuem mais do que um artigo associado, porém é contabilizado apenas 1.</p>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Gráfico Artigos com reincidências -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">Artigos com reincidências</div>
+                <div class="card-body">
+                    <canvas id="artigosReinChart" height="100"></canvas>
+                    <p>*Contado a quantidade de vezes que o artigo é encontrado, podendo, caso o inteno possuir mais que
+                        um, somar quantas vezes possuir.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Gráfico Comarcas -->
     <div class="row">
         <div class="col-12">
@@ -98,6 +112,7 @@
     const alocacoes = {{ alocacoes| safe }};
     const artigos = {{ artigos| safe }};
     const comarcas = {{ comarcas| safe }};
+    const artigosRE = {{ artigosRE | safe }}
 
     // Regimes
     const regimesLabels = regimes.map(item => item.regime);
@@ -113,6 +128,15 @@
     const artigosLabels = artigos.map(item => item.artigo.length > 20 ? item.artigo.substring(0, 20) + '...' : item.artigo);
     const artigosData = artigos.map(item => item.quantidade);
     const artigosColors = randomColorsArray(artigosLabels.length);
+
+    // Artigos com reinc
+    //const artigosRELabels = artigosRE.map(item => item.artigoRE.length > 20 ? item.artigoRE.substring(0, 20) + '...' : item.artigoRE);
+    const artigosRELabels = artigosRE.map(item => {
+        const artigo = item.artigo || "Desconhecido"; // Garante um valor padrão caso esteja undefined
+        return artigo.length > 20 ? artigo.substring(0, 20) + '...' : artigo;
+    });
+    const artigosREData = artigosRE.map(item => item.quantidade);
+    const artigosREColors = randomColorsArray(artigosRELabels.length);
 
     // Comarcas
     const comarcasLabels = comarcas.map(item => item.comarca);
@@ -193,6 +217,57 @@
             },
         }
     });
+
+
+    // Gráfico de artigos com reincindências
+    new Chart(document.getElementById('artigosReinChart'), {
+        type: 'bar',
+        data: {
+            labels: artigosRELabels,
+            datasets: [{
+                label: 'Quantidade',
+                data: artigosREData,
+                backgroundColor: artigosREColors,
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Quantidade',
+                    }
+                },
+                x: {
+                    title: {
+                        beginAtZero: true,
+                        display: true,
+                        text: 'Artigos',
+                    }
+                },
+            },
+            plugins: {
+                legend: {
+                    display: false,
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            var label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.parsed.y || 0;
+                            return label;
+                        },
+                    }
+                }
+            },
+        }
+    });
+
+
 
     // Gráfico de comarcas
     new Chart(document.getElementById('comarcasChart'), {
