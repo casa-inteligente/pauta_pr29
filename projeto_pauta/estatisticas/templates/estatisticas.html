@@ -25,6 +25,14 @@
     <p><strong>Quantidade de Internos:</strong> {{ total_internos }}</p>
     <p><strong>Alocados no Fechado:</strong> {{ qtd_fechado }}</p>
     <p><strong>Alocados no Semiaberto:</strong> {{ qtd_semiaberto }}</p>
+    <p><strong>Em termos porcentuais, temos*:</strong>
+        <li>Provisório: {{ porcentagem_provisiorio }}%</li>
+        <li>Fechado: {{ porcentagem_fechado }}%</li>
+        <li>Semiaberto: {{ porcentagem_sa }}%</li>
+        <li>Alimentos: {{ porcentagem_ali }}% (Inoperante)</li>
+        <li>Soma das percentagens: <strong>{{ soma_porcentagem }}%</strong></li>
+        *Valores truncados para duas casas decimais.
+    </p>
 
     <p>{{ nome_unidade }}</p>
     <p>Estas informações, não estão em sua totalidade.</p>
@@ -37,6 +45,7 @@
                 <div class="card-header">Regimes</div>
                 <div class="card-body">
                     <canvas id="regimesChart" height="100"></canvas>
+                    <p>*Regimes implícitos é contabilizado como PROVISÓRIO</p>
                 </div>
             </div>
         </div>
@@ -47,7 +56,7 @@
             <div class="card mb-4">
                 <div class="card-header">Local de Alocação</div>
                 <div class="card-body">
-                    <canvas id="alocacoesChart" height="100"></canvas>
+                    <canvas id="alocacoesChart" height="100px"></canvas>
                 </div>
             </div>
         </div>
@@ -58,7 +67,7 @@
             <div class="card mb-4">
                 <div class="card-header">Artigos</div>
                 <div class="card-body">
-                    <canvas id="artigosChart" height="100"></canvas>
+                    <canvas id="artigosChart" height="100px"></canvas>
                     <p>*Alguns internos possuem mais do que um artigo associado, porém é contabilizado apenas 1.</p>
                 </div>
             </div>
