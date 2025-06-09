@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.db.models import Count
 from relação_detentos.models import Relacao
 from collections import defaultdict
+import math
 
 
 def estatisticas_view(request):
@@ -83,6 +84,7 @@ def estatisticas_view(request):
         .annotate(quantidade=Count('id'))
         .order_by('regime')
     )
+    #print(regimes_qs)
     regimes_dict = defaultdict(int)
     for item in regimes_qs:
         regime = item['regime'] if item['regime'] else 'PROVISÓRIO'
@@ -93,6 +95,8 @@ def estatisticas_view(request):
         # Unifica 'PRE' e 'PROVISÓRIO'
         elif regime_upper in ['PRE', 'PROVISÓRIO']:
             regime = 'PROVISÓRIO'
+        #else:
+            #regime = 'PROVISÓRIO'
         regimes_dict[regime] += item['quantidade']
     regimes = [{'regime': k, 'quantidade': v} for k, v in regimes_dict.items()]
 
@@ -106,12 +110,37 @@ def estatisticas_view(request):
 
     data_atualizado = Relacao.objects.latest('atualizado').atualizado if Relacao.objects.exists() else None
 
-    # print(f'Variavel artigosRE: {artigosRE}')
-    # print("--------------------------------")
-    # print(F'Variavel artigo: {artigos}')
-
+    #Ordena por artigo, para melhor coompreensão do usuario
     artigosRE = sorted(artigosRE, key=lambda x: x['artigo'])
     artigos = sorted(artigos, key=lambda x: x['artigo'])
+
+    #Altera rotulo, para melhor coompreensão do usuario
+    for aloc in alocacoes:
+        if aloc['local_alocacao'] == 'F':
+            aloc['local_alocacao'] = 'FECHADO'
+        else:
+            aloc['local_alocacao'] = 'SEMIABERTO'
+    
+    
+    #Contabiliza a porcentagem
+    qt_fechado = Relacao.objects.filter(regime__in=['F', 'FECHADO']).count()
+    porcentagem_fechado = (qt_fechado * 100) / total_internos
+    porcentagem_fechado = math.trunc(porcentagem_fechado*100)/100
+
+    qt_semiaberto = Relacao.objects.filter(regime__in=['SA', 'SEMIABERTO']).count()
+    porcentagem_sa = (qt_semiaberto * 100) / total_internos
+    porcentagem_sa = math.trunc(porcentagem_sa*100)/100
+
+    qtd_provisirio = Relacao.objects.filter(regime__in=['PRE', 'PROVISÓRIO']).count()
+    qtd_provisirio += Relacao.objects.filter(regime__isnull=True).count()
+    porcentagem_provisiorio = (qtd_provisirio * 100) / total_internos
+    porcentagem_provisiorio = math.trunc(porcentagem_provisiorio*100)/100
+
+
+    porcentagem_ali = 0
+    soma_porcentagem = porcentagem_fechado + porcentagem_sa + porcentagem_provisiorio + porcentagem_ali
+    soma_porcentagem = math.trunc(soma_porcentagem*100)/100
+
     contexto = {
         'titulo': 'Estatísticas',
         'nome_unidade': 'Presídio Regional de Maravilha',
@@ -124,6 +153,12 @@ def estatisticas_view(request):
         'total_internos': total_internos,
         'qtd_fechado': qtd_fechado,
         'qtd_semiaberto': qtd_semiaberto,
+        'qtd_provisirio': qtd_provisirio,
+        'porcentagem_fechado': porcentagem_fechado,
+        'porcentagem_sa': porcentagem_sa,
+        'porcentagem_provisiorio': porcentagem_provisiorio,
+        'soma_porcentagem': soma_porcentagem,
+        'porcentagem_ali': porcentagem_ali,
         'user': request.user,
     }
     return render(request, 'estatisticas.html', contexto)
