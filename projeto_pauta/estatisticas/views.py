@@ -139,7 +139,7 @@ def estatisticas_view(request):
 
     porcentagem_ali = 0
     soma_porcentagem = porcentagem_fechado + porcentagem_sa + porcentagem_provisiorio + porcentagem_ali
-
+    soma_porcentagem = math.trunc(soma_porcentagem*100)/100
 
     contexto = {
         'titulo': 'Estatísticas',
