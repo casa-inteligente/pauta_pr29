@@ -45,6 +45,7 @@ X_FRAME_OPTIONS = 'DENY'
 # Application definition
 
 INSTALLED_APPS = [
+    'simpleui', #Interface de administração
     "django.contrib.admin", #templetes de Admnistração
     "django.contrib.auth", # Regras de sautentificações
     "django.contrib.contenttypes",
@@ -89,7 +90,7 @@ CORS_ALLOWED_ORIGINS = [
     # Adicione outras origens permitidas aqui
 ]
 
-
+SIMPLEUI_LOGO = 'https://sap.sc.gov.br/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-12-at-13.37.50-1.jpeg'
 ROOT_URLCONF = "projeto_pauta.urls"
 
 TEMPLATES = [
@@ -131,7 +132,6 @@ DATABASES = {
         'USER': 'policiapenal',
         'PASSWORD': 'pa1debatata',
         'HOST': 'localhost', #IP da aaplicação
-        #'HOST': '10.40.22.165', #IP da aaplicação
         'PORT': '5432', #Porta padrão
     },
 }
