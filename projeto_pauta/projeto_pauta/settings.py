@@ -89,8 +89,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://10.40.22.110:8000"
     # Adicione outras origens permitidas aqui
 ]
-
+#Configurações do simplui
 SIMPLEUI_LOGO = 'https://sap.sc.gov.br/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-12-at-13.37.50-1.jpeg'
+
+SIMPLEUI_CONFIG = {
+    'system_keep': False,
+    'system_name': 'Policia Penal',
+    'home_info': '<h2>Bem-vindo à Policia Penal</h2>',
+}
+
+
+
 ROOT_URLCONF = "projeto_pauta.urls"
 
 TEMPLATES = [
