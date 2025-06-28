@@ -73,6 +73,7 @@ class ResenhaLivro(models.Model):
         ordering = ('aluno',)
         verbose_name = 'resenha de livro'
         verbose_name_plural = 'Adicionar resenhas de livros'
+        
 
     def format_data_resenha(self):
         """Modelo para formatar a data da resenha, no modelo Brasileiro"""

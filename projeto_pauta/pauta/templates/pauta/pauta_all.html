@@ -20,17 +20,26 @@
         </div>
     </header>
     <div class="container btn-container" id="inicio">
-        <!-- <button type="button" class="btn btn-info btn-lg">
-            <a href="{% url 'admin:pauta_pauta_add' %}" class="text-white text-decoration-none">Inserir</a>
-        </button> -->
+
         <button type="button" class="btn btn-sm">
             <a href="{% url 'admin:index' %}" class="text-white text-decoration-none"><img
                     src="{% static 'pauta/img/login.png' %}" height="20" alt="Login"></a>
         </button>
-        <button type="button" class="btn btn-sm">
-            <a href="{% url 'relação_detentos:relacao_list' %}" class="text-white text-decoration-none"><img
-                    src="{% static 'pauta/img/skill.png' %}" height="20" alt="relação"></a>
-        </button>
+
+        <div class="dropdown">
+            <button class="btn btn-link dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                aria-haspopup="true" aria-expanded="false">
+                <img src="{% static 'pauta/img/skill.png' %}" height="20" alt="relação">
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="{% url 'relação_detentos:relacao_list' %}">Relação de detentos</a>
+                <a class="dropdown-item" href="#">Preenchimentos de documentos</a>
+                <a class="dropdown-item" href="#">Geração de Ofícios </a>
+            </div>
+        </div>
+
+
+
         <button type="button" class="btn btn-sm">
             <a href="{% url 'pauta:index_7' %}" class="text-white text-decoration-none"><img
                     src="{% static 'pauta/img/age-restriction-seven.png' %}" height="20" alt="seven_day"></a>
@@ -110,7 +119,7 @@
 
     <!-- Bootstrap JS e dependências -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 
