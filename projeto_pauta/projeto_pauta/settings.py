@@ -12,10 +12,26 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import platform
+from datetime import datetime
+import locale
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # print(f'o Dir é:\t {BASE_DIR}')
+
+
+print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')
+print(f'Usuário: {os.getlogin()} - {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
+
+if platform.system() == 'Windows':
+    # Configura o locale para Windows
+    locale.setlocale(locale.LC_ALL, 'Portuguese_Brazil.1252')
+else:
+    # Configura o locale para sistemas Unix/Linux
+    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+
+
 
 #Variaveis de ambiente para login
 LOGIN_URL = 'login'
