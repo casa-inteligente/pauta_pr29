@@ -78,7 +78,7 @@
                 </thead>
                 <tbody>
                     {% for pauta in pauta_all %}
-                    <tr class="text-center text-sm hover:bg-gray-100 odd:bg-white">
+                    <tr class="text-center text-sm hover:bg-yellow-100 odd:bg-white">
                         <td class="border p-2">{{ pauta.data|date:"d/m/y" }}</td>
                         <td class="border p-2">{{ pauta.hora }}</td>
                         <td class="border p-2 text-left">{{ pauta.nome|safe|linebreaksbr }}</td>
