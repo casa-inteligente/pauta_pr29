@@ -54,7 +54,11 @@ class Aluno(models.Model):
 
 class ResenhaLivro(models.Model):
     """Modelo para resenha de livro"""
-    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE, related_name='resenhas')
+    aluno = models.ForeignKey(
+        Aluno, 
+        on_delete=models.CASCADE, 
+        related_name='resenhas'
+        )
     nomelivro = models.CharField('Obra:', max_length=200, blank=False, null=False)
     nomeAutor = models.CharField('Autor:', max_length=100, blank=False, null=False)
     periodoLeitura = models.ForeignKey(PeriodoLeitura, on_delete=models.CASCADE, related_name='resenhas')
@@ -73,6 +77,7 @@ class ResenhaLivro(models.Model):
         ordering = ('aluno',)
         verbose_name = 'resenha de livro'
         verbose_name_plural = 'Adicionar resenhas de livros'
+        
 
     def format_data_resenha(self):
         """Modelo para formatar a data da resenha, no modelo Brasileiro"""

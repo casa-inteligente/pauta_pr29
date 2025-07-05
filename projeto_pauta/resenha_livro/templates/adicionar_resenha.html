@@ -5,35 +5,43 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ titulo }}</title>
-    <link rel="stylesheet" href="{% static 'resenha_livro/css/style.css' %}">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: rgb(241, 238, 232);
-        }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
-    <div class="container">
-        <h1>{{ titulo }}</h1>
-        <form method="post">
+<body class="bg-[#f1eee8] text-gray-800 font-sans min-h-screen flex items-center justify-center">
+
+    <div class="max-w-lg w-full bg-white p-6 rounded shadow-md">
+        <h1 class="text-2xl font-bold text-center mb-6">{{ titulo }}</h1>
+
+        <form method="post" class="space-y-4">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Salvar</button>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+                💾 Salvar
+            </button>
         </form>
-        <button class="btn">
-            <a href="{% url 'resenha_livro:listar_alunos' %}"> Voltar</a>
-        </button> <br>
-        <!-- Botão para abrir o popup de adicionar aluno -->
-        <button class="btn btn-secondary btn-sm" onclick="openPopup()">Adicionar Aluno</button>
 
+        <div class="flex flex-col sm:flex-row gap-4 justify-between items-center mt-6">
+            <a href="{% url 'resenha_livro:listar_alunos' %}"
+                class="bg-gray-600 text-white px-4 py-2 rounded text-center hover:bg-gray-700 transition w-full sm:w-auto">
+                🔙 Voltar
+            </a>
+
+            <button onclick="openPopup()"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition w-full sm:w-auto">
+                ➕ Adicionar Aluno
+            </button>
+        </div>
     </div>
+
     <script>
-        // Função para abrir o popup de adicionar aluno
         function openPopup() {
             const popupUrl = "{% url 'resenha_livro:adicionar_aluno_popup' %}";
-            const popupWindow = window.open(popupUrl, "Adicionar Aluno", "width=300,height=400,resizable=yes,scrollbars=yes");
+            const popupWindow = window.open(
+                popupUrl,
+                "Adicionar Aluno",
+                "width=400,height=500,resizable=yes,scrollbars=yes"
+            );
             popupWindow.focus();
         }
     </script>
