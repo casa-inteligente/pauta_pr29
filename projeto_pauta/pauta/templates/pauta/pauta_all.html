@@ -62,18 +62,18 @@
     </nav>
 
     <!-- Conteúdo Principal -->
-    <main class="max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
+    <main class="max-w-7xl mx-auto grid md:grid-cols-[70%_30%] gap-6">
 
         <!-- Lista de compromissos -->
         <section>
-            <h3 class="text-lg font-medium mb-3">Compromissos</h3>
+            <!-- <h3 class="text-lg font-medium mb-3">Compromissos</h3> -->
             <table class="min-w-full table-auto border-collapse border border-gray-300">
                 <thead class="bg-gray-200">
                     <tr class="text-center text-sm">
-                        <th class="border p-2">Data</th>
-                        <th class="border p-2">Hora</th>
-                        <th class="border p-2">Nome</th>
-                        <th class="border p-2">Situação</th>
+                        <th class="border p-2 w-[15%]">Data</th>
+                        <th class="border p-2 w-[15%]">Hora</th>
+                        <th class="border p-2 w-[35%]">Nome</th>
+                        <th class="border p-2 w-[35%]">Situação</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,8 +81,10 @@
                     <tr class="text-center text-sm hover:bg-gray-100">
                         <td class="border p-2">{{ pauta.data|date:"d/m/y" }}</td>
                         <td class="border p-2">{{ pauta.hora }}</td>
-                        <td class="border p-2">{{ pauta.nome|safe|linebreaksbr }}</td>
-                        <td class="border p-2">{{ pauta.situacao|safe|linebreaksbr }}</td>
+                        <td class="border p-2 text-left">{{ pauta.nome|safe|linebreaksbr }}</td>
+                        <td class="border p-2 text-left">
+                            {{ pauta.situacao|safe|linebreaksbr }}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -96,6 +98,7 @@
                 class="space-y-4 bg-white p-4 border rounded shadow">
                 {% csrf_token %}
                 {{ form.as_p }}
+
                 <button type="submit"
                     class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Salvar</button>
                 <p class="text-sm mt-2">
