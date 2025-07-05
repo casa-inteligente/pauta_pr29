@@ -20,7 +20,7 @@
     </header>
 
     <!-- Menu de navegação -->
-    <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden">
+    <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
         <a href="{% url 'admin:index' %}"
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
             <img src="{% static 'pauta/img/login.png' %}" alt="Login" class="h-4"> Admin
@@ -62,7 +62,7 @@
     </nav>
 
     <!-- Conteúdo Principal -->
-    <main class="max-w-7xl mx-auto grid md:grid-cols-[70%_30%] gap-6">
+    <main class="max-w-7xl mx-auto grid md:grid-cols-[70%_30%] gap-6" id="topo">
 
         <!-- Lista de compromissos -->
         <section>
@@ -78,7 +78,7 @@
                 </thead>
                 <tbody>
                     {% for pauta in pauta_all %}
-                    <tr class="text-center text-sm hover:bg-gray-100">
+                    <tr class="text-center text-sm hover:bg-gray-100 odd:bg-white">
                         <td class="border p-2">{{ pauta.data|date:"d/m/y" }}</td>
                         <td class="border p-2">{{ pauta.hora }}</td>
                         <td class="border p-2 text-left">{{ pauta.nome|safe|linebreaksbr }}</td>
@@ -120,6 +120,11 @@
         <p id="print-time"></p>
         <p id="document-url"></p>
     </div>
+
+    <a href="#topo" class="fixed bottom-6 right-6 z-50 print:hidden">
+        <img src="{% static 'pauta/img/arrow-circle-up.png' %}" alt="Topo" class="h-10 w-10 hover:scale-110 transition">
+    </a>
+
 
     <script>
         window.addEventListener('beforeprint', function () {
