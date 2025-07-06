@@ -7,10 +7,25 @@ class PautaForm(forms.ModelForm):
         model = Pauta
         fields = '__all__'
         widgets = {
-            'data': forms.DateInput(attrs={'type': 'date'}),
-            'hora': forms.TimeInput(attrs={'type': 'time', 'class' : 'time-input'}),  # Alterar para o widget padrão de hora
-            'intervalo_repeticao' : forms.NumberInput(attrs={'min': 1, 'placeholder': 'Dias'}),
-            'numero_repeticoes' : forms.NumberInput(attrs={'min': 1, 'placeholder': 'Número de Repetições'}),
+            'data': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'w-50 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300'
+                }),
+            'hora': forms.TimeInput(attrs={
+                'type': 'time', 'class' : 'time-input',
+                'class': 'w-70 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-pink-300'
+                }),  # Alterar para o widget padrão de hora
+            'nome': forms.TextInput(attrs={
+                'class': 'w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-red-300'
+            }),
+            'intervalo_repeticao' : forms.NumberInput(attrs={
+                'min': 1, 'placeholder': 'Dias (Não implementado)',
+                'class': 'w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300'
+            }),
+            'numero_repeticoes' : forms.NumberInput(attrs={
+                'min': 1, 'placeholder': 'Número de Repetições',
+                'class': 'w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300'
+            }),
         }
 
     def clean_situacao(self):
