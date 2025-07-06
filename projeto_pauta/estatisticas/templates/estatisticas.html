@@ -1,324 +1,346 @@
-{% extends "base.html" %}
 {% load static %}
 
+<!DOCTYPE html>
+<html lang="pt-br">
 
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 
+<body class="bg-gray-50 text-gray-800 font-sans">
 
-{% block head %}
-<meta charset="UTF-8">
-<title>{{ titulo }}</title>
-<link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
+    <!-- Cabeçalho -->
+    <header class="bg-white shadow p-4 mb-6">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-2xl font-semibold">{{ nome_unidade }} &#8211; Estatísticas</h2>
+        </div>
+    </header>
 
-{% block nav %}
-<div class="container mt-4">
-    <h1>{{ titulo }}</h1>
+    <!-- Menu de navegação -->
+    <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden">
+        <a href="{% url 'admin:index' %}"
+            class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
+            <img src="{% static 'pauta/img/login.png' %}" alt="Login" class="h-4"> Admin
+        </a>
+        <a href="{% url 'estatisticas:estatisticas_view' %}"
+            class="bg-indigo-600 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700">
+            <img src="{% static 'pauta/img/estatisticas.png' %}" alt="Estatísticas" class="h-4 inline"> Estatísticas
+        </a>
+        <a href="{% url 'pauta:index_7' %}"
+            class="bg-yellow-600 text-white px-3 py-2 rounded text-sm hover:bg-yellow-700">
+            <img src="{% static 'pauta/img/age-restriction-seven.png' %}" alt="7 dias" class="h-4 inline"> Pauta 7 Dias
+        </a>
+        <button onclick="window.print()" class="bg-gray-700 text-white px-3 py-2 rounded text-sm hover:bg-black">
+            <img src="{% static 'pauta/img/printer.png' %}" alt="Imprimir" class="h-4 inline"> Imprimir
+        </button>
+    </nav>
 
-    <p>Usuário conectado: <b>{{ user.username }}</b></p>
-    <p><strong>Quantidade de Internos:</strong> {{ total_internos }}</p>
-    <p><strong>Alocados no Fechado:</strong> {{ qtd_fechado }}</p>
-    <p><strong>Alocados no Semiaberto:</strong> {{ qtd_semiaberto }}</p>
-    <p><strong>Em termos porcentuais, temos*:</strong>
-        <li>Provisório: {{ porcentagem_provisiorio }}%</li>
-        <li>Fechado: {{ porcentagem_fechado }}%</li>
-        <li>Semiaberto: {{ porcentagem_sa }}%</li>
-        <li>Alimentos: {{ porcentagem_ali }}% (Inoperante)</li>
-        <li>Soma das percentagens: <strong>{{ soma_porcentagem }}%</strong></li>
-        *Valores truncados para duas casas decimais.
-    </p>
+    <!-- Conteúdo principal -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
 
-    <p>{{ nome_unidade }}</p>
-    <p>Estas informações, não estão em sua totalidade.</p>
-    <p>Última atualização: <strong>{{ data_atualizado }}</strong></p>
+        <!-- Bloco de informações gerais -->
+        <section class="space-y-4">
+            <h1 class="text-3xl font-bold text-gray-900">{{ titulo }}</h1>
+            <p class="text-sm text-gray-600">Usuário conectado: <span class="font-medium">{{ user.username }}</span></p>
 
-    <!-- Gráfico Regimes -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header">Regimes</div>
-                <div class="card-body">
-                    <canvas id="regimesChart" height="100"></canvas>
-                    <p>*Regimes implícitos é contabilizado como PROVISÓRIO</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-5 rounded-2xl shadow hover:shadow-lg transition">
+                    <h2 class="text-lg font-semibold text-gray-800">Resumo</h2>
+                    <ul class="mt-3 text-sm text-gray-700 space-y-1">
+                        <li><strong>Total:</strong> {{ total_internos }}</li>
+                        <li><strong>Fechado:</strong> {{ qtd_fechado }}</li>
+                        <li><strong>Semiaberto:</strong> {{ qtd_semiaberto }}</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow hover:shadow-lg transition">
+                    <h2 class="text-lg font-semibold text-gray-800">Distribuição por Regime (%)</h2>
+                    <ul class="mt-3 text-sm text-gray-700 list-disc list-inside space-y-1">
+                        <li>Provisório: {{ porcentagem_provisiorio }}%</li>
+                        <li>Fechado: {{ porcentagem_fechado }}%</li>
+                        <li>Semiaberto: {{ porcentagem_sa }}%</li>
+                        <li class="text-red-500">Alimentos: {{ porcentagem_ali }}% (Inoperante)</li>
+                        <li class="font-semibold">Soma: {{ soma_porcentagem }}%</li>
+                    </ul>
+                    <p class="text-xs text-gray-500 mt-2">*Valores truncados para duas casas decimais.</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow hover:shadow-lg transition">
+                    <h2 class="text-sm text-gray-600">{{ nome_unidade }}</h2>
+                    <p class="text-xs text-gray-500 mt-1">Estas informações não estão em sua totalidade.</p>
+                    <p class="text-xs text-gray-500">Última atualização: <strong>{{ data_atualizado }}</strong></p>
                 </div>
             </div>
-        </div>
-    </div>
-    <!-- Gráfico Local de Alocação -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header">Local de Alocação</div>
-                <div class="card-body">
-                    <canvas id="alocacoesChart" height="100px"></canvas>
-                </div>
+        </section>
+
+        <!-- Gráficos -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Regimes</h3>
+                <canvas id="regimesChart" height="120"></canvas>
+                <p class="text-xs text-gray-500 mt-2">*Regimes implícitos são considerados como Provisório.</p>
             </div>
-        </div>
-    </div>
-    <!-- Gráfico Artigos -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header">Artigos</div>
-                <div class="card-body">
-                    <canvas id="artigosChart" height="100px"></canvas>
-                    <p>*Alguns internos possuem mais do que um artigo associado, porém é contabilizado apenas 1.</p>
-                </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Local de Alocação</h3>
+                <canvas id="alocacoesChart" height="120"></canvas>
             </div>
-        </div>
-    </div>
-    <!-- Gráfico Artigos com reincidências -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header">Artigos com reincidências</div>
-                <div class="card-body">
-                    <canvas id="artigosReinChart" height="100"></canvas>
-                    <p>*Contado a quantidade de vezes que o artigo é encontrado, podendo, caso o inteno possuir mais que
-                        um, somar quantas vezes possuir.</p>
-                </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow lg:col-span-2">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Artigos</h3>
+                <canvas id="artigosChart" height="140"></canvas>
+                <p class="text-xs text-gray-500 mt-2">*Cada interno possui apenas 1 artigo contabilizado.</p>
             </div>
-        </div>
-    </div>
 
-    <!-- Gráfico Comarcas -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header">Comarcas</div>
-                <div class="card-body">
-                    <canvas id="comarcasChart" height="100"></canvas>
-                    <p>*Poderá o interno possuir mais de uma comarca, no entanto, exibe apenas uma.</p>
-                </div>
+            <div class="bg-white p-6 rounded-2xl shadow">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Artigos com Reincidência</h3>
+                <canvas id="artigosReinChart" height="140"></canvas>
+                <p class="text-xs text-gray-500 mt-2">*Contabiliza todas as reincidências associadas ao artigo.</p>
             </div>
-        </div>
-    </div>
-</div>
 
-{% endblock %}
+            <div class="bg-white p-6 rounded-2xl shadow">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Comarcas</h3>
+                <canvas id="comarcasChart" height="140"></canvas>
+                <p class="text-xs text-gray-500 mt-2">*É exibida apenas uma comarca por interno.</p>
+            </div>
+        </section>
+    </main>
 
-{% block scripts %}
-<script>
-    // Função para gerar cor aleatória
-    function randomColor(alpha = 0.5) {
-        const r = Math.floor(Math.random() * 256);
-        const g = Math.floor(Math.random() * 256);
-        const b = Math.floor(Math.random() * 256);
-        return `rgba(${r},${g},${b},${alpha})`;
-    }
-    function randomColorsArray(length, alpha = 0.5) {
-        return Array.from({ length }, () => randomColor(alpha));
-    }
+    <!-- Rodapé -->
+    <footer class="mt-10 py-4 bg-gray-100 text-center text-sm text-gray-600">
+        2025 Presídio Regional de Maravilha &#8211; Todos os direitos reservados
+    </footer>
 
-    // Dados vindos do contexto Django
-    const regimes = {{ regimes| safe }};
-    const alocacoes = {{ alocacoes| safe }};
-    const artigos = {{ artigos| safe }};
-    const comarcas = {{ comarcas| safe }};
-    const artigosRE = {{ artigosRE | safe }}
-
-    // Regimes
-    const regimesLabels = regimes.map(item => item.regime);
-    const regimesData = regimes.map(item => item.quantidade);
-    const regimesColors = randomColorsArray(regimesLabels.length);
-
-    // Local de Alocação
-    const alocacoesLabels = alocacoes.map(item => item.local_alocacao);
-    const alocacoesData = alocacoes.map(item => item.quantidade);
-    const alocacoesColors = randomColorsArray(alocacoesLabels.length);
-
-    // Artigos
-    const artigosLabels = artigos.map(item => item.artigo.length > 20 ? item.artigo.substring(0, 20) + '...' : item.artigo);
-    const artigosData = artigos.map(item => item.quantidade);
-    const artigosColors = randomColorsArray(artigosLabels.length);
-
-    // Artigos com reinc
-    //const artigosRELabels = artigosRE.map(item => item.artigoRE.length > 20 ? item.artigoRE.substring(0, 20) + '...' : item.artigoRE);
-    const artigosRELabels = artigosRE.map(item => {
-        const artigo = item.artigo || "Desconhecido"; // Garante um valor padrão caso esteja undefined
-        return artigo.length > 20 ? artigo.substring(0, 20) + '...' : artigo;
-    });
-    const artigosREData = artigosRE.map(item => item.quantidade);
-    const artigosREColors = randomColorsArray(artigosRELabels.length);
-
-    // Comarcas
-    const comarcasLabels = comarcas.map(item => item.comarca);
-    const comarcasData = comarcas.map(item => item.quantidade);
-    const comarcasColors = randomColorsArray(comarcasLabels.length);
-
-    // Gráfico de regimes
-    new Chart(document.getElementById('regimesChart'), {
-        type: 'pie',
-        data: {
-            labels: regimesLabels,
-            datasets: [{
-                label: 'Quantidade',
-                data: regimesData,
-                backgroundColor: regimesColors
-            }]
+    <!-- JS Chart render (mantido como nos arquivos anteriores) -->
+    {% block scripts %}
+    <script>
+        // Função para gerar cor aleatória
+        function randomColor(alpha = 0.5) {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return `rgba(${r},${g},${b},${alpha})`;
         }
-    });
+        function randomColorsArray(length, alpha = 0.5) {
+            return Array.from({ length }, () => randomColor(alpha));
+        }
 
-    // Gráfico de alocação
-    new Chart(document.getElementById('alocacoesChart'), {
-        type: 'pie',
-        data: {
-            labels: alocacoesLabels,
-            datasets: [{
-                label: "Quantidade",
-                data: alocacoesData,
-                backgroundColor: alocacoesColors
-            }]
-        },
+        // Dados vindos do contexto Django
+        const regimes = {{ regimes| safe }};
+        const alocacoes = {{ alocacoes| safe }};
+        const artigos = {{ artigos| safe }};
+        const comarcas = {{ comarcas| safe }};
+        const artigosRE = {{ artigosRE | safe }}
 
-    });
+        // Regimes
+        const regimesLabels = regimes.map(item => item.regime);
+        const regimesData = regimes.map(item => item.quantidade);
+        const regimesColors = randomColorsArray(regimesLabels.length);
 
-    // Gráfico de artigos
-    new Chart(document.getElementById('artigosChart'), {
-        type: 'bar',
-        data: {
-            labels: artigosLabels,
-            datasets: [{
-                label: 'Quantidade',
-                data: artigosData,
-                backgroundColor: artigosColors
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Quantidade'
-                    }
-                },
-                x: {
-                    title: {
+        // Local de Alocação
+        const alocacoesLabels = alocacoes.map(item => item.local_alocacao);
+        const alocacoesData = alocacoes.map(item => item.quantidade);
+        const alocacoesColors = randomColorsArray(alocacoesLabels.length);
+
+        // Artigos
+        const artigosLabels = artigos.map(item => item.artigo.length > 20 ? item.artigo.substring(0, 20) + '...' : item.artigo);
+        const artigosData = artigos.map(item => item.quantidade);
+        const artigosColors = randomColorsArray(artigosLabels.length);
+
+        // Artigos com reinc
+        //const artigosRELabels = artigosRE.map(item => item.artigoRE.length > 20 ? item.artigoRE.substring(0, 20) + '...' : item.artigoRE);
+        const artigosRELabels = artigosRE.map(item => {
+            const artigo = item.artigo || "Desconhecido"; // Garante um valor padrão caso esteja undefined
+            return artigo.length > 20 ? artigo.substring(0, 20) + '...' : artigo;
+        });
+        const artigosREData = artigosRE.map(item => item.quantidade);
+        const artigosREColors = randomColorsArray(artigosRELabels.length);
+
+        // Comarcas
+        const comarcasLabels = comarcas.map(item => item.comarca);
+        const comarcasData = comarcas.map(item => item.quantidade);
+        const comarcasColors = randomColorsArray(comarcasLabels.length);
+
+        // Gráfico de regimes
+        new Chart(document.getElementById('regimesChart'), {
+            type: 'pie',
+            data: {
+                labels: regimesLabels,
+                datasets: [{
+                    label: 'Quantidade',
+                    data: regimesData,
+                    backgroundColor: regimesColors
+                }]
+            }
+        });
+
+        // Gráfico de alocação
+        new Chart(document.getElementById('alocacoesChart'), {
+            type: 'pie',
+            data: {
+                labels: alocacoesLabels,
+                datasets: [{
+                    label: "Quantidade",
+                    data: alocacoesData,
+                    backgroundColor: alocacoesColors
+                }]
+            },
+
+        });
+
+        // Gráfico de artigos
+        new Chart(document.getElementById('artigosChart'), {
+            type: 'bar',
+            data: {
+                labels: artigosLabels,
+                datasets: [{
+                    label: 'Quantidade',
+                    data: artigosData,
+                    backgroundColor: artigosColors
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
                         beginAtZero: true,
-                        display: true,
-                        text: 'Artigos'
+                        title: {
+                            display: true,
+                            text: 'Quantidade'
+                        }
+                    },
+                    x: {
+                        title: {
+                            beginAtZero: true,
+                            display: true,
+                            text: 'Artigos'
+                        }
+                    },
+                },
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                var label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed.y || 0;
+                                return label;
+                            },
+                        }
                     }
                 },
-            },
-            plugins: {
-                legend: {
-                    display: false,
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            var label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            label += context.parsed.y || 0;
-                            return label;
-                        },
-                    }
-                }
-            },
-        }
-    });
+            }
+        });
 
 
-    // Gráfico de artigos com reincindências
-    new Chart(document.getElementById('artigosReinChart'), {
-        type: 'bar',
-        data: {
-            labels: artigosRELabels,
-            datasets: [{
-                label: 'Quantidade',
-                data: artigosREData,
-                backgroundColor: artigosREColors,
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Quantidade',
-                    }
-                },
-                x: {
-                    title: {
+        // Gráfico de artigos com reincindências
+        new Chart(document.getElementById('artigosReinChart'), {
+            type: 'bar',
+            data: {
+                labels: artigosRELabels,
+                datasets: [{
+                    label: 'Quantidade',
+                    data: artigosREData,
+                    backgroundColor: artigosREColors,
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
                         beginAtZero: true,
-                        display: true,
-                        text: 'Artigos',
+                        title: {
+                            display: true,
+                            text: 'Quantidade',
+                        }
+                    },
+                    x: {
+                        title: {
+                            beginAtZero: true,
+                            display: true,
+                            text: 'Artigos',
+                        }
+                    },
+                },
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                var label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed.y || 0;
+                                return label;
+                            },
+                        }
                     }
                 },
+            }
+        });
+
+
+
+        // Gráfico de comarcas
+        new Chart(document.getElementById('comarcasChart'), {
+            type: 'bar',
+            data: {
+                labels: comarcasLabels,
+                datasets: [{
+                    label: 'Quantidade',
+                    data: comarcasData,
+                    backgroundColor: comarcasColors
+                }]
             },
-            plugins: {
-                legend: {
-                    display: false,
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            var label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            label += context.parsed.y || 0;
-                            return label;
-                        },
-                    }
-                }
-            },
-        }
-    });
-
-
-
-    // Gráfico de comarcas
-    new Chart(document.getElementById('comarcasChart'), {
-        type: 'bar',
-        data: {
-            labels: comarcasLabels,
-            datasets: [{
-                label: 'Quantidade',
-                data: comarcasData,
-                backgroundColor: comarcasColors
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Quantidade'
-                    }
-                },
-                x: {
-                    title: {
+            options: {
+                scales: {
+                    y: {
                         beginAtZero: true,
-                        display: true,
-                        text: 'Comarcas'
+                        title: {
+                            display: true,
+                            text: 'Quantidade'
+                        }
+                    },
+                    x: {
+                        title: {
+                            beginAtZero: true,
+                            display: true,
+                            text: 'Comarcas'
+                        }
+                    },
+                },
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                var label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed.y || 0;
+                                return label;
+                            },
+                        }
                     }
                 },
-            },
-            plugins: {
-                legend: {
-                    display: false,
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            var label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            label += context.parsed.y || 0;
-                            return label;
-                        },
-                    }
-                }
-            },
-        }
-    });
-</script>
-{% endblock %}
+            }
+        });
+    </script>
+    {% endblock %}
+
+</body>
+
+</html>
