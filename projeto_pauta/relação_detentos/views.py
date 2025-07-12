@@ -4,7 +4,7 @@ import pandas as pd
 import json
 import datetime
 from django.conf import settings
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, FileResponse, HttpResponse
@@ -17,6 +17,7 @@ from .process_table import process_pdf, process_regime_pdf, exctrai_date_exit
 from PyPDF2 import PdfReader, PdfWriter
 from PyPDF2.generic import NameObject, createStringObject
 import io 
+import os
 
 @login_required
 def add_detento(request):
@@ -262,50 +263,64 @@ def cadastro_trampo_view(request):
     return render(request, 'cadastro_trampo.html', {'detento': detento})
 
 
-
 @login_required
-def preencher_campos_pdf(input_pdf_path, output_stream, dados):
-    reader = PdfReader(input_pdf_path)
+def gerar_termo_autorizacao(request, detento_id):
+    # Busca o detento no banco de dados
+    detento = get_object_or_404(Relacao, id=detento_id)
+
+    # Prepara os dados para preencher o PDF
+    dados = {
+        'nome': detento.nome,
+        'ipen': str(detento.IPEN),
+        'comarca': detento.comarca or 'Não informada',
+        'artigo': detento.artigo,
+        'regime': detento.get_regime_display() if hasattr(detento, 'get_regime_display') else detento.regime,
+        'empresa': detento.get_trampo_empresa_display() if hasattr(detento, 'get_trampo_empresa_display') else (detento.trampo_empresa or ''),
+        'observacoes': detento.observacoes_trabalho or '',
+        # Adicione outros campos conforme o PDF
+    }
+
+    # Caminho do PDF modelo (ajuste conforme o local real do arquivo)
+    input_pdf_path = os.path.join(settings.BASE_DIR, 'doc', 'Termo de autorização.pdf')
+    if not os.path.exists(input_pdf_path):
+        return HttpResponse("Arquivo do termo de autorização não encontrado.", status=404)
+
+    # Sobrescreve o arquivo original com os dados preenchidos
+    with open(input_pdf_path, "rb") as original_pdf:
+        output_stream = io.BytesIO()
+        preencher_campos_pdf(original_pdf, output_stream, dados)
+        output_stream.seek(0)
+        # Salva o PDF preenchido sobrescrevendo o original
+        with open(input_pdf_path, "wb") as f:
+            f.write(output_stream.getvalue())
+        output_stream.seek(0)
+
+    # Retorna o arquivo sobrescrito para download
+    response = FileResponse(output_stream, as_attachment=True, filename='termo_autorizacao.pdf')
+    return response
+
+def preencher_campos_pdf(input_pdf_file, output_stream, dados):
+    reader = PdfReader(input_pdf_file)
     writer = PdfWriter()
 
     # Copia todas as páginas
     for page in reader.pages:
         writer.add_page(page)
 
-    # Preenche os campos do formulário
+    # Preenche os campos do formulário (os nomes das chaves de 'dados' devem ser iguais aos campos do PDF)
     writer.update_page_form_field_values(
         writer.pages[0],  # supondo que os campos estão na primeira página
         dados
     )
 
-    # Mantém os campos editáveis ou não
+    # Torna os campos somente leitura
     for j in range(len(writer.pages)):
         page = writer.pages[j]
         if '/Annots' in page:
             for annot in page['/Annots']:
                 annot_obj = annot.get_object()
                 annot_obj.update({
-                    NameObject("/Ff"): 1  # torna o campo somente leitura
+                    NameObject("/Ff"): 1
                 })
 
     writer.write(output_stream)
-
-def gerar_termo_autorizacao(request, detento_id):
-    # Exemplo de dados recebidos (pode vir de um formulário, por exemplo)
-    nome = request.GET.get('nome', 'Fulano de Tal')
-    data = request.GET.get('data', '01/01/2024')
-
-    dados = {
-        'nome': nome,
-        'data': data,
-        # Adicione outros campos conforme o PDF
-    }
-
-    input_pdf_path = f"{settings.BASE_DIR}\\static\\pdf\\Termo de autorização.pdf"
-    output_stream = io.BytesIO()
-
-    preencher_campos_pdf(input_pdf_path, output_stream, dados)
-    output_stream.seek(0)
-
-    response = FileResponse(output_stream, as_attachment=True, filename='termo_autorizacao.pdf')
-    return response
