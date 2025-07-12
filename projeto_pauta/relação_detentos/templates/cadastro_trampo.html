@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Termo de Autorização - Convênio</title>
+    <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+    <div class="max-w-2xl mx-auto mt-8 bg-white rounded-2xl shadow p-8">
+        <h1 class="text-2xl font-bold mb-4">Termo de Autorização para Trabalho Externo</h1>
+        <form method="get" class="mb-6 flex gap-2">
+            <input type="text" name="ipen" placeholder="Digite o IPEN"
+                class="border-2 border-gray-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Buscar</button>
+        </form>
+
+        {% if detento %}
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold mb-2">Dados do Interno</h2>
+            <ul class="text-sm space-y-1">
+                <li><strong>IPEN:</strong> {{ detento.IPEN }}</li>
+                <li><strong>Nome:</strong> {{ detento.nome }}</li>
+                <li><strong>Comarca:</strong> {{ detento.comarca }}</li>
+                <li><strong>Artigo(s):</strong> {{ detento.artigo }}</li>
+                <li><strong>Regime:</strong> {{ detento.get_regime_display }}</li>
+                <li><strong>Convênio:</strong> {{ detento.get_trampo_empresa_display }}</li>
+                <li><strong>Observações:</strong> {{ detento.observacoes_trabalho }}</li>
+            </ul>
+        </div>
+        <form method="post" action="{% url 'relação_detentos:gerar_termo_autorizacao' detento.id %}">
+            {% csrf_token %}
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full">Gerar
+                Termo de Autorização (PDF)</button>
+        </form>
+        {% elif request.GET.ipen %}
+        <div class="text-red-500">Nenhum interno encontrado com o IPEN informado.</div>
+        {% endif %}
+    </div>
+</body>
+
+</html>

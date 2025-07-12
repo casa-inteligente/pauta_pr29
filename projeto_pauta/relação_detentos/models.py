@@ -13,9 +13,9 @@ class Relacao(models.Model):
         ('CHAMALUX', 'CHAMALUX'),
         ('PREFEITURA', 'PREFEITURA'),
         ('PRESÍDIO', 'PRESÍDIO'),
-        ('OLIVEIRA', 'CONS. OLIVEIRA'),
+        ('OLIVEIRA', 'CONSTRUTORA OLIVEIRA'),
         ('REALCE', 'REALCE'),
-        ('SEPAT', 'SEPAT')
+        ('SEPAT', 'SEPAT'),
     )
 
     campo_regime = (

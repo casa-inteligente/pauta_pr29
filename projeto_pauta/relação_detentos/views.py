@@ -3,16 +3,20 @@ import pdfplumber
 import pandas as pd
 import json
 import datetime
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from .models import Relacao
 from django.db.models import Case, When, Value
 from django.db.models.functions import Concat
 from django.utils import timezone
 from .process_table import process_pdf, process_regime_pdf, exctrai_date_exit
+from PyPDF2 import PdfReader, PdfWriter
+from PyPDF2.generic import NameObject, createStringObject
+import io 
 
 @login_required
 def add_detento(request):
@@ -227,3 +231,81 @@ def exctrai_date_exit_view(request):
 
         return redirect(f'/relacoes/?message={message}')
     return render(request, 'relacao_list.html')
+
+
+@login_required
+def view_termo_autorizacao(request, relacao_id):
+    """
+    Visualiza o termo de autorização de trabalho do detento.
+    """
+    relacao = Relacao.objects.get(id=relacao_id)
+    if not relacao.trampo_empresa:
+        return render(request, 'termo_autorizacao.html', {
+            'error': 'Nenhum termo de autorização encontrado para este detento.'
+        })
+    
+    return render(request, 'termo_autorizacao.html', {
+        'relacao': relacao,
+        'empresa': relacao.trampo_empresa
+    })
+
+
+@login_required
+def cadastro_trampo_view(request):
+    detento = None
+    ipen = request.GET.get('ipen')
+    if ipen:
+        try:
+            detento = Relacao.objects.get(IPEN=ipen)
+        except Relacao.DoesNotExist:
+            detento = None
+    return render(request, 'cadastro_trampo.html', {'detento': detento})
+
+
+
+@login_required
+def preencher_campos_pdf(input_pdf_path, output_stream, dados):
+    reader = PdfReader(input_pdf_path)
+    writer = PdfWriter()
+
+    # Copia todas as páginas
+    for page in reader.pages:
+        writer.add_page(page)
+
+    # Preenche os campos do formulário
+    writer.update_page_form_field_values(
+        writer.pages[0],  # supondo que os campos estão na primeira página
+        dados
+    )
+
+    # Mantém os campos editáveis ou não
+    for j in range(len(writer.pages)):
+        page = writer.pages[j]
+        if '/Annots' in page:
+            for annot in page['/Annots']:
+                annot_obj = annot.get_object()
+                annot_obj.update({
+                    NameObject("/Ff"): 1  # torna o campo somente leitura
+                })
+
+    writer.write(output_stream)
+
+def gerar_termo_autorizacao(request, detento_id):
+    # Exemplo de dados recebidos (pode vir de um formulário, por exemplo)
+    nome = request.GET.get('nome', 'Fulano de Tal')
+    data = request.GET.get('data', '01/01/2024')
+
+    dados = {
+        'nome': nome,
+        'data': data,
+        # Adicione outros campos conforme o PDF
+    }
+
+    input_pdf_path = f"{settings.BASE_DIR}\\static\\pdf\\Termo de autorização.pdf"
+    output_stream = io.BytesIO()
+
+    preencher_campos_pdf(input_pdf_path, output_stream, dados)
+    output_stream.seek(0)
+
+    response = FileResponse(output_stream, as_attachment=True, filename='termo_autorizacao.pdf')
+    return response
