@@ -4,8 +4,10 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.units import cm
+from reportlab.lib.units import cm  # Ensure cm is imported
 from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import pandas as pd
 import json
 import datetime
@@ -24,6 +26,12 @@ from PyPDF2 import PdfReader, PdfWriter
 from PyPDF2.generic import NameObject, createStringObject
 import io 
 import os
+from reportlab.platypus import Image, Table, TableStyle
+from reportlab.lib import colors
+
+# Registre Arial e Arial-Bold (se quiser usar negrito)
+pdfmetrics.registerFont(TTFont('Arial', 'C:/Windows/Fonts/arial.ttf'))
+pdfmetrics.registerFont(TTFont('Arial-Bold', 'C:/Windows/Fonts/arialbd.ttf'))
 
 
 @login_required
@@ -338,10 +346,18 @@ def termo_monitorado(request):
     Gera o termo de monitoramento eletrônico conforme o modelo
     '2 - TERMO DE MONITORAMENTO ATUALIZADO 27.05.2024.pdf'.
     """
+ 
     detento = get_object_or_404(Relacao, IPEN=710698)
 
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=2.5 * cm,
+        leftMargin=2 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=2 * cm
+    )
 
     # Crie um estilo justificado para os parágrafos
     estilos = getSampleStyleSheet()
@@ -350,57 +366,102 @@ def termo_monitorado(request):
         parent=estilos['Normal'],
         alignment=TA_JUSTIFY,
         firstLineIndent=1.5 * cm,
-        fontName='Helvetica',         # Altere para a fonte desejada, ex: 'Times-Roman', 'Courier'
-        fontSize=12,                  # Altere para o tamanho desejado
+        fontName='Arial',         # Altere para a fonte desejada, ex: 'Times-Roman', 'Courier', Arial
+        fontSize=11,                  # Altere para o tamanho desejado
         leading=15,                   # Espaçamento entre linhas (opcional)
     )
     estilo_titulo = ParagraphStyle(
         name='Centralizado',
         parent=estilos['Normal'],
         alignment=TA_CENTER,
-        fontName='Helvetica-Bold',    # Fonte para o título
-        fontSize=14,                  # Tamanho do título
-        leading=18,                   # Espaçamento entre linhas (opcional)
+        fontName='Arial',    # Fonte para o título
+        fontSize=11,                  # Tamanho do título
+        leading=15,                   # Espaçamento entre linhas (opcional)
     )
     estilo_centralizado = ParagraphStyle(
         name='centralizado',
         parent=estilos['Normal'],
         alignment=TA_CENTER,
-        fontName='Helvetica',
-        fontSize=12,
+        fontName='Arial',
+        fontSize=11,
         leading=15,
     )
     estilo_normal = ParagraphStyle(
         name='Normal',
         parent=estilos['Normal'],
-        fontName='Helvetica',
-        fontSize=12,
+        fontName='Arial',
+        fontSize=11,
         leading=15,
+    )
+    estilo_rodape = ParagraphStyle(
+        name='Rodape',
+        parent=estilos['Normal'],
+        fontName='Arial',
+        fontSize=10,
+        leading=5,
     )
 
     elementos = []
 
+    # Caminho para a imagem do cabeçalho (ajuste conforme necessário)
+    caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo.png')
+
+    # Cria a imagem do cabeçalho
+    img_logo = None
+    if os.path.exists(caminho_logo):
+        img_logo = Image(caminho_logo, width=2*cm, height=2.5*cm)
+    else:
+        img_logo = Spacer(2*cm, 2.5*cm)  # Espaço reservado caso não encontre a imagem
+
+    # Texto de identificação da instituição
+    texto_instituicao = Paragraph(
+        "<b>ESTADO DE SANTA CATARINA<br/>"
+        "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL<br/>"
+        "DEPARTAMENTO DE POLÍCIA PENAL - DPP<br/>"
+        "UNIDADE DE MONITORAMENTO ELETRÔNICO - UME</b>",
+        estilo_rodape
+    )
+
+    # Monta o cabeçalho como uma tabela com imagem à esquerda e texto à direita
+    cabecalho = Table(
+        [[img_logo, texto_instituicao]],
+        colWidths=[2.5*cm, 15*cm]
+    )
+    cabecalho.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+        ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        # ('BOX', (0, 0), (-1, -1), 0.25, colors.black),  # Descomente para ver a borda do cabeçalho
+    ]))
+
+    elementos.append(cabecalho)
+    elementos.append(Spacer(1, 0.5 * cm))
+
     # Título centralizado
     elementos.append(Paragraph("<b>TERMO DE MONITORAMENTO ELETRÔNICO E DE INSTRUÇÕES AO MONITORADO PARA O USO DA TORNOZELEIRA ELETRÔNICA.</b>", estilo_titulo))
-    elementos.append(Spacer(1, 1 * cm))
+    elementos.append(Spacer(1, 0.5 * cm))
 
     
 
     # Corpo do termo conforme modelo atualizado
     elementos.append(Paragraph(
         f"Eu, {detento.nome} ({detento.IPEN}), declaro para os devidos fins, que fui devidamente instruído sobre o uso e conservação da TORNOZELEIRA ELETRÔNICA, e observarei, principalmente, o seguinte: carregamento diário por, no mínimo, <b>3 (TRÊS) horas, não utilizando extensões, benjamins, adaptadores ou similares, não recarregar durante o sono </b>, não retirar, queimar, abrir, forçar, danificar ou inutilizar o equipamento e/ou o carregador que acompanha, não praticar esporte de contato, não mergulhar com o equipamento em piscina, mar ou rio. A pessoa monitorada deverá zelar pelo dispositivo sendo responsável onerosamente pelos danos causados, em todo ou em parte, dos equipamentos de monitoramento.", estilo_justificado))
-    elementos.append(Spacer(1, 0.5 * cm))
+    elementos.append(Spacer(1, 0.2 * cm))
        
     elementos.append(Paragraph("Ainda, fui orientado(a) que, em casos de dúvidas, informações, acidente ou anomalia com o dispositivo, carregadores ou acessórios, devo entrar em contato com a Unidade de Monitoramento Eletrônico através dos números de telefones <b>(48) 3665-7322 / (48) 3665-7323 / (48) 3665- 7325 / (48) 3665-7327</b>, que funcionam 24 horas, como também informar à Unidade de Monitoramento Eletrônico qualquer necessidade de saída da área, ciente de que sem autorização judicial cometerei violação das regras de monitoramento, obedecendo <b>IMEDIATAMENTE AS ORIENTAÇÕES EMANADAS PELA UNIDADE DE MONITORAMENTO ELETRÔNICO – UME.</b>", estilo_justificado))
-    elementos.append(Spacer(1, 0.5 * cm))
+    elementos.append(Spacer(1, 0.2 * cm))
 
     elementos.append(Paragraph(
         "Tenho conhecimento das regras impostas na Decisão Judicial que concedeu o uso do monitoramento eletrônico e <b>DEVO RESPEITAR INTEGRALMENTE</b> o que foi determinado, bem como respeitar as instruções de uso do dispositivo, além de <b>fornecer número de telefone válido</b> e em funcionamento, juntamente com o endereço, mantendo esses atualizados. Sempre atender aos contatos que a Unidade de Monitoramento Eletrônico necessitar realizar e que ao fim do monitoramento eletrônico devo devolver a tornozeleira e seu carregador, que estão sob minha responsabilidade, em perfeito estado de conservação.", estilo_justificado))
-    elementos.append(Spacer(1, 0.5 * cm))
+    elementos.append(Spacer(1, 0.2 * cm))
 
     elementos.append(Paragraph(
         "Por fim, declaro estar ciente de todas as regras e condições a mim impostas e que estarei sujeito às normas da Lei se as descumprir.", estilo_justificado))
-    elementos.append(Spacer(1, 0.5 * cm))
+    elementos.append(Spacer(1, 0.2 * cm))
 
     elementos.append(Paragraph(
         "Nos termos do disposto no art. 5º da Resolução n. 5, de 10-11-2017, do Conselho Nacional de Política Criminal e Penitenciária do Ministério da Justiça e Cidadania, aceito a afixação, ao meu corpo, de dispositivo de monitoração eletrônica, sendo devidamente instalados a tornozeleira nº___________________, cinta, travas e me entregue o carregador, todos em perfeito funcionamento.", estilo_justificado))
