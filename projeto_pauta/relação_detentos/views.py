@@ -1,5 +1,10 @@
 
 import pdfplumber
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.enums import TA_JUSTIFY
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.pagesizes import A4
 import pandas as pd
 import json
 import datetime
@@ -18,6 +23,7 @@ from PyPDF2 import PdfReader, PdfWriter
 from PyPDF2.generic import NameObject, createStringObject
 import io 
 import os
+
 
 @login_required
 def add_detento(request):
@@ -324,3 +330,80 @@ def preencher_campos_pdf(input_pdf_file, output_stream, dados):
                 })
 
     writer.write(output_stream)
+
+
+def termo_monitorado(request):
+    """
+    Gera o termo de monitoramento eletrônico conforme o modelo
+    '2 - TERMO DE MONITORAMENTO ATUALIZADO 27.05.2024.pdf'.
+    """
+    detento = get_object_or_404(Relacao, IPEN=710698)
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
+
+    # Crie um estilo justificado para os parágrafos
+    estilos = getSampleStyleSheet()
+    estilo_justificado = ParagraphStyle(
+        name='Justificado',
+        parent=estilos['Normal'],
+        alignment=TA_JUSTIFY
+    )
+    estilos = getSampleStyleSheet()
+    estilo_titulo = estilos["Title"]
+    estilo_subtitulo = estilos["Heading2"]
+    estilo_normal = estilos["Normal"]
+
+    elementos = []
+
+    # Título centralizado
+    elementos.append(Paragraph("TERMO DE COMPROMISSO PARA USO DE MONITORAMENTO ELETRÔNICO", estilo_titulo))
+    elementos.append(Spacer(1, 24))
+
+   
+
+    # Corpo do termo conforme modelo atualizado
+    elementos.append(Paragraph(
+        f"Eu, {detento.nome} ({detento.IPEN}), declaro para os devidos fins, que fui devidamente instruído sobre o uso e conservação da TORNOZELEIRA ELETRÔNICA, e observarei, principalmente, o seguinte: carregamento diário por, no mínimo, <b>3 (Três) horas, não utilizando extensões, benjamins, adaptadores ou similares, não recarregar durante o sono </b>, não retirar, queimar, abrir, forçar, danificar ou inutilizar o equipamento e/ou o carregador que acompanha, não praticar esporte de contato, não mergulhar com o equipamento em piscina, mar ou rio. A pessoa monitorada deverá zelar pelo dispositivo sendo resposável onerosamente pelos danos causados, em todo ou em parte, dos equipamentos de monitoramento.", estilo_justificado))
+    elementos.append(Spacer(1, 12))
+
+    obrigacoes = [
+        "1. Manter o equipamento de monitoramento eletrônico devidamente instalado e em perfeito funcionamento, zelando por sua integridade e conservação;",
+        "2. Não retirar, violar, danificar ou permitir que terceiros manipulem o equipamento, sob pena de revogação do benefício e responsabilização criminal;",
+        "3. Manter o equipamento carregado, observando as orientações fornecidas pela equipe técnica responsável;",
+        "4. Cumprir rigorosamente os horários e limites geográficos estabelecidos pela decisão judicial;",
+        "5. Comunicar imediatamente à Central de Monitoramento qualquer anormalidade, falha técnica ou necessidade de manutenção do equipamento, pelo telefone (18) 3903-1050;",
+        "6. Atender prontamente às convocações e orientações da equipe de monitoramento e das autoridades competentes;",
+        "7. Apresentar-se sempre que solicitado para inspeção, manutenção ou substituição do equipamento;",
+        "8. Informar previamente qualquer alteração de endereço ou rotina autorizada pela Justiça."
+    ]
+    for item in obrigacoes:
+        elementos.append(Paragraph(item, estilo_normal))
+        elementos.append(Spacer(1, 4))
+
+    elementos.append(Spacer(1, 12))
+    elementos.append(Paragraph(
+        "Estou ciente de que o descumprimento de quaisquer das condições acima poderá acarretar a revogação do benefício, "
+        "com o consequente retorno ao regime prisional anterior, sem prejuízo das demais sanções legais cabíveis.", estilo_normal))
+    elementos.append(Spacer(1, 18))
+
+    elementos.append(Paragraph(
+        "Declaro, ainda, ter recebido as orientações necessárias sobre o funcionamento e cuidados com o equipamento, "
+        "bem como sobre as consequências do descumprimento das condições estabelecidas.", estilo_normal))
+    elementos.append(Spacer(1, 24))
+
+    # Data e local
+    data_atual = timezone.now().strftime('%d/%m/%Y')
+    elementos.append(Paragraph(f"Presidente Prudente, {data_atual}.", estilo_normal))
+    elementos.append(Spacer(1, 48))
+
+    # Assinatura
+    elementos.append(Paragraph("_______________________________________", estilo_normal))
+    elementos.append(Paragraph(f"{detento.nome}", estilo_normal))
+    elementos.append(Spacer(1, 24))
+    elementos.append(Paragraph("Assinatura do(a) monitorado(a)", estilo_normal))
+
+    doc.build(elementos)
+    buffer.seek(0)
+    nome_arquivo = f"termo_monitorado_{detento.IPEN}.pdf"
+    return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
