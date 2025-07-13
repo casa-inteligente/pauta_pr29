@@ -6,75 +6,57 @@
     <meta charset="UTF-8">
     <title>Login</title>
     <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- <link rel="stylesheet" href="{% static 'css/style_login.css' %}"> -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            margin: 0;
-            border: 0;
-            padding: 0;
-        }
-
-        .container {
-            margin: 0;
-            margin-top: 200px;
-        }
-
-        .flex {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            padding-right: 150px;
-        }
-
-        .card {
-            text-align: center;
-            background-color: rgb(194, 199, 199);
-            padding-top: 30px;
-            padding-bottom: 20px;
-        }
-
-        .oculta {
-            display: none;
-        }
-
-        /* rodapé */
-        .footer {
-            background-color: #343a40;
-            color: white;
-            padding: 10px 0;
-            position: fixed;
-            /* position: fixed; */
-            bottom: 0;
+        input[type="text"],
+        input[type="password"] {
+            border-width: 2px;
+            border-color: #d1d5db;
+            /* gray-300 */
+            border-radius: 0.5rem;
+            /* rounded */
+            padding: 0.5rem 0.75rem;
+            /* px-3 py-2 */
             width: 100%;
-            text-align: center;
-            height: 50px;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #3b82f6;
+            /* blue-500 */
+            outline: none;
         }
     </style>
 </head>
 
-<body class="text-center">
-    <div class="flex">
-        <div class="container">
-            <img src="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png" alt="" height="200">
-        </div>
-        <div class="container card">
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
-            <!-- <h1>Login</h1> -->
-            <form method="post">
+    <!-- Cabeçalho -->
+    <header class="bg-white shadow p-4 mb-8">
+        <div class="max-w-md mx-auto text-center">
+            <img src="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png" alt="Logo SAP"
+                class="mx-auto h-24 mb-2">
+            <h2 class="text-2xl font-semibold">Presídio Regional de Maravilha</h2>
+            <p class="text-gray-500 text-sm">Acesso ao sistema</p>
+        </div>
+    </header>
+
+    <!-- Formulário de Login -->
+    <main class="flex-1 flex items-center justify-center">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+            <h1 class="text-xl font-bold mb-6 text-center">Login</h1>
+            <form method="post" class="space-y-4">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit" class="btn btn-success">Entrar</button>
+                <button type="submit"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded transition">Entrar</button>
             </form>
         </div>
+    </main>
 
-    </div>
     <!-- Rodapé -->
-    <footer class="footer">
-        <div>
-            <p class="mb-0">2025 Presídio Regional de Maravilha &#8211; Todos os direitos reservados</p>
-        </div>
+    <footer class="mt-auto py-4 bg-gray-100 text-center text-sm text-gray-600">
+        2025 Presídio Regional de Maravilha &#8211; Todos os direitos reservados
     </footer>
 </body>
 

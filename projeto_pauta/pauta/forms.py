@@ -9,21 +9,27 @@ class PautaForm(forms.ModelForm):
         widgets = {
             'data': forms.DateInput(attrs={
                 'type': 'date',
-                'class': 'w-50 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300'
+                'class': 'date-input w-50 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300'
                 }),
             'hora': forms.TimeInput(attrs={
-                'type': 'time', 'class' : 'time-input',
-                'class': 'w-70 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-pink-300'
+                'type': 'time',
+                'class': 'w-70 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-pink-300',
+                'placeholder': 'Hora'
                 }),  # Alterar para o widget padrão de hora
             'nome': forms.TextInput(attrs={
-                'class': 'w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-red-300'
+                'class': 'w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-red-300',
+                'placeholder': 'Nome'
             }),
             'intervalo_repeticao' : forms.NumberInput(attrs={
-                'min': 1, 'placeholder': 'Dias (Não implementado)',
+                'min': 1,
+                'max': 365, 
+                'placeholder': 'Dias (Não implementado)',
                 'class': 'w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300'
             }),
             'numero_repeticoes' : forms.NumberInput(attrs={
-                'min': 1, 'placeholder': 'Número de Repetições',
+                'min': 2, 
+                'max': 50,
+                'placeholder': 'Número de Repetições',
                 'class': 'w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300'
             }),
         }
