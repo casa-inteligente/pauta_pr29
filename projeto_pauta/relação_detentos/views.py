@@ -2,8 +2,9 @@
 import pdfplumber
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.enums import TA_JUSTIFY
+from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
 from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import cm
 from reportlab.lib.pagesizes import A4
 import pandas as pd
 import json
@@ -347,63 +348,74 @@ def termo_monitorado(request):
     estilo_justificado = ParagraphStyle(
         name='Justificado',
         parent=estilos['Normal'],
-        alignment=TA_JUSTIFY
+        alignment=TA_JUSTIFY,
+        firstLineIndent=1.5 * cm,
+        fontName='Helvetica',         # Altere para a fonte desejada, ex: 'Times-Roman', 'Courier'
+        fontSize=12,                  # Altere para o tamanho desejado
+        leading=15,                   # Espaçamento entre linhas (opcional)
     )
-    estilos = getSampleStyleSheet()
-    estilo_titulo = estilos["Title"]
-    estilo_subtitulo = estilos["Heading2"]
-    estilo_normal = estilos["Normal"]
+    estilo_titulo = ParagraphStyle(
+        name='Centralizado',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold',    # Fonte para o título
+        fontSize=14,                  # Tamanho do título
+        leading=18,                   # Espaçamento entre linhas (opcional)
+    )
+    estilo_centralizado = ParagraphStyle(
+        name='centralizado',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontName='Helvetica',
+        fontSize=12,
+        leading=15,
+    )
+    estilo_normal = ParagraphStyle(
+        name='Normal',
+        parent=estilos['Normal'],
+        fontName='Helvetica',
+        fontSize=12,
+        leading=15,
+    )
 
     elementos = []
 
     # Título centralizado
-    elementos.append(Paragraph("TERMO DE COMPROMISSO PARA USO DE MONITORAMENTO ELETRÔNICO", estilo_titulo))
-    elementos.append(Spacer(1, 24))
+    elementos.append(Paragraph("<b>TERMO DE MONITORAMENTO ELETRÔNICO E DE INSTRUÇÕES AO MONITORADO PARA O USO DA TORNOZELEIRA ELETRÔNICA.</b>", estilo_titulo))
+    elementos.append(Spacer(1, 1 * cm))
 
-   
+    
 
     # Corpo do termo conforme modelo atualizado
     elementos.append(Paragraph(
-        f"Eu, {detento.nome} ({detento.IPEN}), declaro para os devidos fins, que fui devidamente instruído sobre o uso e conservação da TORNOZELEIRA ELETRÔNICA, e observarei, principalmente, o seguinte: carregamento diário por, no mínimo, <b>3 (Três) horas, não utilizando extensões, benjamins, adaptadores ou similares, não recarregar durante o sono </b>, não retirar, queimar, abrir, forçar, danificar ou inutilizar o equipamento e/ou o carregador que acompanha, não praticar esporte de contato, não mergulhar com o equipamento em piscina, mar ou rio. A pessoa monitorada deverá zelar pelo dispositivo sendo resposável onerosamente pelos danos causados, em todo ou em parte, dos equipamentos de monitoramento.", estilo_justificado))
-    elementos.append(Spacer(1, 12))
-
-    obrigacoes = [
-        "1. Manter o equipamento de monitoramento eletrônico devidamente instalado e em perfeito funcionamento, zelando por sua integridade e conservação;",
-        "2. Não retirar, violar, danificar ou permitir que terceiros manipulem o equipamento, sob pena de revogação do benefício e responsabilização criminal;",
-        "3. Manter o equipamento carregado, observando as orientações fornecidas pela equipe técnica responsável;",
-        "4. Cumprir rigorosamente os horários e limites geográficos estabelecidos pela decisão judicial;",
-        "5. Comunicar imediatamente à Central de Monitoramento qualquer anormalidade, falha técnica ou necessidade de manutenção do equipamento, pelo telefone (18) 3903-1050;",
-        "6. Atender prontamente às convocações e orientações da equipe de monitoramento e das autoridades competentes;",
-        "7. Apresentar-se sempre que solicitado para inspeção, manutenção ou substituição do equipamento;",
-        "8. Informar previamente qualquer alteração de endereço ou rotina autorizada pela Justiça."
-    ]
-    for item in obrigacoes:
-        elementos.append(Paragraph(item, estilo_normal))
-        elementos.append(Spacer(1, 4))
-
-    elementos.append(Spacer(1, 12))
-    elementos.append(Paragraph(
-        "Estou ciente de que o descumprimento de quaisquer das condições acima poderá acarretar a revogação do benefício, "
-        "com o consequente retorno ao regime prisional anterior, sem prejuízo das demais sanções legais cabíveis.", estilo_normal))
-    elementos.append(Spacer(1, 18))
+        f"Eu, {detento.nome} ({detento.IPEN}), declaro para os devidos fins, que fui devidamente instruído sobre o uso e conservação da TORNOZELEIRA ELETRÔNICA, e observarei, principalmente, o seguinte: carregamento diário por, no mínimo, <b>3 (TRÊS) horas, não utilizando extensões, benjamins, adaptadores ou similares, não recarregar durante o sono </b>, não retirar, queimar, abrir, forçar, danificar ou inutilizar o equipamento e/ou o carregador que acompanha, não praticar esporte de contato, não mergulhar com o equipamento em piscina, mar ou rio. A pessoa monitorada deverá zelar pelo dispositivo sendo responsável onerosamente pelos danos causados, em todo ou em parte, dos equipamentos de monitoramento.", estilo_justificado))
+    elementos.append(Spacer(1, 0.5 * cm))
+       
+    elementos.append(Paragraph("Ainda, fui orientado(a) que, em casos de dúvidas, informações, acidente ou anomalia com o dispositivo, carregadores ou acessórios, devo entrar em contato com a Unidade de Monitoramento Eletrônico através dos números de telefones <b>(48) 3665-7322 / (48) 3665-7323 / (48) 3665- 7325 / (48) 3665-7327</b>, que funcionam 24 horas, como também informar à Unidade de Monitoramento Eletrônico qualquer necessidade de saída da área, ciente de que sem autorização judicial cometerei violação das regras de monitoramento, obedecendo <b>IMEDIATAMENTE AS ORIENTAÇÕES EMANADAS PELA UNIDADE DE MONITORAMENTO ELETRÔNICO – UME.</b>", estilo_justificado))
+    elementos.append(Spacer(1, 0.5 * cm))
 
     elementos.append(Paragraph(
-        "Declaro, ainda, ter recebido as orientações necessárias sobre o funcionamento e cuidados com o equipamento, "
-        "bem como sobre as consequências do descumprimento das condições estabelecidas.", estilo_normal))
-    elementos.append(Spacer(1, 24))
+        "Tenho conhecimento das regras impostas na Decisão Judicial que concedeu o uso do monitoramento eletrônico e <b>DEVO RESPEITAR INTEGRALMENTE</b> o que foi determinado, bem como respeitar as instruções de uso do dispositivo, além de <b>fornecer número de telefone válido</b> e em funcionamento, juntamente com o endereço, mantendo esses atualizados. Sempre atender aos contatos que a Unidade de Monitoramento Eletrônico necessitar realizar e que ao fim do monitoramento eletrônico devo devolver a tornozeleira e seu carregador, que estão sob minha responsabilidade, em perfeito estado de conservação.", estilo_justificado))
+    elementos.append(Spacer(1, 0.5 * cm))
 
+    elementos.append(Paragraph(
+        "Por fim, declaro estar ciente de todas as regras e condições a mim impostas e que estarei sujeito às normas da Lei se as descumprir.", estilo_justificado))
+    elementos.append(Spacer(1, 0.5 * cm))
+
+    elementos.append(Paragraph(
+        "Nos termos do disposto no art. 5º da Resolução n. 5, de 10-11-2017, do Conselho Nacional de Política Criminal e Penitenciária do Ministério da Justiça e Cidadania, aceito a afixação, ao meu corpo, de dispositivo de monitoração eletrônica, sendo devidamente instalados a tornozeleira nº___________________, cinta, travas e me entregue o carregador, todos em perfeito funcionamento.", estilo_justificado))
+    elementos.append(Spacer(1, 1 * cm))
     # Data e local
-    data_atual = timezone.now().strftime('%d/%m/%Y')
-    elementos.append(Paragraph(f"Presidente Prudente, {data_atual}.", estilo_normal))
-    elementos.append(Spacer(1, 48))
+    data_atual = timezone.now().strftime('%d de %B de %Y')
+    elementos.append(Paragraph(f"Maravilha, {data_atual}.", estilo_centralizado))
+    elementos.append(Spacer(1, 1.5 * cm))
 
     # Assinatura
-    elementos.append(Paragraph("_______________________________________", estilo_normal))
-    elementos.append(Paragraph(f"{detento.nome}", estilo_normal))
-    elementos.append(Spacer(1, 24))
-    elementos.append(Paragraph("Assinatura do(a) monitorado(a)", estilo_normal))
+    elementos.append(Paragraph("_______________________________________", estilo_centralizado))
+    elementos.append(Paragraph(f"{detento.nome}", estilo_centralizado))
+    
 
     doc.build(elementos)
     buffer.seek(0)
-    nome_arquivo = f"termo_monitorado_{detento.IPEN}.pdf"
+    nome_arquivo = f"termo_monitorado_{detento.nome}.pdf"
     return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
