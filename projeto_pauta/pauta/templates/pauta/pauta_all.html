@@ -5,110 +5,128 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Pauta</title>
+    <title>{{ titulo }}</title>
     <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
-    <!--adiciona uma imagem na aba do navegador-->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'pauta/css/style_pauta_all.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
     <!-- Cabeçalho -->
-    <header class="header">
-        <div class="container">
-            <h2 class="text-center">Presídio Regional de Maravilha &#8211; Pauta</h2>
+    <header class="bg-white shadow p-4 mb-6">
+        <div class="max-w-5xl mx-auto text-center">
+            <h2 class="text-2xl font-semibold">{{ nome_unidade }} &#8211; Pauta</h2>
         </div>
     </header>
-    <div class="container btn-container" id="inicio">
-        <!-- <button type="button" class="btn btn-info btn-lg">
-            <a href="{% url 'admin:pauta_pauta_add' %}" class="text-white text-decoration-none">Inserir</a>
-        </button> -->
-        <button type="button" class="btn btn-sm">
-            <a href="{% url 'admin:index' %}" class="text-white text-decoration-none"><img
-                    src="{% static 'pauta/img/login.png' %}" height="20" alt="Login"></a>
-        </button>
-        <button type="button" class="btn btn-sm">
-            <a href="{% url 'relação_detentos:relacao_list' %}" class="text-white text-decoration-none"><img
-                    src="{% static 'pauta/img/skill.png' %}" height="20" alt="relação"></a>
-        </button>
-        <button type="button" class="btn btn-sm">
-            <a href="{% url 'pauta:index_7' %}" class="text-white text-decoration-none"><img
-                    src="{% static 'pauta/img/age-restriction-seven.png' %}" height="20" alt="seven_day"></a>
-        </button>
 
-        <button type="button" class="btn btn-sm btn-info">
-            <a href="{% url 'resenha_livro:listar_alunos' %}" class="text-white text-decoration-none">Folhas
-                resenhas</a>
+    <!-- Menu de navegação -->
+    <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
+        <a href="{% url 'admin:index' %}"
+            class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
+            <img src="{% static 'pauta/img/login.png' %}" alt="Login" class="h-4"> Admin
+        </a>
+
+        <div class="relative group">
+            <button class="bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
+                <img src="{% static 'pauta/img/skill.png' %}" alt="Relação" class="h-4"> Relações
+            </button>
+            <div class="absolute hidden group-hover:block bg-white border mt-2 rounded shadow">
+                <a href="{% url 'relação_detentos:relacao_list' %}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Relação de Detentos</a>
+                <a href="{% url 'relação_detentos:cadastro_trampo' %}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Preenchimento de Documentos</a>
+                <a href="#" class="block px-4 py-2 hover:bg-gray-100 text-sm">Geração de Ofícios</a>
+                <a href="https://github.com/casa-inteligente/doc-tornozeleiras" target="_blank"
+                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Modelo PDF (Git)</a>
+                <a href="{% url 'relação_detentos:termo_monitorado' %}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Termo monitorado</a>
+            </div>
+        </div>
+
+        <!-- Botões adicionais -->
+        <a href="{% url 'pauta:index_7' %}"
+            class="bg-yellow-600 text-white px-3 py-2 rounded text-sm hover:bg-yellow-700">
+            <img src="{% static 'pauta/img/age-restriction-seven.png' %}" alt="7 dias" class="h-4 inline"> Pauta 7 Dias
+        </a>
+
+        <a href="{% url 'estatisticas:estatisticas_view' %}"
+            class="bg-indigo-600 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700">
+            <img src="{% static 'pauta/img/estatisticas.png' %}" alt="Estatísticas" class="h-4 inline"> Estatísticas
+        </a>
+
+        <a href="{% url 'resenha_livro:listar_alunos' %}"
+            class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700">
+            <img src="{% static 'pauta/img/folha_resenha.png' %}" alt="Folha" class="h-6 inline"> Resenhas
+        </a>
+
+        <button onclick="window.print()" class="bg-gray-700 text-white px-3 py-2 rounded text-sm hover:bg-black">
+            <img src="{% static 'pauta/img/printer.png' %}" alt="Imprimir" class="h-4 inline"> Imprimir
         </button>
+    </nav>
 
+    <!-- Conteúdo Principal -->
+    <main class="max-w-7xl mx-auto grid md:grid-cols-[70%_30%] gap-6" id="topo">
 
-        <button type="button" class="btn btn-sm" onclick="window.print()"><img
-                src="{% static 'pauta/img/printer.png' %}" height="20" alt="print"></button>
-    </div>
-
-    <div class="container content">
-        <!-- Coluna para mostrar os compromissos -->
-        <div class="col table-container">
-            <table class="table table-striped table-bordered table-hover">
-                <thead class="table-dark">
-                    <tr class="text-center">
-                        <th class="border " scope="col">Data</th>
-                        <th class="border " scope="col">Hora</th>
-                        <th class="border " scope="col">Nome</th>
-                        <th class="border " scope="col">Situação</th>
+        <!-- Lista de compromissos -->
+        <section>
+            <!-- <h3 class="text-lg font-medium mb-3">Compromissos</h3> -->
+            <table class="min-w-full table-auto border-collapse border border-gray-300">
+                <thead class="bg-gray-200">
+                    <tr class="text-center text-sm">
+                        <th class="border p-2 w-[15%]">Data</th>
+                        <th class="border p-2 w-[15%]">Hora</th>
+                        <th class="border p-2 w-[35%]">Nome</th>
+                        <th class="border p-2 w-[35%]">Situação</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for pauta in pauta_all %}
-                    <tr class="text-center">
-                        <td class="border">{{ pauta.data|date:"d/m/y" }}</td>
-                        <td class="border">{{ pauta.hora }}</td>
-                        <td class="border">{{ pauta.nome|safe|linebreaksbr }}</td>
-                        <td class="border">{{ pauta.situacao|safe|linebreaksbr }}</td>
+                    <tr class="text-center text-sm hover:bg-yellow-100 odd:bg-white">
+                        <td class="border p-2">{{ pauta.data|date:"d/m/y" }}</td>
+                        <td class="border p-2">{{ pauta.hora }}</td>
+                        <td class="border p-2 text-left">{{ pauta.nome|safe|linebreaksbr }}</td>
+                        <td class="border p-2 text-left">
+                            {{ pauta.situacao|safe|linebreaksbr }}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
+        </section>
 
-        <!-- Coluna para inserir compromissos -->
-        <div class="col remo_print insercao ">
-            <h5 class="text-center">INSERIR:</h5>
-            <form method="post" action="{% url 'pauta:pauta_all' %}" class="form-situacao">
+        <!-- Inserção de novos compromissos -->
+        <section class="print:hidden">
+            <h3 class="text-lg font-medium mb-3 text-center">Inserir Compromisso</h3>
+            <form method="post" action="{% url 'pauta:pauta_all' %}"
+                class="space-y-4 bg-white p-4 border rounded shadow">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button type="submit" class="btn btn-success btn-sm">Salvar</button>
-                Lembre-se de lançar o compromisso no <a href="https://www.sc.gov.br/sap/ipen/signin" class="btn btn-sm"
-                    target="_blank">
-                    <b>i-PEN</b></a>
-            </form>
 
-        </div>
-        <!-- <aside style="background-color: aqua;">
-            Botões
-        </aside> -->
-    </div>
+                <button type="submit"
+                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Salvar</button>
+                <p class="text-sm mt-2">
+                    Lembre-se de lançar o compromisso no
+                    <a href="https://www.sc.gov.br/sap/ipen/signin" target="_blank"
+                        class="underline text-blue-600 hover:text-blue-800"><strong>i-PEN</strong></a>
+                </p>
+            </form>
+        </section>
+    </main>
 
     <!-- Rodapé -->
-    <footer class="footer">
-        <div class="container">
-            <p class="mb-0">2025 Presídio Regional de Maravilha &#8211; Todos os direitos reservados</p>
-        </div>
+    <footer class="mt-10 py-4 bg-gray-100 text-center text-sm text-gray-600">
+        2025 Presídio Regional de Maravilha &#8211; Todos os direitos reservados
     </footer>
-    <a href="#inicio" id="topo" class="remo_print"> <img src="{% static 'img/arrow-circle-up.png' %}" height="30"
-            alt="Topo do compromisso"></a>
-    <!-- Script para adicionar a hora da impressão e o link do documento -->
-    <div class="print-info">
-        <p id="print-time" style="display: inline;"></p> <br>
-        <p id="document-url" style="display: inline; margin-left: 0px;"></p>
+
+    <!-- Script impressão -->
+    <div class="hidden print:block">
+        <p id="print-time"></p>
+        <p id="document-url"></p>
     </div>
 
-
-    <!-- Bootstrap JS e dependências -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
+    <a href="#topo" class="fixed bottom-6 right-6 z-50 print:hidden">
+        <img src="{% static 'pauta/img/arrow-circle-up.png' %}" alt="Topo" class="h-10 w-10 hover:scale-110 transition">
+    </a>
 
 
     <script>
@@ -116,10 +134,10 @@
             var now = new Date();
             var printTime = now.toLocaleString();
             var documentURL = window.location.href;
-
             document.getElementById('print-time').innerText = printTime;
             document.getElementById('document-url').innerText = documentURL;
         });
+
     </script>
 </body>
 

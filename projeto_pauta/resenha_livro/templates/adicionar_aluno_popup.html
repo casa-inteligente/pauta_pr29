@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <link rel="stylesheet" href="{% static 'resenha_livro/css/style.css' %}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: rgb(241, 238, 232);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>{{ titulo }}</h1>
+        <form method="post" id="alunoForm">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <button onclick="window.close()" class="btn btn-voltar">Voltar</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                window.close();//Fecha o popup
+            }
+        });
+
+        // Enviar o formulário via AJAX
+        document.getElementById('alunoForm').onsubmit = function (event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+
+            // Selecionar o botão de envio
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true; // Desabilitar o botão
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken // Updated to use the variable
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na requisição');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.id) {
+                        window.opener.postMessage(data, '*');
+                        window.close();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Ocorreu um erro ao enviar o formulário.');
+                });
+        };
+    </script>
+</body>
+
+</html>

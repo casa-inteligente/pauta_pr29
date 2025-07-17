@@ -1,18 +1,38 @@
 
 import pdfplumber
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import cm  # Ensure cm is imported
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import pandas as pd
 import json
 import datetime
-from django.shortcuts import render, redirect
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from .models import Relacao
 from django.db.models import Case, When, Value
 from django.db.models.functions import Concat
 from django.utils import timezone
 from .process_table import process_pdf, process_regime_pdf, exctrai_date_exit
+from PyPDF2 import PdfReader, PdfWriter
+from PyPDF2.generic import NameObject, createStringObject
+import io 
+import os
+from reportlab.platypus import Image, Table, TableStyle
+from reportlab.lib import colors
+
+# Registre Arial e Arial-Bold (se quiser usar negrito)
+pdfmetrics.registerFont(TTFont('Arial', 'C:/Windows/Fonts/arial.ttf'))
+pdfmetrics.registerFont(TTFont('Arial-Bold', 'C:/Windows/Fonts/arialbd.ttf'))
+
 
 @login_required
 def add_detento(request):
@@ -75,7 +95,7 @@ def relacao_list(request):
         When(regime='SA', then=Value(4)),
     )
 
-    relacoes = Relacao.objetos.all().annotate(
+    relacoes = Relacao.objects.all().annotate(
         regime_order=regime_order
     ).order_by('regime_order', 'previsao_saida', 'local_alocacao', 'nome')
 
@@ -174,29 +194,24 @@ def salvar_alteracoes(request):
 
 
 # '''
-#     Processa o relatorio 1.8 e atualiza o banco de dados
+#     Processa o relatorio 1.9 e atualiza o banco de dados
 # '''
 
 
 def upload_pdf(request):
-    if request.method == 'POST' and request.FILES['pdfFile']:
+    if request.method == 'POST' and request.FILES.get('pdfFile'):
         pdf_file = request.FILES['pdfFile']
         fs = FileSystemStorage()
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
-        #print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
-        added_records = process_pdf(file_path)
-
-        if added_records:
-            message = 'Registros adicionados: ' + ', '.join(added_records)
-            return render(request, 'relacao_list.html', {'message': message})
+        process_pdf(file_path)
 
         return redirect('relação_detentos:relacao_list')
     return render(request, 'relacao_list.html')
 
 def upload_regime_pdf(request):
-    if request.method == 'POST' and request.FILES['regimePdfFile']:
+    if request.method == 'POST' and request.FILES.get('regimePdfFile'):
         pdf_file = request.FILES['regimePdfFile']
         fs = FileSystemStorage()
         filename = fs.save(pdf_file.name, pdf_file)
@@ -204,28 +219,264 @@ def upload_regime_pdf(request):
         #print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
         updated_records = process_regime_pdf(file_path)
+        
 
         if updated_records:
-            message = 'Regimes atualizados: ' + ', '.join(updated_records)
-            return render(request, 'relacao_list.html', {'message': message})
+            message = f'Regimes atualizados: {len(updated_records)}'
+        else:
+            message = 'Nenhum regime foi atualizado.'
 
-        return redirect('relação_detentos:relacao_list')
+        return redirect(f'/relacoes/?message={message}')
     return render(request, 'relacao_list.html')
 
 
 def exctrai_date_exit_view(request):
-    if request.method == 'POST' and request.FILES['progressaoPdfFile']:
+    if request.method == 'POST' and request.FILES.get('progressaoPdfFile'):
         pdf_file = request.FILES['progressaoPdfFile']
         fs = FileSystemStorage()
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
-        #print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
+        # print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
 
         updated_records = exctrai_date_exit(file_path)
 
         if updated_records:
-            message = 'Regimes atualizados: ' + ', '.join(updated_records)
-            return render(request, 'relacao_list.html', {'message': message})
+            message = f'Regimes atualizados: {len(updated_records)}'
+        else:
+            message = 'Nenhum regime foi atualizado.'
 
-        return redirect('relação_detentos:relacao_list')
+        return redirect(f'/relacoes/?message={message}')
     return render(request, 'relacao_list.html')
+
+
+@login_required
+def view_termo_autorizacao(request, relacao_id):
+    """
+    Visualiza o termo de autorização de trabalho do detento.
+    """
+    relacao = Relacao.objects.get(id=relacao_id)
+    if not relacao.trampo_empresa:
+        return render(request, 'termo_autorizacao.html', {
+            'error': 'Nenhum termo de autorização encontrado para este detento.'
+        })
+    
+    return render(request, 'termo_autorizacao.html', {
+        'relacao': relacao,
+        'empresa': relacao.trampo_empresa
+    })
+
+
+@login_required
+def cadastro_trampo_view(request):
+    detento = None
+    ipen = request.GET.get('ipen')
+    if ipen:
+        try:
+            detento = Relacao.objects.get(IPEN=ipen)
+        except Relacao.DoesNotExist:
+            detento = None
+    return render(request, 'cadastro_trampo.html', {'detento': detento})
+
+
+@login_required
+def gerar_termo_autorizacao(request, detento_id):
+    # Busca o detento no banco de dados
+    detento = get_object_or_404(Relacao, id=detento_id)
+
+    # Prepara os dados para preencher o PDF
+    dados = {
+        'nome': detento.nome,
+        'ipen': str(detento.IPEN),
+        'comarca': detento.comarca or 'Não informada',
+        'artigo': detento.artigo,
+        'regime': detento.get_regime_display() if hasattr(detento, 'get_regime_display') else detento.regime,
+        'empresa': detento.get_trampo_empresa_display() if hasattr(detento, 'get_trampo_empresa_display') else (detento.trampo_empresa or ''),
+        'observacoes': detento.observacoes_trabalho or '',
+        # Adicione outros campos conforme o PDF
+    }
+
+    # Caminho do PDF modelo (ajuste conforme o local real do arquivo)
+    input_pdf_path = os.path.join(settings.BASE_DIR, 'doc', 'Termo de autorização.pdf')
+    if not os.path.exists(input_pdf_path):
+        return HttpResponse("Arquivo do termo de autorização não encontrado.", status=404)
+
+    # Sobrescreve o arquivo original com os dados preenchidos
+    with open(input_pdf_path, "rb") as original_pdf:
+        output_stream = io.BytesIO()
+        preencher_campos_pdf(original_pdf, output_stream, dados)
+        output_stream.seek(0)
+        # Salva o PDF preenchido sobrescrevendo o original
+        with open(input_pdf_path, "wb") as f:
+            f.write(output_stream.getvalue())
+        output_stream.seek(0)
+
+    # Retorna o arquivo sobrescrito para download
+    response = FileResponse(output_stream, as_attachment=True, filename='termo_autorizacao.pdf')
+    return response
+
+def preencher_campos_pdf(input_pdf_file, output_stream, dados):
+    reader = PdfReader(input_pdf_file)
+    writer = PdfWriter()
+
+    # Copia todas as páginas
+    for page in reader.pages:
+        writer.add_page(page)
+
+    # Preenche os campos do formulário (os nomes das chaves de 'dados' devem ser iguais aos campos do PDF)
+    writer.update_page_form_field_values(
+        writer.pages[0],  # supondo que os campos estão na primeira página
+        dados
+    )
+
+    # Torna os campos somente leitura
+    for j in range(len(writer.pages)):
+        page = writer.pages[j]
+        if '/Annots' in page:
+            for annot in page['/Annots']:
+                annot_obj = annot.get_object()
+                annot_obj.update({
+                    NameObject("/Ff"): 1
+                })
+
+    writer.write(output_stream)
+
+
+def termo_monitorado(request):
+    """
+    Gera o termo de monitoramento eletrônico conforme o modelo
+    '2 - TERMO DE MONITORAMENTO ATUALIZADO 27.05.2024.pdf'.
+    """
+ 
+    detento = get_object_or_404(Relacao, IPEN=710698)
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=2.5 * cm,
+        leftMargin=2 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=2 * cm
+    )
+
+    # Crie um estilo justificado para os parágrafos
+    estilos = getSampleStyleSheet()
+    estilo_justificado = ParagraphStyle(
+        name='Justificado',
+        parent=estilos['Normal'],
+        alignment=TA_JUSTIFY,
+        firstLineIndent=1.5 * cm,
+        fontName='Arial',         # Altere para a fonte desejada, ex: 'Times-Roman', 'Courier', Arial
+        fontSize=11,                  # Altere para o tamanho desejado
+        leading=15,                   # Espaçamento entre linhas (opcional)
+    )
+    estilo_titulo = ParagraphStyle(
+        name='Centralizado',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontName='Arial',    # Fonte para o título
+        fontSize=11,                  # Tamanho do título
+        leading=15,                   # Espaçamento entre linhas (opcional)
+    )
+    estilo_centralizado = ParagraphStyle(
+        name='centralizado',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontName='Arial',
+        fontSize=11,
+        leading=15,
+    )
+    estilo_normal = ParagraphStyle(
+        name='Normal',
+        parent=estilos['Normal'],
+        fontName='Arial',
+        fontSize=11,
+        leading=15,
+    )
+    estilo_rodape = ParagraphStyle(
+        name='Rodape',
+        parent=estilos['Normal'],
+        fontName='Arial',
+        fontSize=10,
+        leading=5,
+    )
+
+    elementos = []
+
+    # Caminho para a imagem do cabeçalho (ajuste conforme necessário)
+    caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo.png')
+
+    # Cria a imagem do cabeçalho
+    img_logo = None
+    if os.path.exists(caminho_logo):
+        img_logo = Image(caminho_logo, width=2*cm, height=2.5*cm)
+    else:
+        img_logo = Spacer(2*cm, 2.5*cm)  # Espaço reservado caso não encontre a imagem
+
+    # Texto de identificação da instituição
+    texto_instituicao = Paragraph(
+        "<b>ESTADO DE SANTA CATARINA<br/>"
+        "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL<br/>"
+        "DEPARTAMENTO DE POLÍCIA PENAL - DPP<br/>"
+        "UNIDADE DE MONITORAMENTO ELETRÔNICO - UME</b>",
+        estilo_rodape
+    )
+
+    # Monta o cabeçalho como uma tabela com imagem à esquerda e texto à direita
+    cabecalho = Table(
+        [[img_logo, texto_instituicao]],
+        colWidths=[2.5*cm, 15*cm]
+    )
+    cabecalho.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+        ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        # ('BOX', (0, 0), (-1, -1), 0.25, colors.black),  # Descomente para ver a borda do cabeçalho
+    ]))
+
+    elementos.append(cabecalho)
+    elementos.append(Spacer(1, 0.5 * cm))
+
+    # Título centralizado
+    elementos.append(Paragraph("<b>TERMO DE MONITORAMENTO ELETRÔNICO E DE INSTRUÇÕES AO MONITORADO PARA O USO DA TORNOZELEIRA ELETRÔNICA.</b>", estilo_titulo))
+    elementos.append(Spacer(1, 0.5 * cm))
+
+    
+
+    # Corpo do termo conforme modelo atualizado
+    elementos.append(Paragraph(
+        f"Eu, {detento.nome} ({detento.IPEN}), declaro para os devidos fins, que fui devidamente instruído sobre o uso e conservação da TORNOZELEIRA ELETRÔNICA, e observarei, principalmente, o seguinte: carregamento diário por, no mínimo, <b>3 (TRÊS) horas, não utilizando extensões, benjamins, adaptadores ou similares, não recarregar durante o sono </b>, não retirar, queimar, abrir, forçar, danificar ou inutilizar o equipamento e/ou o carregador que acompanha, não praticar esporte de contato, não mergulhar com o equipamento em piscina, mar ou rio. A pessoa monitorada deverá zelar pelo dispositivo sendo responsável onerosamente pelos danos causados, em todo ou em parte, dos equipamentos de monitoramento.", estilo_justificado))
+    elementos.append(Spacer(1, 0.2 * cm))
+       
+    elementos.append(Paragraph("Ainda, fui orientado(a) que, em casos de dúvidas, informações, acidente ou anomalia com o dispositivo, carregadores ou acessórios, devo entrar em contato com a Unidade de Monitoramento Eletrônico através dos números de telefones <b>(48) 3665-7322 / (48) 3665-7323 / (48) 3665- 7325 / (48) 3665-7327</b>, que funcionam 24 horas, como também informar à Unidade de Monitoramento Eletrônico qualquer necessidade de saída da área, ciente de que sem autorização judicial cometerei violação das regras de monitoramento, obedecendo <b>IMEDIATAMENTE AS ORIENTAÇÕES EMANADAS PELA UNIDADE DE MONITORAMENTO ELETRÔNICO – UME.</b>", estilo_justificado))
+    elementos.append(Spacer(1, 0.2 * cm))
+
+    elementos.append(Paragraph(
+        "Tenho conhecimento das regras impostas na Decisão Judicial que concedeu o uso do monitoramento eletrônico e <b>DEVO RESPEITAR INTEGRALMENTE</b> o que foi determinado, bem como respeitar as instruções de uso do dispositivo, além de <b>fornecer número de telefone válido</b> e em funcionamento, juntamente com o endereço, mantendo esses atualizados. Sempre atender aos contatos que a Unidade de Monitoramento Eletrônico necessitar realizar e que ao fim do monitoramento eletrônico devo devolver a tornozeleira e seu carregador, que estão sob minha responsabilidade, em perfeito estado de conservação.", estilo_justificado))
+    elementos.append(Spacer(1, 0.2 * cm))
+
+    elementos.append(Paragraph(
+        "Por fim, declaro estar ciente de todas as regras e condições a mim impostas e que estarei sujeito às normas da Lei se as descumprir.", estilo_justificado))
+    elementos.append(Spacer(1, 0.2 * cm))
+
+    elementos.append(Paragraph(
+        "Nos termos do disposto no art. 5º da Resolução n. 5, de 10-11-2017, do Conselho Nacional de Política Criminal e Penitenciária do Ministério da Justiça e Cidadania, aceito a afixação, ao meu corpo, de dispositivo de monitoração eletrônica, sendo devidamente instalados a tornozeleira nº___________________, cinta, travas e me entregue o carregador, todos em perfeito funcionamento.", estilo_justificado))
+    elementos.append(Spacer(1, 1 * cm))
+    # Data e local
+    data_atual = timezone.now().strftime('%d de %B de %Y')
+    elementos.append(Paragraph(f"Maravilha, {data_atual}.", estilo_centralizado))
+    elementos.append(Spacer(1, 1.5 * cm))
+
+    # Assinatura
+    elementos.append(Paragraph("_______________________________________", estilo_centralizado))
+    elementos.append(Paragraph(f"{detento.nome}", estilo_centralizado))
+    
+
+    doc.build(elementos)
+    buffer.seek(0)
+    nome_arquivo = f"termo_monitorado_{detento.nome}.pdf"
+    return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)

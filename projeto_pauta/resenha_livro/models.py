@@ -3,6 +3,7 @@ from django.utils import timezone
 import re
 
 class Turma(models.Model):
+    """Modelo para turma, sempres sera duas"""
     nome = models.CharField('Nome da Turma:', max_length=100, blank=False, null=False)
 
     class Meta:
@@ -13,48 +14,73 @@ class Turma(models.Model):
         return self.nome
 
 class PeriodoLeitura(models.Model):
+    """Modelo para periodo de leitura"""
     turma = models.ForeignKey(Turma, on_delete=models.CASCADE, related_name='periodos')
     intervalo_leitura = models.CharField('Periodo de leitura:', max_length=30, blank=False, null=False)
     data_resenha = models.DateField('Data da Resenha:', blank=False, null=False)
+    aprovada = models.BooleanField('Aprovada:', default=True, blank=False, null=False)
 
     class Meta:
+        
         verbose_name = 'periodo de leitura'
         verbose_name_plural = 'Adicionar periodos de leituras'
 
     def __str__(self):
-        return f'{self.turma.nome} - {self.intervalo_leitura} - {self.data_resenha.strftime("%d/%m/%Y")}'
+        return f'{self.turma.nome} - {self.intervalo_leitura}'
 
 class Aluno(models.Model):
+    """Modelo para aluno"""
     nome = models.CharField('Nome do Aluno:', max_length=100, blank=False, null=False)
-    turma = models.ForeignKey(Turma, on_delete=models.CASCADE, related_name='alunos')
+    turma = models.ForeignKey(
+        Turma, 
+        on_delete=models.CASCADE, 
+        related_name='alunos'
+    )
+    matricula = models.CharField(
+        'Matrícula:', 
+        max_length=20, 
+        unique=True, blank=False, null=True
+    )
 
     class Meta:
         verbose_name = 'aluno'
         verbose_name_plural = 'Adicionar alunos'
 
     def __str__(self):
-        return self.nome
+        if (self.matricula == None):
+            return self.nome
+        else:
+            return f'{self.nome} - {self.matricula}'
 
 class ResenhaLivro(models.Model):
-    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE, related_name='resenhas')
+    """Modelo para resenha de livro"""
+    aluno = models.ForeignKey(
+        Aluno, 
+        on_delete=models.CASCADE, 
+        related_name='resenhas'
+        )
     nomelivro = models.CharField('Obra:', max_length=200, blank=False, null=False)
     nomeAutor = models.CharField('Autor:', max_length=100, blank=False, null=False)
     periodoLeitura = models.ForeignKey(PeriodoLeitura, on_delete=models.CASCADE, related_name='resenhas')
     nomeProfessor = models.CharField('Nome do professor(a):', max_length=150, blank=False, null=False, default='Terlene Bolzan')
+    aprovada = models.BooleanField('Aprovada', default=True)
 
     def __str__(self):
         return f'{self.aluno.nome} - {self.nomelivro}'
 
     @property
     def dataResenha(self):
+        """Modelo para data da resenha"""
         return self.periodoLeitura.data_resenha
 
     class Meta:
         ordering = ('aluno',)
         verbose_name = 'resenha de livro'
         verbose_name_plural = 'Adicionar resenhas de livros'
+        
 
     def format_data_resenha(self):
+        """Modelo para formatar a data da resenha, no modelo Brasileiro"""
         if self.dataResenha:
             return self.dataResenha.strftime('%d/%m/%Y')
     format_data_resenha.short_description = 'Data da Resenha'

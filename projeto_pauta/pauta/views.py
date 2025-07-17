@@ -25,6 +25,8 @@ def pauta_all(request):
         form = PautaForm()
     
     return render(request, 'pauta/pauta_all.html', {
+        'titulo': 'Pauta',
+        'nome_unidade': 'Presídio Regional de Maravilha',
         'pauta_all': pauta_alls,
         'form': form,
     })
@@ -34,5 +36,12 @@ def pauta_all(request):
 def index_7(request):
     today = timezone.now().date()
     end_date = today + timedelta(days=7)
-    pautas = Pauta.objects.filter(data__range=[today, end_date]).order_by('data', 'hora')
-    return render(request, 'pauta/index_7.html', {'pautas': pautas})
+    pautas = Pauta.objects.filter(
+        data__range=[today, end_date]).order_by('data', 'hora'
+    )
+    return render(request, 'pauta/index_7.html', {
+        'pautas': pautas,
+        'titulo': 'Pauta 7 dias',
+        'nome_unidade': 'Presídio Regional de Maravilha',
+        }
+    )

@@ -78,16 +78,6 @@ class PautaAdmin(SummernoteModelAdmin):
 
             for i in range(1, obj.numero_repeticoes):
                 data_atual += relativedelta(days=obj.intervalo_repeticao)
-                # if obj.intervalo_repeticao == 30:
-                #     data_atual += relativedelta(weeks=4)
-                # elif obj.intervalo_repeticao == 15:
-                #     data_atual += relativedelta(weeks=2)
-                # elif obj.intervalo_repeticao == 21:
-                #     data_atual += relativedelta(weeks=3)
-                # elif obj.intervalo_repeticao == 7:
-                #     data_atual += relativedelta(weeks=1)
-                # else:
-                #     data_atual += relativedelta(days=obj.intervalo_repeticao)
                 
                 Pauta.objects.create(
                     data=data_atual,

@@ -12,10 +12,26 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import platform
+from datetime import datetime
+import locale
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # print(f'o Dir é:\t {BASE_DIR}')
+
+
+print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')
+print(f'Usuário: {os.getlogin()} - {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
+
+if platform.system() == 'Windows':
+    # Configura o locale para Windows
+    locale.setlocale(locale.LC_ALL, 'Portuguese_Brazil.1252')
+else:
+    # Configura o locale para sistemas Unix/Linux
+    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+
+
 
 #Variaveis de ambiente para login
 LOGIN_URL = 'login'
@@ -34,7 +50,6 @@ SECRET_KEY = "django-insecure-pf=m^iio!47d@@%(%w4(-ef&cistro&@sil29+7_ao6fj22sok
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = False 
 DEBUG = True
-
 ALLOWED_HOSTS = ['127.0.0.1', '10.40.22.110']
 
 # Algumas configuraçãoes de segurança a mais
@@ -45,6 +60,7 @@ X_FRAME_OPTIONS = 'DENY'
 # Application definition
 
 INSTALLED_APPS = [
+    'simpleui', #Interface de administração
     "django.contrib.admin", #templetes de Admnistração
     "django.contrib.auth", # Regras de sautentificações
     "django.contrib.contenttypes",
@@ -57,6 +73,7 @@ INSTALLED_APPS = [
     'dbbackup', #Para realizar backup
     'relação_detentos', #Para o controle dos prazos
     'resenha_livro', #para o controle de resenhas
+    'estatisticas', #para o controle de estatisticas
 ]
 
 MIDDLEWARE = [
@@ -87,6 +104,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://10.40.22.110:8000"
     # Adicione outras origens permitidas aqui
 ]
+#Configurações do simplui
+SIMPLEUI_LOGO = 'https://sap.sc.gov.br/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-12-at-13.37.50-1.jpeg'
+
+SIMPLEUI_CONFIG = {
+    'system_keep': False,
+    'system_name': 'Policia Penal',
+    'home_info': '<h2>Bem-vindo à Policia Penal</h2>',
+}
+
 
 
 ROOT_URLCONF = "projeto_pauta.urls"
@@ -99,6 +125,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'pauta/templates'),
             os.path.join(BASE_DIR, 'relação_detentos/templates'),
             os.path.join(BASE_DIR,  'resenha_livro/templates'),
+            os.path.join(BASE_DIR, 'estatisticas/templates'),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -129,7 +156,6 @@ DATABASES = {
         'USER': 'policiapenal',
         'PASSWORD': 'pa1debatata',
         'HOST': 'localhost', #IP da aaplicação
-        #'HOST': '10.40.22.165', #IP da aaplicação
         'PORT': '5432', #Porta padrão
     },
 }
@@ -194,7 +220,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'projeto_pauta/static'),
     os.path.join(BASE_DIR, 'pauta/static'),
     os.path.join(BASE_DIR, 'relação_detentos/static'),
-    os.path.join(BASE_DIR, 'resenha_livro/static')
+    os.path.join(BASE_DIR, 'resenha_livro/static'),
+    os.path.join(BASE_DIR, 'estatisticas/static'),
 ]
 
 

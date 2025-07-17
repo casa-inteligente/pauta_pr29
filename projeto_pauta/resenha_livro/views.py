@@ -1,28 +1,36 @@
 import os
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.templatetags.static import static
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.http import require_POST
 from .models import Aluno, ResenhaLivro, PeriodoLeitura
 from .forms import ResenhaLivroForm
+#from django.contrib.auth.decorators import login_required
+from .forms import ResenhaLivroForm, AlunoForm
 from django.conf import settings
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 
 def listar_alunos(request):
-    # Agrupar alunos por período de leitura
+    """Listar todos os alunos e suas resenhas por período de leitura."""
     periodos = PeriodoLeitura.objects.all()
-    alunos_por_periodo = {
-        periodo: Aluno.objects.filter(resenhas__periodoLeitura=periodo).distinct()
+    resenhas_por_periodo = {
+        periodo: ResenhaLivro.objects.filter(periodoLeitura=periodo).select_related('aluno', 'periodoLeitura')
         for periodo in periodos
     }
-    return render(request, 'listar_alunos.html', {'alunos_por_periodo': alunos_por_periodo})
+    return render(request, 'listar_alunos.html', {'resenhas_por_periodo': resenhas_por_periodo,
+                                                  'titulo': 'Listar Alunos',
+                                                  })
 
-def imprimir_resenha(request, aluno_id):
+def imprimir_resenha(request, aluno_id, periodo_id):
+    """Renderiza a página para imprimir a resenha do aluno."""
     aluno = get_object_or_404(Aluno.objects.using('resenha_livro'), id=aluno_id)
-    resenhas = ResenhaLivro.objects.using('resenha_livro').filter(aluno=aluno)
-    linhas = range(50)
+    periodo = get_object_or_404(PeriodoLeitura, id=periodo_id)
+    resenhas = ResenhaLivro.objects.using('resenha_livro').filter(aluno=aluno, periodoLeitura=periodo)
+    linhas = range(68)
     
     return render(request, 'imprimir_resenha.html', {
+        'titulo': 'Imprimir Resenha',
         'aluno': aluno,
         'resenhas': resenhas,
         'linhas': linhas,
@@ -30,6 +38,7 @@ def imprimir_resenha(request, aluno_id):
 
 
 def adicionar_resenha(request):
+    """Adicionar uma nova resenha."""
     if request.method == 'POST':
         form = ResenhaLivroForm(request.POST)
         if form.is_valid():
@@ -37,10 +46,13 @@ def adicionar_resenha(request):
             return redirect('resenha_livro:listar_alunos')
     else:
         form = ResenhaLivroForm()
-    return render(request, 'adicionar_resenha.html', {'form': form})
+    return render(request, 'adicionar_resenha.html', {'form': form,
+                                                      'titulo': 'Adicionar Resenha',
+                                                      })
 
 def editar_resenha(request, resenha_id):
-    resenha = get_object_or_404(ResenhaLivro.objects.using('resenha_livro'), id=resenha_id)
+    """Editar uma resenha existente."""
+    resenha = get_object_or_404(ResenhaLivro, id=resenha_id)
     if request.method == 'POST':
         form = ResenhaLivroForm(request.POST, instance=resenha)
         if form.is_valid():
@@ -48,9 +60,19 @@ def editar_resenha(request, resenha_id):
             return redirect('resenha_livro:listar_alunos')
     else:
         form = ResenhaLivroForm(instance=resenha)
-    return render(request, 'editar_resenha.html', {'form': form})
+    return render(request, 'editar_resenha.html', {'form': form,
+                                                   'titulo': 'Editar Resenha',
+                                                   })
+
+def excluir_resenha(request, resenha_id):
+    """Excluir uma resenha existente."""
+    resenha = get_object_or_404(ResenhaLivro, id=resenha_id)
+    resenha.delete()
+    return redirect('resenha_livro:listar_alunos')
+
 
 def gerar_todas_resenhas(request, periodo_id):
+    """Gerar um PDF com todas as resenhas de um período de leitura."""
     # Obter o período de leitura
     periodo = get_object_or_404(PeriodoLeitura, id=periodo_id)
     resenhas = ResenhaLivro.objects.filter(periodoLeitura=periodo)
@@ -162,3 +184,19 @@ def gerar_todas_resenhas(request, periodo_id):
     # Finalizar o PDF
     pdf.save()
     return response
+
+#@require_POST
+def adicionar_aluno_popup(request):     
+    """Adicionar um novo aluno através de um popup."""
+    if request.method == 'POST':
+        form = AlunoForm(request.POST)
+        if form.is_valid():
+            aluno = form.save()
+            # Retornar o ID do aluno recém-criado para o popup
+            return JsonResponse({'id': aluno.id, 'nome': aluno.nome, 'matricula': aluno.matricula})
+    else:
+        form = AlunoForm()
+
+    return render(request, 'adicionar_aluno_popup.html', {'form': form,
+                                                          'titulo': 'Adicionar Aluno',
+                                                          })
