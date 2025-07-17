@@ -11,6 +11,9 @@ from reportlab.pdfbase.ttfonts import TTFont
 import pandas as pd
 import json
 import datetime
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+from django.templatetags.static import static
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -30,8 +33,14 @@ from reportlab.platypus import Image, Table, TableStyle
 from reportlab.lib import colors
 
 # Registre Arial e Arial-Bold (se quiser usar negrito)
-pdfmetrics.registerFont(TTFont('Arial', 'C:/Windows/Fonts/arial.ttf'))
-pdfmetrics.registerFont(TTFont('Arial-Bold', 'C:/Windows/Fonts/arialbd.ttf'))
+# Registre Arial e Arial-Bold (se quiser usar negrito)
+# Caminhos relativos à pasta base do projeto
+arial_path = os.path.join(settings.BASE_DIR, 'projeto_pauta', 'static', 'fonts', 'arial.ttf')
+arial_bold_path = os.path.join(settings.BASE_DIR, 'projeto_pauta', 'static', 'fonts', 'arialbd.ttf')
+
+# Registra as fontes
+pdfmetrics.registerFont(TTFont('Arial', arial_path))
+pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 
 
 @login_required
@@ -340,6 +349,54 @@ def preencher_campos_pdf(input_pdf_file, output_stream, dados):
 
     writer.write(output_stream)
 
+def cabecalho_e_rodape(canvas, doc):
+    from reportlab.lib.utils import ImageReader
+   
+
+    # Cabeçalho
+    canvas.saveState()
+
+    # Caminho da logo
+    caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo.png')
+    if os.path.exists(caminho_logo):
+        logo = ImageReader(caminho_logo)
+        canvas.drawImage(logo, x=doc.leftMargin, y=A4[1] - 2.7*cm, width=2*cm, height=2.5*cm, mask='auto')
+
+    # Texto institucional (centralizado à direita da logo)
+    canvas.setFont("Helvetica-Bold", 9)
+    x_texto = doc.leftMargin + 2.3 * cm
+    y_topo = A4[1] - 1.2 * cm
+
+    linhas = [
+        "ESTADO DE SANTA CATARINA",
+        "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL",
+        "DEPARTAMENTO DE POLÍCIA PENAL - DPP",
+        "UNIDADE DE MONITORAMENTO ELETRÔNICO - UME",
+        " "
+    ]
+    for i, linha in enumerate(linhas):
+        canvas.drawString(x_texto, y_topo - i * 0.4 * cm, linha)
+
+    # Rodapé
+    canvas.setFont("Helvetica-Oblique", 9)
+    canvas.setFillColor(colors.grey)
+    canvas.drawCentredString(
+        x=doc.pagesize[0] / 2,
+        y=1.5 * cm,
+        text="UNIDADE DE MONITORAMENTO ELETRÔNICO"
+    )
+    canvas.drawCentredString(
+        x=doc.pagesize[0] / 2,
+        y=1.1 * cm,
+        text="Rua Fúlvio Aducci, 1214, Estreito, Florianópolis/SC - CEP 88075-145"
+    )
+    canvas.drawCentredString(
+        x=doc.pagesize[0] / 2,
+        y=0.7 * cm,
+        text="Tel: (48) 3665-7323 / (48) 3665-7327 / monitoramento@pp.sc.gov.br"
+    )
+
+    canvas.restoreState()
 
 def termo_monitorado(request):
     """
@@ -393,54 +450,12 @@ def termo_monitorado(request):
         fontSize=11,
         leading=15,
     )
-    estilo_rodape = ParagraphStyle(
-        name='Rodape',
-        parent=estilos['Normal'],
-        fontName='Arial',
-        fontSize=10,
-        leading=5,
-    )
+
 
     elementos = []
 
-    # Caminho para a imagem do cabeçalho (ajuste conforme necessário)
-    caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo.png')
 
-    # Cria a imagem do cabeçalho
-    img_logo = None
-    if os.path.exists(caminho_logo):
-        img_logo = Image(caminho_logo, width=2*cm, height=2.5*cm)
-    else:
-        img_logo = Spacer(2*cm, 2.5*cm)  # Espaço reservado caso não encontre a imagem
-
-    # Texto de identificação da instituição
-    texto_instituicao = Paragraph(
-        "<b>ESTADO DE SANTA CATARINA<br/>"
-        "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL<br/>"
-        "DEPARTAMENTO DE POLÍCIA PENAL - DPP<br/>"
-        "UNIDADE DE MONITORAMENTO ELETRÔNICO - UME</b>",
-        estilo_rodape
-    )
-
-    # Monta o cabeçalho como uma tabela com imagem à esquerda e texto à direita
-    cabecalho = Table(
-        [[img_logo, texto_instituicao]],
-        colWidths=[2.5*cm, 15*cm]
-    )
-    cabecalho.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('ALIGN', (0, 0), (0, 0), 'LEFT'),
-        ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('LEFTPADDING', (0, 0), (-1, -1), 0),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-        # ('BOX', (0, 0), (-1, -1), 0.25, colors.black),  # Descomente para ver a borda do cabeçalho
-    ]))
-
-    elementos.append(cabecalho)
-    elementos.append(Spacer(1, 0.5 * cm))
-
+    elementos.append(Spacer(1, 2 * cm))
     # Título centralizado
     elementos.append(Paragraph("<b>TERMO DE MONITORAMENTO ELETRÔNICO E DE INSTRUÇÕES AO MONITORADO PARA O USO DA TORNOZELEIRA ELETRÔNICA.</b>", estilo_titulo))
     elementos.append(Spacer(1, 0.5 * cm))
@@ -476,7 +491,8 @@ def termo_monitorado(request):
     elementos.append(Paragraph(f"{detento.nome}", estilo_centralizado))
     
 
-    doc.build(elementos)
+    doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
+
     buffer.seek(0)
     nome_arquivo = f"termo_monitorado_{detento.nome}.pdf"
     return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
