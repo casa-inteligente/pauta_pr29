@@ -11,6 +11,9 @@ from reportlab.pdfbase.ttfonts import TTFont
 import pandas as pd
 import json
 import datetime
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+from django.templatetags.static import static
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -30,8 +33,14 @@ from reportlab.platypus import Image, Table, TableStyle
 from reportlab.lib import colors
 
 # Registre Arial e Arial-Bold (se quiser usar negrito)
-pdfmetrics.registerFont(TTFont('Arial', 'C:/Windows/Fonts/arial.ttf'))
-pdfmetrics.registerFont(TTFont('Arial-Bold', 'C:/Windows/Fonts/arialbd.ttf'))
+# Registre Arial e Arial-Bold (se quiser usar negrito)
+# Caminhos relativos à pasta base do projeto
+arial_path = os.path.join(settings.BASE_DIR, 'projeto_pauta', 'static', 'fonts', 'arial.ttf')
+arial_bold_path = os.path.join(settings.BASE_DIR, 'projeto_pauta', 'static', 'fonts', 'arialbd.ttf')
+
+# Registra as fontes
+pdfmetrics.registerFont(TTFont('Arial', arial_path))
+pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 
 
 @login_required
