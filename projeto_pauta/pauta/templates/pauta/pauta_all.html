@@ -34,12 +34,21 @@
                 <a href="{% url 'relação_detentos:relacao_list' %}"
                     class="block px-4 py-2 hover:bg-gray-100 text-sm">Relação de Detentos</a>
                 <a href="{% url 'relação_detentos:cadastro_trampo' %}"
-                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Preenchimento de Documentos</a>
+                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Termo Trabalho Externo</a>
                 <a href="#" class="block px-4 py-2 hover:bg-gray-100 text-sm">Geração de Ofícios</a>
                 <a href="https://github.com/casa-inteligente/doc-tornozeleiras" target="_blank"
                     class="block px-4 py-2 hover:bg-gray-100 text-sm">Modelo PDF (Git)</a>
-                <a href="{% url 'relação_detentos:termo_monitorado' %}"
-                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Termo monitorado</a>
+                
+                <div class="px-4 py-2 border-t">
+                    <input type="number" 
+                        id="ipen_termo_monitorado" 
+                        placeholder="Digite o IPEN" 
+                        class="w-full border rounded px-2 py-1 text-sm">
+                    <button onclick="gerarTermoMonitorado()" 
+                        class="w-full mt-2 bg-violet-300 text-white px-2 py-1 rounded text-sm hover:bg-blue-700">
+                Gerar Termo Monitorado
+            </button>
+        </div>
             </div>
         </div>
 
@@ -138,6 +147,14 @@
             document.getElementById('document-url').innerText = documentURL;
         });
 
+        function gerarTermoMonitorado() {
+            const ipen = document.getElementById('ipen_termo_monitorado').value;
+            if (ipen) {
+                window.open(`{% url 'relação_detentos:termo_monitorado' 0 %}`.replace('0', ipen), '_blank');
+            } else{
+                alert('Por favor, insira um IPEN válido.');
+            }
+        }
     </script>
 </body>
 

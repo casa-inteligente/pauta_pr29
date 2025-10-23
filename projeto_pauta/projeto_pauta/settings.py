@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import platform
-from datetime import datetime
+from datetime import datetime 
 import locale
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -50,7 +50,7 @@ SECRET_KEY = "django-insecure-pf=m^iio!47d@@%(%w4(-ef&cistro&@sil29+7_ao6fj22sok
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = False 
 DEBUG = True
-ALLOWED_HOSTS = ['127.0.0.1', '10.40.22.110']
+ALLOWED_HOSTS = ['127.0.0.1', '10.40.22.46']
 
 # Algumas configuraçãoes de segurança a mais
 X_FRAME_OPTIONS = 'DENY'
@@ -101,7 +101,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
-    "http://10.40.22.110:8000"
+    "http://10.40.22.46:8000"
     # Adicione outras origens permitidas aqui
 ]
 #Configurações do simplui
@@ -155,7 +155,7 @@ DATABASES = {
         'NAME': 'resenha_livro',
         'USER': 'policiapenal',
         'PASSWORD': 'pa1debatata',
-        'HOST': 'localhost', #IP da aaplicação
+        'HOST': 'localhost', #IP da aplicação
         'PORT': '5432', #Porta padrão
     },
 }
