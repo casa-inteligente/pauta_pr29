@@ -10,11 +10,11 @@ class Relacao(models.Model):
     
     empresas_conveniadas = (
         ('ROTOPLAST', 'ROTOPLAST'),
-        ('CHAMALUX', 'CHAMALUX'),
+        ('BRUNA', 'BRUNA MALHAS'),
         ('PREFEITURA', 'PREFEITURA'),
         ('PRESÍDIO', 'PRESÍDIO'),
         ('OLIVEIRA', 'CONSTRUTORA OLIVEIRA'),
-        ('REALCE', 'REALCE'),
+        ('REALCE', 'FOGÕES REALCE'),
         ('SEPAT', 'SEPAT'),
     )
 

@@ -43,55 +43,8 @@ pdfmetrics.registerFont(TTFont('Arial', arial_path))
 pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 
 
-@login_required
-def add_detento(request):
-    '''
-    Responsavel pela adicão de novos cadastros
-    '''
-    if request.method == 'POST':
-        IPEN = request.POST.get('IPEN')
-        nome = request.POST.get('nome')
-        comarca = request.POST.get('comarca')
-        artigo = request.POST.get('artigo')
-        ingresso = request.POST.get('ingresso')
-        regime = request.POST.get('regime')
-        pena = request.POST.get('pena', '-')
-        local_alocacao = request.POST.get('local_alocacao')
-        previsao_saida = request.POST.get('previsao_saida')
-        observacao = request.POST.get('observacao')
-        atualizado = request.POST.get('atualizado')
 
-        # Converter datas para o formato correto
-        ingresso = datetime.datetime.strptime(ingresso, '%Y-%m-%d').date()
-        if previsao_saida:
-            previsao_saida = datetime.datetime.strptime(previsao_saida, '%Y-%m-%d').date()
-        else:
-            previsao_saida = None
-        if atualizado:
-            atualizado = datetime.datetime.strptime(atualizado, '%Y-%m-%d').date()
-        else:
-            atualizado = None
-
-        # Criar novo registro no banco de dados
-        Relacao.objects.create(
-            IPEN=IPEN,
-            nome=nome,
-            comarca=comarca,
-            artigo=artigo,
-            ingresso=ingresso,
-            regime=regime,
-            pena=pena,
-            local_alocacao=local_alocacao,
-            previsao_saida=previsao_saida,
-            observacoes=observacao,
-            atualizado=atualizado
-        )
-
-        return redirect('relação_detentos:relacao_list')
-
-    return render(request, 'relacao_list.html')
-
-@login_required
+# @login_required
 def relacao_list(request):
 
     '''
@@ -275,79 +228,157 @@ def view_termo_autorizacao(request, relacao_id):
     })
 
 
-@login_required
+
 def cadastro_trampo_view(request):
     detento = None
+    empresa_conveniada_nome = None
     ipen = request.GET.get('ipen')
+    empresa_conveniada = request.GET.get('empresa_conveniada')
+    
+    # Busca o detento se IPEN foi fornecido
     if ipen:
         try:
             detento = Relacao.objects.get(IPEN=ipen)
         except Relacao.DoesNotExist:
             detento = None
-    return render(request, 'cadastro_trampo.html', {'detento': detento})
+    
+    # Busca o nome da empresa conveniada se foi selecionada
+    if empresa_conveniada:
+        empresas_dict = dict(Relacao.empresas_conveniadas)
+        empresa_conveniada_nome = empresas_dict.get(empresa_conveniada, empresa_conveniada)
+    
+    return render(request, 'cadastro_trampo.html', {
+        'detento': detento, 
+        'empresa_conveniada': empresa_conveniada,
+        'empresa_conveniada_nome': empresa_conveniada_nome,
+        'empresas_conveniadas': Relacao.empresas_conveniadas
+    })
 
 
-@login_required
-def gerar_termo_autorizacao(request, detento_id):
+
+def gerar_termo_autorizacao(request, detento_id, empresa_conveniada):
     # Busca o detento no banco de dados
     detento = get_object_or_404(Relacao, id=detento_id)
 
-    # Prepara os dados para preencher o PDF
-    dados = {
-        'nome': detento.nome,
-        'ipen': str(detento.IPEN),
-        'comarca': detento.comarca or 'Não informada',
-        'artigo': detento.artigo,
-        'regime': detento.get_regime_display() if hasattr(detento, 'get_regime_display') else detento.regime,
-        'empresa': detento.get_trampo_empresa_display() if hasattr(detento, 'get_trampo_empresa_display') else (detento.trampo_empresa or ''),
-        'observacoes': detento.observacoes_trabalho or '',
-        # Adicione outros campos conforme o PDF
-    }
+    # Busca o nome completo da empresa
+    empresas_dict = dict(Relacao.empresas_conveniadas)
+    empresa_nome = empresas_dict.get(empresa_conveniada, empresa_conveniada)
+    
+    # Se não foi passada empresa pela URL, usa a do detento
+    if empresa_conveniada == "Não informada" or not empresa_conveniada:
+        if hasattr(detento, 'trampo_empresa') and detento.trampo_empresa:
+            empresa_nome = detento.get_trampo_empresa_display()
+        else:
+            empresa_nome = "Empresa não informada"
 
-    # Caminho do PDF modelo (ajuste conforme o local real do arquivo)
-    input_pdf_path = os.path.join(settings.BASE_DIR, 'doc', 'Termo de autorização.pdf')
-    if not os.path.exists(input_pdf_path):
-        return HttpResponse("Arquivo do termo de autorização não encontrado.", status=404)
-
-    # Sobrescreve o arquivo original com os dados preenchidos
-    with open(input_pdf_path, "rb") as original_pdf:
-        output_stream = io.BytesIO()
-        preencher_campos_pdf(original_pdf, output_stream, dados)
-        output_stream.seek(0)
-        # Salva o PDF preenchido sobrescrevendo o original
-        with open(input_pdf_path, "wb") as f:
-            f.write(output_stream.getvalue())
-        output_stream.seek(0)
-
-    # Retorna o arquivo sobrescrito para download
-    response = FileResponse(output_stream, as_attachment=True, filename='termo_autorizacao.pdf')
-    return response
-
-def preencher_campos_pdf(input_pdf_file, output_stream, dados):
-    reader = PdfReader(input_pdf_file)
-    writer = PdfWriter()
-
-    # Copia todas as páginas
-    for page in reader.pages:
-        writer.add_page(page)
-
-    # Preenche os campos do formulário (os nomes das chaves de 'dados' devem ser iguais aos campos do PDF)
-    writer.update_page_form_field_values(
-        writer.pages[0],  # supondo que os campos estão na primeira página
-        dados
+    # Criar novo PDF
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=2.5 * cm,
+        leftMargin=2 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=2 * cm
     )
 
-    # Torna os campos somente leitura
-    for j in range(len(writer.pages)):
-        page = writer.pages[j]
-        if '/Annots' in page:
-            for annot in page['/Annots']:
-                annot_obj = annot.get_object()
-                annot_obj.update({
-                    NameObject("/Ff"): 1
-                })
+    # Estilos
+    estilos = getSampleStyleSheet()
+    estilo_titulo = ParagraphStyle(
+        name='Titulo',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontName='Arial-Bold',
+        fontSize=12,
+        leading=15,
+        spaceAfter=20
+    )
+    
+    estilo_justificado = ParagraphStyle(
+        name='Justificado',
+        parent=estilos['Normal'],
+        alignment=TA_JUSTIFY,
+        firstLineIndent=1.5 * cm,
+        fontName='Arial',
+        fontSize=11,
+        leading=15,
+        spaceAfter=12
+    )
 
-    writer.write(output_stream)
+    estilo_centralizado = ParagraphStyle(
+        name='Centralizado',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontName='Arial',
+        fontSize=11,
+        leading=15
+    )
+
+    elementos = []
+
+    # Espaço do cabeçalho
+    elementos.append(Spacer(1, 2 * cm))
+
+    # Título
+    elementos.append(Paragraph("<b>Termo de autorização e ciência das condições para ingresso no trabalho</b>", estilo_titulo))
+    elementos.append(Spacer(1, 0.5 * cm))
+
+    # Parágrafo 1
+    paragrafo1 = f"""No Presídio Regional de Maravilha, nesta data, o interno <b>{detento.nome}</b>, <b>{detento.IPEN}</b>, 
+    participou de instrução e ciência dos termos e condições para ingresso no trabalho externo junto à Empresa <b>{empresa_nome}</b>, 
+    na qual passará trabalhar."""
+    elementos.append(Paragraph(paragrafo1, estilo_justificado))
+
+    # Parágrafo 2
+    paragrafo2 = """Neste ato, foi informado ao apenado que a prestação de trabalho externo, a ser autorizada pela direção do estabelecimento, 
+    dependerá de aptidão, disciplina e responsabilidade (art. 37 da LEP), e que revogar-se-á a autorização de trabalho externo ao preso 
+    que vier a praticar fato definido como crime, for punido por falta grave, ou tiver comportamento contrário aos requisitos 
+    (parágrafo único do art. 37 da LEP)."""
+    elementos.append(Paragraph(paragrafo2, estilo_justificado))
+
+    # Parágrafo 3
+    paragrafo3 = """O interno foi informado das condições do trabalho e necessidade de disciplina que consiste na colaboração com a ordem, 
+    na obediência às determinações das autoridades e seus agentes e no desempenho do trabalho (art. 44 da LEP). Nos termos do artigo 39, 
+    II e V foi cientificado ainda que é um dever a obediência ao servidor e respeito a qualquer pessoa com quem deva relacionar-se 
+    bem como a execução do trabalho, das tarefas e das ordens recebidas de forma geral."""
+    elementos.append(Paragraph(paragrafo3, estilo_justificado))
+
+    # Parágrafo 4
+    paragrafo4 = """Dentre as ordens recebidas, destaca-se a impossibilidade de retirar-se do local de trabalho sem autorização de sua chefia 
+    ou encarregado imediato ou geral, permanecer no refeitório sob vigilância da pessoa responsável durante e após o almoço até o horário 
+    de começar a trabalhar, a impossibilidade de ingerir qualquer tipo de bebida alcoólica, o uso de qualquer telefone fixo ou móvel 
+    para contato externo, bem como acesso a redes sociais como facebook, twitter, x etc., não manter contato com pessoas que nada tenham 
+    relação com o trabalho para o qual foi autorizado e outras situações similares."""
+    elementos.append(Paragraph(paragrafo4, estilo_justificado))
+
+    # Parágrafo 5
+    paragrafo5 = """Nos termos do art. 36, § 3º da LEP, declaro que aceito as condições impostas acima e mediante minha assinatura, 
+    concordo com a prestação de trabalho em entidade privada, consentimento expresso que faço abaixo, mediante o Diretor do estabelecimento 
+    penal que atesta ser ato voluntário e de meu interesse."""
+    elementos.append(Paragraph(paragrafo5, estilo_justificado))
+
+    # Parágrafo 6
+    paragrafo6 = """Esse termo não isenta o interno das obrigações dispostas em lei ou outras necessidades ou faltas que possa cometer 
+    que não estejam aqui expressas."""
+    elementos.append(Paragraph(paragrafo6, estilo_justificado))
+
+    elementos.append(Spacer(1, 1 * cm))
+
+    # Data
+    data_atual = timezone.now().strftime('%d de %B de %Y')
+    elementos.append(Paragraph(f"Maravilha, {data_atual}.", estilo_centralizado))
+    elementos.append(Spacer(1, 2 * cm))
+
+    # Assinatura
+    elementos.append(Paragraph("_______________________________________", estilo_centralizado))
+    elementos.append(Paragraph(f"{detento.nome}", estilo_centralizado))
+
+    # Gerar o PDF
+    doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
+
+    buffer.seek(0)
+    nome_arquivo = f'termo_autorizacao_{detento.nome}.pdf'
+    return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
 
 def cabecalho_e_rodape(canvas, doc):
     from reportlab.lib.utils import ImageReader
@@ -360,7 +391,7 @@ def cabecalho_e_rodape(canvas, doc):
     caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo.png')
     if os.path.exists(caminho_logo):
         logo = ImageReader(caminho_logo)
-        canvas.drawImage(logo, x=doc.leftMargin, y=A4[1] - 2.7*cm, width=2*cm, height=2.5*cm, mask='auto')
+        canvas.drawImage(logo, x=doc.leftMargin, y=A4[1] - 3*cm, width=2*cm, height=2.5*cm, mask='auto')
 
     # Texto institucional (centralizado à direita da logo)
     canvas.setFont("Helvetica-Bold", 9)
@@ -370,7 +401,56 @@ def cabecalho_e_rodape(canvas, doc):
     linhas = [
         "ESTADO DE SANTA CATARINA",
         "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL",
-        "DEPARTAMENTO DE POLÍCIA PENAL - DPP",
+        "DEPARTAMENTO DE POLÍCIA PENAL",
+        "PRESÍDIO REGIONAL DE MARAVILHA",
+        "CHEFIA DE SEGURANÇA"
+    ]
+    for i, linha in enumerate(linhas):
+        canvas.drawString(x_texto, y_topo - i * 0.4 * cm, linha)
+
+    # Rodapé
+    canvas.setFont("Helvetica-Oblique", 9)
+    canvas.setFillColor(colors.grey)
+    canvas.drawCentredString(
+        x=doc.pagesize[0] / 2,
+        y=1.5 * cm,
+        text="PRESÍDIO REGIONAL DE MARAVILHA"
+    )
+    canvas.drawCentredString(
+        x=doc.pagesize[0] / 2,
+        y=1.1 * cm,
+        text="Avenida Sul Brasil, 1607, Novo Bairro, Maravilha/SC - CEP 89874-000"
+    )
+    canvas.drawCentredString(
+        x=doc.pagesize[0] / 2,
+        y=0.7 * cm,
+        text="Telefone: (49) 3664-6672 / pr29@pp.sc.gov.br"
+    )
+
+    canvas.restoreState()
+
+def cabecalho_e_rodape_ume(canvas, doc):
+    from reportlab.lib.utils import ImageReader
+   
+
+    # Cabeçalho
+    canvas.saveState()
+
+    # Caminho da logo
+    caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo.png')
+    if os.path.exists(caminho_logo):
+        logo = ImageReader(caminho_logo)
+        canvas.drawImage(logo, x=doc.leftMargin, y=A4[1] - 3*cm, width=2*cm, height=2.5*cm, mask='auto')
+
+    # Texto institucional (centralizado à direita da logo)
+    canvas.setFont("Helvetica-Bold", 9)
+    x_texto = doc.leftMargin + 2.3 * cm
+    y_topo = A4[1] - 1.2 * cm
+
+    linhas = [
+        "ESTADO DE SANTA CATARINA",
+        "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL",
+        "DEPARTAMENTO DE POLÍCIA PENAL",
         "UNIDADE DE MONITORAMENTO ELETRÔNICO - UME",
         " "
     ]
@@ -398,13 +478,14 @@ def cabecalho_e_rodape(canvas, doc):
 
     canvas.restoreState()
 
-def termo_monitorado(request):
+
+def termo_monitorado(request, detento_ipen):
     """
     Gera o termo de monitoramento eletrônico conforme o modelo
     '2 - TERMO DE MONITORAMENTO ATUALIZADO 27.05.2024.pdf'.
     """
- 
-    detento = get_object_or_404(Relacao, IPEN=710698)
+    IPEN = detento_ipen
+    detento = get_object_or_404(Relacao, IPEN=IPEN)
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -491,7 +572,7 @@ def termo_monitorado(request):
     elementos.append(Paragraph(f"{detento.nome}", estilo_centralizado))
     
 
-    doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
+    doc.build(elementos, onFirstPage=cabecalho_e_rodape_ume, onLaterPages=cabecalho_e_rodape_ume)
 
     buffer.seek(0)
     nome_arquivo = f"termo_monitorado_{detento.nome}.pdf"
