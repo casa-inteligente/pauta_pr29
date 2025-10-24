@@ -254,7 +254,9 @@ def cadastro_trampo_view(request):
         'empresas_conveniadas': Relacao.empresas_conveniadas
     })
 
-
+def gerar_termo_kit_higiene(request):
+    print("Gerando termo kit higiene...")
+    return redirect('pauta:pauta_all')
 
 def gerar_termo_autorizacao(request, detento_id, empresa_conveniada):
     # Busca o detento no banco de dados

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import relacao_list, salvar_alteracoes, upload_pdf, upload_regime_pdf, exctrai_date_exit_view, cadastro_trampo_view, gerar_termo_autorizacao, termo_monitorado  # Importe a nova view
+from .views import relacao_list, salvar_alteracoes, upload_pdf, upload_regime_pdf, exctrai_date_exit_view, cadastro_trampo_view, gerar_termo_autorizacao, termo_monitorado, gerar_termo_kit_higiene
 
 app_name = 'relação_detentos'
 
@@ -13,4 +13,5 @@ urlpatterns = [
     path('cadastro_trampo/', cadastro_trampo_view, name='cadastro_trampo'),
     path('gerar-termo/<int:detento_id>/<str:empresa_conveniada>/', gerar_termo_autorizacao, name='gerar_termo_autorizacao'),
     path('termo-monitorado/<int:detento_ipen>/', termo_monitorado, name='termo_monitorado'),
+    path('termo-kit-higiene/', gerar_termo_kit_higiene, name='gerar_termo_kit_higiene'),
 ]

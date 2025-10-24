@@ -28,7 +28,7 @@
 
         <div class="relative group">
             <button class="bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
-                <img src="{% static 'pauta/img/skill.png' %}" alt="Relação" class="h-4"> Relações
+                <img src="{% static 'pauta/img/skill.png' %}" alt="Relação" class="h-4"> Relações <img src="{% static 'relação_detentos/img/drop-down-menu.png' %}" alt="Seta" class="h-3">
             </button>
             <div class="absolute hidden group-hover:block bg-white border mt-2 rounded shadow">
                 <a href="{% url 'relação_detentos:relacao_list' %}"
@@ -36,8 +36,8 @@
                 <a href="{% url 'relação_detentos:cadastro_trampo' %}"
                     class="block px-4 py-2 hover:bg-gray-100 text-sm">Termo Trabalho Externo</a>
                 <a href="#" class="block px-4 py-2 hover:bg-gray-100 text-sm">Geração de Ofícios</a>
-                <a href="https://github.com/casa-inteligente/doc-tornozeleiras" target="_blank"
-                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Modelo PDF (Git)</a>
+                <a href="{% url 'relação_detentos:gerar_termo_kit_higiene' %}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Termo Kit Higiene</a>
                 
                 <div class="px-4 py-2 border-t">
                     <input type="number" 
