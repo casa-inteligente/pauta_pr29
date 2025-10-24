@@ -1,5 +1,5 @@
-
 import pdfplumber
+
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT, TA_RIGHT
@@ -8,12 +8,13 @@ from reportlab.lib.units import cm  # Ensure cm is imported
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
+
 import pandas as pd
 import json
 import datetime
+
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.templatetags.static import static
@@ -23,14 +24,19 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
-from .models import Relacao
+
 from django.db.models import Case, When, Value
 from django.db.models.functions import Concat
 from django.utils import timezone
+
 from .process_table import process_pdf, process_regime_pdf, exctrai_date_exit
+from .models import Relacao, DescricaoKitHigiene
+
 from PyPDF2 import PdfReader, PdfWriter
 from PyPDF2.generic import NameObject, createStringObject
+
 import io 
+
 import os
 
 
@@ -289,7 +295,7 @@ def gerar_termo_kit_higiene(request):
         fontName='Arial-Bold',
         fontSize=12,
         leading=15,
-        spaceAfter=20
+        spaceAfter=12
     )
 
     
@@ -312,11 +318,15 @@ def gerar_termo_kit_higiene(request):
         leading=15
     )
 
+    descricao_kit_higiene = DescricaoKitHigiene.objects.first().descricao
+    checked_data = DescricaoKitHigiene.objects.first().checked_data_recebido
+    checked_kit = DescricaoKitHigiene.objects.first().checked_kit_higiene
+
     elementos = []
 
     for i, detento in enumerate(detentos):
         # Espaço do cabeçalho
-        elementos.append(Spacer(1, 2 * cm))
+        elementos.append(Spacer(1, 1.5 * cm))
         
         # Título
         elementos.append(Paragraph("<b>TERMO DE RECEBIMENTO</b>", estilo_titulo))
@@ -349,12 +359,20 @@ def gerar_termo_kit_higiene(request):
         ])
 
         # Linha 3: Duas colunas - X e Kit higiene
-        tabela_dados.append([
-            Paragraph("X", estilo_centralizado),
-            Paragraph("Kit higiene", estilo_justificado),
-            "",  # Célula vazia
-            ""   # Célula vazia
-        ])
+        if checked_kit:
+            tabela_dados.append([
+                Paragraph("X", estilo_centralizado),
+                Paragraph("Kit higiene", estilo_justificado),
+                "",  # Célula vazia
+                ""   # Célula vazia
+            ])
+        else:
+            tabela_dados.append([
+                "",
+                Paragraph("Kit higiene", estilo_justificado),
+                "",  # Célula vazia
+                ""   # Célula vazia
+            ])
 
         # Adicione mais linhas conforme necessário (continuando a estrutura anterior)
         # Linha 4: Uniforme
@@ -375,15 +393,22 @@ def gerar_termo_kit_higiene(request):
 
         # Linha 6: Observação sobre uniforme
         tabela_dados.append([
-            Paragraph("Observação:", estilo_justificado),
+            Paragraph("Observação:", estilo_subtitulo),
+            ""
+            "",  # Célula vazia
+            ""   # Célula vazia
+        ])
+
+        tabela_dados.append([
             Paragraph("Se uniforme, quantidade e tamanho.", estilo_justificado),
+            "",
             "",  # Célula vazia
             ""   # Célula vazia
         ])
 
         # Linha 7: Descrição do kit
         tabela_dados.append([
-            Paragraph("KIT HIGIENE: 01 ESCOVA DE DENTE, 01 CREME DENTAL, 03 ROLOS DE PAPEL HIGIÊNICO, 04 BARBEADORES, 01 DESODORANTE LIQUIDO E 01 SABONETE LIQUIDO.", estilo_justificado),
+            Paragraph(f"{descricao_kit_higiene}", estilo_justificado),
             "",
             "",  # Célula vazia
             ""   # Célula vazia
@@ -393,11 +418,11 @@ def gerar_termo_kit_higiene(request):
         tabela = Table(tabela_dados, colWidths=col_widths, hAlign='LEFT')
         tabela.setStyle(TableStyle([
             ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('LEFTPADDING', (0, 0), (-1, -1), 6),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-            ('TOPPADDING', (0, 0), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 3),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
             ('SPAN', (1, 0), (3, 0)),  # Mesclar colunas 1-2 na linha 1
             # Mesclar células vazias para melhor aparência
             ('SPAN', (2, 1), (3, 1)),
@@ -407,14 +432,19 @@ def gerar_termo_kit_higiene(request):
             ('SPAN', (1, 4), (3, 4)),  # Mesclar colunas 3-4 na linha 5
             ('SPAN', (1, 5), (3, 5)),  # Mesclar colunas 3-4 na linha 6
             ('SPAN', (0, 6), (3, 6)),  # Mesclar colunas 3-4 na linha 7
+            ('SPAN', (0, 7), (3, 7)),  # Mesclar colunas 3-4 na linha 7
         ]))
 
         elementos.append(tabela)
         elementos.append(Spacer(1, 1 * cm))
         
         # Data
-        elementos.append(Paragraph(f"Recebido em ____/_______/_______", estilo_justificado))
-        elementos.append(Spacer(1, 0.75 * cm))
+        if checked_data:
+            elementos.append(Paragraph(f"Recebido em {data_atual}", estilo_justificado))
+            elementos.append(Spacer(1, 0.75 * cm))
+        else:
+            elementos.append(Paragraph(f"Recebido em _____/_______/_______", estilo_justificado))
+            elementos.append(Spacer(1, 0.75 * cm))
 
         # Assinatura
         elementos.append(Paragraph("_______________________________________", estilo_justificado))
@@ -582,7 +612,7 @@ def cabecalho_e_rodape(canvas, doc):
         canvas.drawImage(logo, x=doc.leftMargin, y=A4[1] - 3.2*cm, width=2*cm, height=2.5*cm, mask='auto')
 
     # Texto institucional (centralizado à direita da logo)
-    canvas.setFont("Helvetica-Bold", 9)
+    canvas.setFont("Helvetica", 9)
     x_texto = doc.leftMargin + 2.3 * cm
     y_topo = A4[1] - 1.2 * cm
 
@@ -591,7 +621,7 @@ def cabecalho_e_rodape(canvas, doc):
         "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL",
         "DEPARTAMENTO DE POLÍCIA PENAL",
         "PRESÍDIO REGIONAL DE MARAVILHA",
-        "CHEFIA DE SEGURANÇA"
+        ""
     ]
     for i, linha in enumerate(linhas):
         canvas.drawString(x_texto, y_topo - i * 0.4 * cm, linha)
@@ -601,17 +631,22 @@ def cabecalho_e_rodape(canvas, doc):
     canvas.setFillColor(colors.grey)
     canvas.drawCentredString(
         x=doc.pagesize[0] / 2,
-        y=1.5 * cm,
-        text="PRESÍDIO REGIONAL DE MARAVILHA"
+        y=2.1 * cm,
+        text="POLÍCIA PENAL DE SANTA CATARINA"
     )
     canvas.drawCentredString(
         x=doc.pagesize[0] / 2,
-        y=1.1 * cm,
+        y=1.7 * cm,
+        text="Presídio Regional de Maravilha"
+    )
+    canvas.drawCentredString(
+        x=doc.pagesize[0] / 2,
+        y=1.3 * cm,
         text="Avenida Sul Brasil, 1607, Novo Bairro, Maravilha/SC - CEP 89874-000"
     )
     canvas.drawCentredString(
         x=doc.pagesize[0] / 2,
-        y=0.7 * cm,
+        y=0.9 * cm,
         text="Telefone: (49) 3664-6672 / pr29@pp.sc.gov.br"
     )
 

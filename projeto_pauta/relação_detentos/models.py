@@ -3,11 +3,33 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
+class DescricaoKitHigiene(models.Model):
+    descricao = models.CharField(
+        verbose_name='Descrição do item',
+        max_length=200,
+        blank=False,
+        null=False
+    )
+    checked_data_recebido = models.BooleanField(
+        verbose_name='Data recebido, preenchido',
+        default=False
+    )
+    checked_kit_higiene = models.BooleanField(
+        verbose_name='Kit de higiene, com "X"',
+        default=True
+    )
 
+    def __str__(self):
+        return self.descricao
+
+    class Meta:
+        ordering = ('descricao',)
+        verbose_name = 'descrição do kit de higiene'
+        verbose_name_plural = 'Descrições do kit de higiene'
 
 # Create your models here.
 class Relacao(models.Model):
-    
+   
     empresas_conveniadas = (
         ('ROTOPLAST', 'ROTOPLAST'),
         ('BRUNA', 'BRUNA MALHAS'),

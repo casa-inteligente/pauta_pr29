@@ -167,6 +167,9 @@ DATABASE_ROUTERS = ['projeto_pauta.routers.NovoBancoRouter']
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
+    {#Criado Autentificador próprio
+        'NAME': 'pauta.validators.MinimumNumericPasswordValidator',
+    },
     # {
     #     "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     # },
@@ -179,11 +182,8 @@ AUTH_PASSWORD_VALIDATORS = [
     # {
     #     "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     # },
-    # {
-    #     "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    # },
-    {#Criado Autentificador próprio
-        'NAME': 'pauta.validators.MinimumNumericPasswordValidator',
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
