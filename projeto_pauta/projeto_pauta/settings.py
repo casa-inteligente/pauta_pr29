@@ -157,6 +157,11 @@ DATABASES = {
         'PASSWORD': 'pa1debatata',
         'HOST': 'localhost', #IP da aplicação
         'PORT': '5432', #Porta padrão
+        'CONN_MAX_AGE': 600,
+        'ATOMIC_REQUESTS': False,
+        'OPTIONS': {
+            'connect_timeout': 10,
+        }
     },
 }
 
@@ -182,9 +187,9 @@ AUTH_PASSWORD_VALIDATORS = [
     # {
     #     "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     # },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    #{
+    #     "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    # },
 ]
 
 

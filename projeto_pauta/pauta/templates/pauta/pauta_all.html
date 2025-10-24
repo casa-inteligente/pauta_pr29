@@ -22,6 +22,9 @@
 
     <!-- Menu de navegação -->
     <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
+        <button onclick="alert('Para utilizar a LISTA DE FUNCIONALIDADES, atualize os dados através de relatórios do IPEN-1_9. Acesse a RELAÇÃO DE DETENTOS e importe os .pdf(Adicionar/Atualizar)')" class="bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
+            <img src="{% static 'pauta/img/help.svg' %}" alt="Ajuda" class="h-5">
+        </button>
         <a href="{% url 'admin:index' %}"
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
             <img src="{% static 'pauta/img/login.png' %}" alt="Login" class="h-4"> Admin
