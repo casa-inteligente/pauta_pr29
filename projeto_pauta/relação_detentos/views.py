@@ -8,6 +8,9 @@ from reportlab.lib.units import cm  # Ensure cm is imported
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import Image, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.pdfgen import canvas
 import pandas as pd
 import json
 import datetime
@@ -29,8 +32,7 @@ from PyPDF2 import PdfReader, PdfWriter
 from PyPDF2.generic import NameObject, createStringObject
 import io 
 import os
-from reportlab.platypus import Image, Table, TableStyle
-from reportlab.lib import colors
+
 
 # Registre Arial e Arial-Bold (se quiser usar negrito)
 # Registre Arial e Arial-Bold (se quiser usar negrito)
@@ -211,7 +213,7 @@ def exctrai_date_exit_view(request):
     return render(request, 'relacao_list.html')
 
 
-@login_required
+
 def view_termo_autorizacao(request, relacao_id):
     """
     Visualiza o termo de autorização de trabalho do detento.
@@ -256,7 +258,44 @@ def cadastro_trampo_view(request):
 
 def gerar_termo_kit_higiene(request):
     print("Gerando termo kit higiene...")
-    return redirect('pauta:pauta_all')
+    detentos = Relacao.objects.all().order_by('nome')
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="kit_higiene_{datetime.date.today()}.pdf"'
+
+    # confiura o canvas do PDF
+    pdf = canvas.Canvas(response, pagesize=A4)
+    pdf.setTitle("Termo de Entrega de Kit de Higiene")
+    pdf.setLineWidth(0.5) #Espessura da linha
+    pdf.setStrokeColorRGB(0, 0, 0, 0.7) #Cor da linha
+    pdf.setAuthor("casa-inteligente")
+    largura, altura = A4
+
+    #adicionar termos
+    for detento in detentos:
+        pdf.setFont("Arial-Bold", 14)
+        pdf.drawCentredString(largura / 2, altura - 4 * cm, "TERMO DE ENTREGA DE KIT DE HIGIENE")
+        
+        pdf.setFont("Arial", 11)
+        texto = f"Eu, {detento.nome}, IPEN {detento.IPEN}, recebi do Presídio Regional de Maravilha o kit de higiene pessoal, composto por sabonete, escova de dentes, pasta de dentes e papel higiênico."
+        text_object = pdf.beginText(2.5 * cm, altura - 6 * cm)
+        text_object.setFont("Arial", 11)
+        text_object.setLeading(15)
+        for linha in texto.splitlines():
+            text_object.textLine(linha)
+        pdf.drawText(text_object)
+
+        # Espaço para assinatura
+        pdf.line(2.5 * cm, altura - 10 * cm, largura - 2.5 * cm, altura - 10 * cm)
+        pdf.drawCentredString(largura / 2, altura - 10.5 * cm, "Assinatura do Detento")
+
+        #pdf = build(redirect, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
+        pdf.showPage()  # Adiciona uma nova página para o próximo detento
+    pdf.save()
+
+    return response
+
+
 
 def gerar_termo_autorizacao(request, detento_id, empresa_conveniada):
     # Busca o detento no banco de dados

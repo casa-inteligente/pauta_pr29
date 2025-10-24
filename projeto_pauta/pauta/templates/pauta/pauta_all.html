@@ -8,6 +8,7 @@
     <title>{{ titulo }}</title>
     <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
 </head>
 
 <body class="bg-gray-50 text-gray-800 font-sans">
@@ -28,11 +29,12 @@
 
         <div class="relative group">
             <button class="bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
-                <img src="{% static 'pauta/img/skill.png' %}" alt="Relação" class="h-4"> Relações <img src="{% static 'relação_detentos/img/drop-down-menu.png' %}" alt="Seta" class="h-3">
+                {% comment %} <img src="{% static 'pauta/img/skill.png' %}" alt="Relação" class="h-4">   {% endcomment %}
+                        Lista de Funcionalidades
             </button>
             <div class="absolute hidden group-hover:block bg-white border mt-2 rounded shadow">
                 <a href="{% url 'relação_detentos:relacao_list' %}"
-                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Relação de Detentos</a>
+                    class="block px-4 py-2 hover:bg-gray-100 text-sm"> Relação de Detentos</a>
                 <a href="{% url 'relação_detentos:cadastro_trampo' %}"
                     class="block px-4 py-2 hover:bg-gray-100 text-sm">Termo Trabalho Externo</a>
                 <a href="#" class="block px-4 py-2 hover:bg-gray-100 text-sm">Geração de Ofícios</a>
