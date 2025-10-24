@@ -1,14 +1,14 @@
 
 import pdfplumber
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
+from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm  # Ensure cm is imported
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import Image, Table, TableStyle
+
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 import pandas as pd
@@ -257,42 +257,189 @@ def cadastro_trampo_view(request):
     })
 
 def gerar_termo_kit_higiene(request):
-    print("Gerando termo kit higiene...")
-    detentos = Relacao.objects.all().order_by('nome')
+    #print("Gerando termo kit higiene...")
+    detentos = Relacao.objects.all().order_by('local_alocacao', 'regime','nome')
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="kit_higiene_{datetime.date.today()}.pdf"'
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=2.5 * cm,
+        leftMargin=2 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=2 * cm
+    )
 
-    # confiura o canvas do PDF
-    pdf = canvas.Canvas(response, pagesize=A4)
-    pdf.setTitle("Termo de Entrega de Kit de Higiene")
-    pdf.setLineWidth(0.5) #Espessura da linha
-    pdf.setStrokeColorRGB(0, 0, 0, 0.7) #Cor da linha
-    pdf.setAuthor("casa-inteligente")
-    largura, altura = A4
+    # Estilos
+    estilos = getSampleStyleSheet()
+    estilo_titulo = ParagraphStyle(
+        name='Titulo',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontName='Arial-Bold',
+        fontSize=14,
+        leading=18,
+        spaceAfter=20
+    )
 
-    #adicionar termos
-    for detento in detentos:
-        pdf.setFont("Arial-Bold", 14)
-        pdf.drawCentredString(largura / 2, altura - 4 * cm, "TERMO DE ENTREGA DE KIT DE HIGIENE")
+    estilo_subtitulo = ParagraphStyle(
+        name='Subtitulo',
+        parent=estilos['Normal'],
+        alignment=TA_JUSTIFY,
+        fontName='Arial-Bold',
+        fontSize=12,
+        leading=15,
+        spaceAfter=20
+    )
+
+    
+    estilo_justificado = ParagraphStyle(
+        name='Justificado',
+        parent=estilos['Normal'],
+        alignment=TA_JUSTIFY,
+        fontName='Arial',
+        fontSize=11,
+        leading=15,
+        spaceAfter=12
+    )
+
+    estilo_centralizado = ParagraphStyle(
+        name='Centralizado',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontName='Arial',
+        fontSize=11,
+        leading=15
+    )
+
+    elementos = []
+
+    for i, detento in enumerate(detentos):
+        # Espaço do cabeçalho
+        elementos.append(Spacer(1, 2 * cm))
         
-        pdf.setFont("Arial", 11)
-        texto = f"Eu, {detento.nome}, IPEN {detento.IPEN}, recebi do Presídio Regional de Maravilha o kit de higiene pessoal, composto por sabonete, escova de dentes, pasta de dentes e papel higiênico."
-        text_object = pdf.beginText(2.5 * cm, altura - 6 * cm)
-        text_object.setFont("Arial", 11)
-        text_object.setLeading(15)
-        for linha in texto.splitlines():
-            text_object.textLine(linha)
-        pdf.drawText(text_object)
+        # Título
+        elementos.append(Paragraph("<b>TERMO DE RECEBIMENTO</b>", estilo_titulo))
+        elementos.append(Spacer(1, 0.5 * cm))
+        texto = "Instruções:"
+        elementos.append(Paragraph(texto, estilo_subtitulo))
 
-        # Espaço para assinatura
-        pdf.line(2.5 * cm, altura - 10 * cm, largura - 2.5 * cm, altura - 10 * cm)
-        pdf.drawCentredString(largura / 2, altura - 10.5 * cm, "Assinatura do Detento")
+        texto = f" 01) Os internos devem assinar a opção com um X;<br/>02) Na opção “observação” descrever o que está sendo entregue (tamanho e quantidade de uniforme); <br/> 03) O termo de recebimento, devidamente assinado, deverá ser digitalizado e arquivado no IPEN do interno."
+        elementos.append(Paragraph(texto, estilo_justificado))
+        
+        # Tabela 2x8 com estilo_justificado
+        # Tabela com estrutura específica
+        tabela_dados = []
+        data_atual = timezone.now().strftime('%d/%m/%Y')
 
-        #pdf = build(redirect, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
-        pdf.showPage()  # Adiciona uma nova página para o próximo detento
-    pdf.save()
+        # Linha 1: Duas colunas - INTERNO
+        tabela_dados.append([
+            Paragraph("INTERNO:", estilo_justificado),
+            Paragraph(f"{detento.nome}", estilo_justificado),
+            "",  # Célula vazia
+            ""   # Célula vazia
+        ])
 
+        # Linha 2: Quatro colunas - IPEN e DATA
+        tabela_dados.append([
+            Paragraph("IPEN:", estilo_justificado),
+            Paragraph(f"{detento.IPEN}", estilo_justificado),
+            Paragraph(f"DATA: {data_atual}", estilo_justificado),
+            ""
+        ])
+
+        # Linha 3: Duas colunas - X e Kit higiene
+        tabela_dados.append([
+            Paragraph("X", estilo_centralizado),
+            Paragraph("Kit higiene", estilo_justificado),
+            "",  # Célula vazia
+            ""   # Célula vazia
+        ])
+
+        # Adicione mais linhas conforme necessário (continuando a estrutura anterior)
+        # Linha 4: Uniforme
+        tabela_dados.append([
+            Paragraph(" ", estilo_centralizado),
+            Paragraph("Uniforme", estilo_justificado),
+            "",  # Célula vazia
+            ""   # Célula vazia
+        ])
+
+        # Linha 5: Cobertor
+        tabela_dados.append([
+            "",
+            Paragraph("Cobertor", estilo_justificado),
+            "",  # Célula vazia
+            ""   # Célula vazia
+        ])
+
+        # Linha 6: Observação sobre uniforme
+        tabela_dados.append([
+            Paragraph("Observação:", estilo_justificado),
+            Paragraph("Se uniforme, quantidade e tamanho.", estilo_justificado),
+            "",  # Célula vazia
+            ""   # Célula vazia
+        ])
+
+        # Linha 7: Descrição do kit
+        tabela_dados.append([
+            Paragraph("KIT HIGIENE: 01 ESCOVA DE DENTE, 01 CREME DENTAL, 03 ROLOS DE PAPEL HIGIÊNICO, 04 BARBEADORES, 01 DESODORANTE LIQUIDO E 01 SABONETE LIQUIDO.", estilo_justificado),
+            "",
+            "",  # Célula vazia
+            ""   # Célula vazia
+        ])
+
+        col_widths = [3 * cm, 7 * cm, 3 * cm, 3 * cm]
+        tabela = Table(tabela_dados, colWidths=col_widths, hAlign='LEFT')
+        tabela.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 6),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('SPAN', (1, 0), (3, 0)),  # Mesclar colunas 1-2 na linha 1
+            # Mesclar células vazias para melhor aparência
+            ('SPAN', (2, 1), (3, 1)),
+            ('SPAN', (2, 0), (3, 0)),  # Mesclar colunas 3-4 na linha 1
+            ('SPAN', (1, 2), (3, 2)),  # Mesclar colunas 3-4 na linha 3
+            ('SPAN', (1, 3), (3, 3)),  # Mesclar colunas 3-4 na linha 4
+            ('SPAN', (1, 4), (3, 4)),  # Mesclar colunas 3-4 na linha 5
+            ('SPAN', (1, 5), (3, 5)),  # Mesclar colunas 3-4 na linha 6
+            ('SPAN', (0, 6), (3, 6)),  # Mesclar colunas 3-4 na linha 7
+        ]))
+
+        elementos.append(tabela)
+        elementos.append(Spacer(1, 1 * cm))
+        
+        # Data
+        elementos.append(Paragraph(f"Recebido em ____/_______/_______", estilo_justificado))
+        elementos.append(Spacer(1, 0.75 * cm))
+
+        # Assinatura
+        elementos.append(Paragraph("_______________________________________", estilo_justificado))
+        elementos.append(Paragraph(f"{detento.nome}", estilo_justificado))
+        elementos.append(Spacer(1, 0.75 * cm))  
+
+        # Assinatura
+        elementos.append(Paragraph("_______________________________________", estilo_justificado))
+        elementos.append(Paragraph(f"Assinatura do servidor (nome completo)", estilo_justificado))
+        elementos.append(Spacer(1, 0.75 * cm))
+
+
+        # Adiciona quebra de página se não for o último detento
+        if i < len(detentos) - 1:
+            elementos.append(PageBreak())  # Força nova página
+
+    # Gerar o PDF com cabeçalho e rodapé
+    doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
+
+    buffer.seek(0)
+    response = FileResponse(
+        buffer, 
+        as_attachment=True, 
+        filename=f'kit_higiene_{datetime.date.today()}.pdf'
+    )
     return response
 
 
@@ -432,7 +579,7 @@ def cabecalho_e_rodape(canvas, doc):
     caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo.png')
     if os.path.exists(caminho_logo):
         logo = ImageReader(caminho_logo)
-        canvas.drawImage(logo, x=doc.leftMargin, y=A4[1] - 3*cm, width=2*cm, height=2.5*cm, mask='auto')
+        canvas.drawImage(logo, x=doc.leftMargin, y=A4[1] - 3.2*cm, width=2*cm, height=2.5*cm, mask='auto')
 
     # Texto institucional (centralizado à direita da logo)
     canvas.setFont("Helvetica-Bold", 9)
