@@ -264,7 +264,13 @@ def cadastro_trampo_view(request):
 
 def gerar_termo_kit_higiene(request):
     #print("Gerando termo kit higiene...")
-    detentos = Relacao.objects.all().order_by('local_alocacao', 'regime','nome')
+    #detentos = Relacao.objects.all().order_by('local_alocacao', 'regime','nome')
+    detentos = (
+        Relacao.objects
+        .only('IPEN', 'nome', 'local_alocacao', 'regime')  # Busca apenas campos necessários
+        .order_by('local_alocacao', 'regime', 'nome')
+    )
+    
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
