@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Termo de Rouparia</title>
+    <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-200 text-gray-800 font-sans min-h-screen">
+    <!-- Menu de navegação -->
+    <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
+        <a href="{% url 'admin:index' %}"
+            class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
+            <img src="{% static 'pauta/img/login.png' %}" alt="Login" class="h-4"> Admin
+        </a>
+
+        <a href="{% url 'pauta:pauta_all' %}"
+            class="bg-indigo-600 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700">
+            <img src="{% static 'pauta/img/home.png' %}" alt="inicio" class="h-4 inline"> Início
+        </a>
+
+        <button onclick="window.print()" class="bg-gray-700 text-white px-3 py-2 rounded text-sm hover:bg-black">
+            <img src="{% static 'pauta/img/printer.png' %}" alt="Imprimir" class="h-4 inline"> Imprimir
+        </button>
+    </nav>
+
+    <div class="max-w-4xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
+        <h1 class="text-2xl font-bold mb-4 text-center">
+            <i class="fas fa-solid fa-shirt"></i>
+            Termo de Rouparia
+        </h1>
+        
+        <form method="get" class="mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <!-- IPEN Input -->
+                <div>
+                    <label for="ipen" class="block text-sm font-medium mb-1">IPEN:</label>
+                    <input type="number" name="ipen" placeholder="Digite o IPEN" min='100000' max='999999' 
+                           id="ipen" value="{{ request.GET.ipen }}"
+                           class="border-2 border-gray-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none">
+                </div>
+                
+                <!-- Número Rouparia Input -->
+                <div>
+                    <label for="numero_rouparia" class="block text-sm font-medium mb-1">Número do Kit:</label>
+                    <input type="number" name="numero_rouparia" placeholder="Número do Kit" min="1" max="200" 
+                           id="numero_rouparia" value="{{ request.GET.numero_rouparia }}"
+                           class="border-2 border-gray-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none">
+                </div>
+                
+                <!-- Toggle Switch para Regime -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tipo de Regime:</label>
+                    <div class="flex justify-center">
+                        {{ form.escolha_tipo_regime }}
+                    </div>
+                </div>
+                
+                <!-- Botão Buscar -->
+                <div>
+                    <button type="submit" class="bg-violet-400 text-white px-6 py-2 rounded hover:bg-violet-600 w-full">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        {% if detento %}
+        <div class="mb-6 bg-white rounded-lg p-4 shadow">
+            <h2 class="text-lg font-semibold mb-2">Dados do Interno</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><strong>IPEN:</strong> {{ detento.IPEN }}</div>
+                <div><strong>Nome:</strong> {{ detento.nome }}</div>
+                <div><strong>Número do Kit:</strong> {{ numero_rouparia|default:"Não informado" }}</div>
+                <div><strong>Regime Selecionado:</strong> 
+                    {% if request.GET.escolha_tipo_regime %}
+                        Fechado
+                    {% else %}
+                        Semiaberto
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if numero_rouparia %}
+            <form method="post" action="{% url 'relação_detentos:gerar_termo_rouparia' detento.id numero_rouparia request.GET.escolha_tipo_regime|default:'semiaberto' %}">
+                {% csrf_token %}
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full">
+                    <i class="fas fa-file-pdf"></i>
+                    Gerar Termo da Rouparia (PDF)
+                </button>
+            </form>
+        {% else %}
+            <div class="text-yellow-600 text-center bg-yellow-100 rounded p-4">
+                <i class="fas fa-exclamation-triangle"></i>
+                Informe o número do KIT Rouparia para gerar o termo.
+            </div>
+        {% endif %}
+        
+        {% elif request.GET.ipen %}
+        <div class="text-red-500 text-center bg-red-100 rounded p-4">
+            <i class="fas fa-exclamation-circle"></i>
+            Nenhum interno encontrado com o IPEN informado.
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>

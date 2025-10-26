@@ -24,6 +24,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
+from .forms.geradores import DescricaoKitHigieneForm  
 
 from django.db.models import Case, When, Value
 from django.db.models.functions import Concat
@@ -218,6 +219,53 @@ def exctrai_date_exit_view(request):
         return redirect(f'/relacoes/?message={message}')
     return render(request, 'relacao_list.html')
 
+def view_termo_rouparia(request):
+    detento = None
+    numero_rouparia = None
+    regime_selecionado = None
+    
+    ipen = request.GET.get('ipen')
+    numero_rouparia = request.GET.get('numero_rouparia')
+    escolha_tipo_regime = request.GET.get('escolha_tipo_regime')  # Mudança aqui
+    
+    # Criar instância do form com dados iniciais
+    initial_data = {}
+    if escolha_tipo_regime:
+        # Se foi enviado o valor do toggle switch
+        initial_data['escolha_tipo_regime'] = escolha_tipo_regime == 'on'
+    
+    form = DescricaoKitHigieneForm(initial=initial_data)
+    
+    # Busca o detento se IPEN foi fornecido
+    if ipen:
+        try:
+            detento = Relacao.objects.get(IPEN=ipen)
+        except Relacao.DoesNotExist:
+            detento = None
+    
+    # Determina o regime selecionado
+    if escolha_tipo_regime == 'on':
+        regime_selecionado = 'fechado'
+    else:
+        regime_selecionado = 'semiaberto'
+    
+    return render(request, 'gerador_rouparia.html', {
+        'detento': detento,
+        'numero_rouparia': numero_rouparia,
+        'regime_selecionado': regime_selecionado,
+        'form': form,
+    })
+
+def gerar_termo_rouparia(request, detento_id, numero_kit, regime):
+    """
+    Gera o termo de rouparia para o detento
+    """
+    detento = get_object_or_404(Relacao, id=detento_id)
+    
+    # Implementar a lógica de geração do PDF aqui
+    # Similar às outras funções de geração de termo
+    
+    return HttpResponse("Função em desenvolvimento")
 
 
 def view_termo_autorizacao(request, relacao_id):
@@ -400,7 +448,7 @@ def gerar_termo_kit_higiene(request):
         # Linha 6: Observação sobre uniforme
         tabela_dados.append([
             Paragraph("Observação:", estilo_subtitulo),
-            ""
+            "",
             "",  # Célula vazia
             ""   # Célula vazia
         ])

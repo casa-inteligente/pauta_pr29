@@ -3,6 +3,45 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
+class Descricao_termo_rouparia(models.Model):
+    descricao_fechado = models.CharField(
+        verbose_name='Descrição da rouparia do Fechado',
+        max_length=200,
+        blank=False,
+        null=False
+    )
+    descricao_semiaberto = models.CharField(
+        verbose_name='Descrição da rouparia do Semiaberto',
+        max_length=200,
+        blank=False,
+        null=False
+    )
+    escolha_tipo_regime = models.BooleanField(
+        verbose_name='Escolha o tipo de regime Fechado ou Semiaberto',
+        default=True
+    )
+    numero_kit_roupa = models.PositiveIntegerField(
+        verbose_name='Número do kit de roupa',
+        blank=False,
+        null=False,
+        default=0,
+        max_length=3
+    )
+
+    com_higient = models.BooleanField(
+        verbose_name='Com kit de higiene',
+        default=True
+    )
+    
+    def __str__(self):
+        return self.numero_kit_roupa
+
+    class Meta:
+        ordering = ('numero_kit_roupa',)
+        verbose_name = 'descrição do termo de rouparia'
+        verbose_name_plural = 'Descrições do termo de rouparia'
+
+
 class DescricaoKitHigiene(models.Model):
     descricao = models.CharField(
         verbose_name='Descrição do item',
