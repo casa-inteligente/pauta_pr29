@@ -9,7 +9,7 @@ cor_inativa_toggle = "#2ed33c"  # Verde (Semiaberto)
 class DescricaoKitHigieneForm(forms.ModelForm):
     class Meta:
         model = Descricao_termo_rouparia  # Corrigido para usar o modelo correto
-        fields = ['escolha_tipo_regime']  # Corrigido: remover __all__
+        fields = ['escolha_tipo_regime', 'com_higiene']  # Corrigido: remover __all__
         widgets = {
             'escolha_tipo_regime': ToggleSwitchWidget(
                 size='sm',
@@ -40,7 +40,7 @@ class TermoRoupariaForm(forms.Form):
     escolha_tipo_regime = forms.BooleanField(
         label='Tipo de Regime',
         required=False,
-        initial=False,  # False = Semiaberto (padrão)
+        initial=True,  # False = Semiaberto (padrão)
         widget=ToggleSwitchWidget(
             size='sm',
             active_color=cor_ativa_toggle,
@@ -59,3 +59,7 @@ class TermoRoupariaForm(forms.Form):
             }
         )
     )
+    def __init__(self, *args, **kwargs):
+        super(TermoRoupariaForm, self).__init__(*args, **kwargs)
+        # Não aplicar classes padrão ao toggle switch
+     

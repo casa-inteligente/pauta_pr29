@@ -25,7 +25,7 @@ class Descricao_termo_rouparia(models.Model):
         blank=False,
         null=False,
         default=0,
-        max_length=3
+        #max_length=3
     )
 
     com_higiene = models.BooleanField(

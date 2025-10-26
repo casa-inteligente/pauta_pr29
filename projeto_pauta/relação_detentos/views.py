@@ -354,7 +354,7 @@ def gerar_termo_rouparia(request, detento_id, numero_kit, regime):
     doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
 
     buffer.seek(0)
-    nome_arquivo = f'termo_rouparia_{detento.nome}_{numero_kit}_{regime_texto}.pdf'
+    nome_arquivo = f'termo_rouparia_{detento.nome}_{numero_kit}.pdf'
     return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
 
 
