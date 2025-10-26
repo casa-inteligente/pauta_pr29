@@ -59,7 +59,12 @@
                         {{ form.escolha_tipo_regime }}
                     </div>
                 </div>
-                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Inclui Kit Higiene:</label>
+                    <div class="flex justify-center">
+                        {{ form.com_higiene }}
+                    </div>
+                </div>
                 <!-- Botão Buscar -->
                 <div>
                     <button type="submit" class="bg-violet-400 text-white px-6 py-2 rounded hover:bg-violet-600 w-full">
@@ -83,6 +88,12 @@
                         Semiaberto
                     {% endif %}
                 </div>
+                <div><strong>Incluir Kit Higiene:</strong> 
+                    {% if com_kit_higiene %}
+                        Sim
+                    {% else %}
+                        Não
+                    {% endif %}
             </div>
         </div>
         

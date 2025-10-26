@@ -28,11 +28,11 @@ class Descricao_termo_rouparia(models.Model):
         max_length=3
     )
 
-    com_higient = models.BooleanField(
+    com_higiene = models.BooleanField(
         verbose_name='Com kit de higiene',
         default=True
     )
-    
+
     def __str__(self):
         return self.numero_kit_roupa
 

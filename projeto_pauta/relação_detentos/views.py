@@ -24,7 +24,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
-from .forms.geradores import DescricaoKitHigieneForm  
+from .forms.geradores import DescricaoKitHigieneForm, TermoRoupariaForm 
 
 from django.db.models import Case, When, Value
 from django.db.models.functions import Concat
@@ -223,18 +223,21 @@ def view_termo_rouparia(request):
     detento = None
     numero_rouparia = None
     regime_selecionado = None
+    com_kit_higiene = None
     
     ipen = request.GET.get('ipen')
     numero_rouparia = request.GET.get('numero_rouparia')
-    escolha_tipo_regime = request.GET.get('escolha_tipo_regime')  # Mudança aqui
+    escolha_tipo_regime = request.GET.get('escolha_tipo_regime')
+    com_kit_higiene = request.GET.get('com_higiene')
+
+    # Usar o form alternativo que funciona melhor
+    form = TermoRoupariaForm()
     
-    # Criar instância do form com dados iniciais
-    initial_data = {}
-    if escolha_tipo_regime:
-        # Se foi enviado o valor do toggle switch
-        initial_data['escolha_tipo_regime'] = escolha_tipo_regime == 'on'
-    
-    form = DescricaoKitHigieneForm(initial=initial_data)
+    # Se há dados do GET, popular o form
+    if escolha_tipo_regime == 'on':
+        form = TermoRoupariaForm(initial={'escolha_tipo_regime': True})
+    else:
+        form = TermoRoupariaForm(initial={'escolha_tipo_regime': False})
     
     # Busca o detento se IPEN foi fornecido
     if ipen:
@@ -243,7 +246,7 @@ def view_termo_rouparia(request):
         except Relacao.DoesNotExist:
             detento = None
     
-    # Determina o regime selecionado
+    # Determina o regime selecionado baseado no toggle
     if escolha_tipo_regime == 'on':
         regime_selecionado = 'fechado'
     else:
@@ -253,6 +256,7 @@ def view_termo_rouparia(request):
         'detento': detento,
         'numero_rouparia': numero_rouparia,
         'regime_selecionado': regime_selecionado,
+        'com_kit_higiene': com_kit_higiene,
         'form': form,
     })
 
@@ -262,10 +266,96 @@ def gerar_termo_rouparia(request, detento_id, numero_kit, regime):
     """
     detento = get_object_or_404(Relacao, id=detento_id)
     
-    # Implementar a lógica de geração do PDF aqui
-    # Similar às outras funções de geração de termo
+    # Determinar o tipo de regime baseado no parâmetro
+    if regime == 'on' or regime == 'True' or regime == 'fechado':
+        regime_texto = "Fechado"
+        # Buscar descrição do fechado do modelo
+        try:
+            descricao_obj = Descricao_termo_rouparia.objects.first()
+            descricao_rouparia = descricao_obj.descricao_fechado if descricao_obj else "Kit de rouparia padrão do regime fechado"
+        except:
+            descricao_rouparia = "Kit de rouparia padrão do regime fechado"
+    else:
+        regime_texto = "Semiaberto"
+        # Buscar descrição do semiaberto do modelo
+        try:
+            descricao_obj = Descricao_termo_rouparia.objects.first()
+            descricao_rouparia = descricao_obj.descricao_semiaberto if descricao_obj else "Kit de rouparia padrão do regime semiaberto"
+        except:
+            descricao_rouparia = "Kit de rouparia padrão do regime semiaberto"
     
-    return HttpResponse("Função em desenvolvimento")
+    # Criar PDF
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=2.5 * cm,
+        leftMargin=2 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=2 * cm
+    )
+
+    # Estilos
+    estilos = getSampleStyleSheet()
+    estilo_titulo = ParagraphStyle(
+        name='Titulo',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontName='Arial-Bold',
+        fontSize=14,
+        leading=18,
+        spaceAfter=20
+    )
+    
+    estilo_justificado = ParagraphStyle(
+        name='Justificado',
+        parent=estilos['Normal'],
+        alignment=TA_JUSTIFY,
+        fontName='Arial',
+        fontSize=11,
+        leading=15,
+        spaceAfter=12
+    )
+
+    estilo_centralizado = ParagraphStyle(
+        name='Centralizado',
+        parent=estilos['Normal'],
+        alignment=TA_CENTER,
+        fontName='Arial',
+        fontSize=11,
+        leading=15
+    )
+
+    elementos = []
+
+    # Espaço do cabeçalho
+    elementos.append(Spacer(1, 2 * cm))
+
+    # Título
+    elementos.append(Paragraph("<b>TERMO DE ENTREGA DE ROUPARIA</b>", estilo_titulo))
+    elementos.append(Spacer(1, 0.5 * cm))
+
+    # Conteúdo
+    texto = f"""Eu, <b>{detento.nome}</b>, IPEN <b>{detento.IPEN}</b>, recebi do Presídio Regional de Maravilha 
+    o kit de rouparia número <b>{numero_kit}</b>, destinado ao regime <b>{regime_texto}</b>, contendo: <b>{descricao_rouparia}</b>."""
+    elementos.append(Paragraph(texto, estilo_justificado))
+    elementos.append(Spacer(1, 2 * cm))
+
+    # Data
+    data_atual = timezone.now().strftime('%d de %B de %Y')
+    elementos.append(Paragraph(f"Maravilha, {data_atual}.", estilo_centralizado))
+    elementos.append(Spacer(1, 2 * cm))
+
+    # Assinatura
+    elementos.append(Paragraph("_______________________________________", estilo_centralizado))
+    elementos.append(Paragraph(f"{detento.nome}", estilo_centralizado))
+
+    # Gerar o PDF
+    doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
+
+    buffer.seek(0)
+    nome_arquivo = f'termo_rouparia_{detento.nome}_{numero_kit}_{regime_texto}.pdf'
+    return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
 
 
 def view_termo_autorizacao(request, relacao_id):
