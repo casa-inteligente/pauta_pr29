@@ -55,9 +55,16 @@ ANO_CORRENTE = timezone.now().year
 
 # @login_required
 def relacao_list(request):
-
     '''
-    responsavél por processaro os dados e exibir na página
+    Exibe uma lista com os detentos e suas informações
+    Returns:
+        render com a pagina renderizada e com variaveis das informações
+    
+    Args:
+        Request: Requisição da  página    
+    
+    Template:
+        pauta/template/relacao_list.html
     '''
     regime_order = Case(
         When(regime='PRO', then=Value(1)),
@@ -82,7 +89,7 @@ def relacao_list(request):
     qtd_fechado = relacoes.filter(local_alocacao='F').count()
     qtd_semiaberto = relacoes.filter(local_alocacao='SA').count()
     #qtd_preventiva = relacoes.filter(regime='PRE').count
-    qtd_preventiva = 0
+    qtd_preventiva = 0 # Atualmente não utilizado
     qtd_total = qtd_fechado + qtd_semiaberto + qtd_preventiva
     #print(qtd_fechado)
 
@@ -108,7 +115,12 @@ def relacao_list(request):
 @csrf_exempt
 def salvar_alteracoes(request):
     """
-    Responsavél por salvar as informações alteradas na página inicial
+    Responsavél por salvar as informações alteradas na lista de detentos
+    Args:
+        request (HttpRequest): Requisição HTTP contendo os dados em JSON no corpo da requisição.
+
+    Returns:
+        JsonResponse: Resposta JSON indicando sucesso ou falha da operação.
     """
     if request.method == 'POST':
         try:
@@ -170,6 +182,18 @@ def salvar_alteracoes(request):
 
 
 def upload_pdf(request):
+    '''
+    Recebe o arquivo PDF enviado pelo usuário, processa o conteúdo para extrair informações relevantes e atualiza o banco de dados com esses dados.
+
+    Returns:
+        render com a pagina renderizada e atualizada com 1 de 3 atualizaçoes
+    
+    Args:
+        Arquivo PDF, oriundo do sistema IPEN relatorio 1.9    
+    
+    Template:
+        pauta/template/relacao_list.html
+    '''
     if request.method == 'POST' and request.FILES.get('pdfFile'):
         pdf_file = request.FILES['pdfFile']
         fs = FileSystemStorage()
@@ -220,6 +244,17 @@ def exctrai_date_exit_view(request):
     return render(request, 'relacao_list.html')
 
 def view_termo_rouparia(request):
+    '''
+    Busca e configura as informações para gerar o termo de rouparia
+    Returns:
+        Pagina renderizada e com variaveis das configurações do termo de rouparia
+    
+    Args:
+        Request: Requisição da  página    
+    
+    Template:
+        relação_detentos/template/gerador_rouparia.html
+    '''
     detento = None
     numero_rouparia = None
     regime_selecionado = None
@@ -268,9 +303,16 @@ def view_termo_rouparia(request):
     })
 
 def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, com_higiene:str):
-    """
-    Gera o termo de rouparia para o detento
-    """
+    '''
+    Gera e baixa um documento no formato PDF do termo de rouparia do detento
+    Returns:
+        FileResponse: Documento pdf para download
+    
+    Args:
+        Request: ID do detento, numero do kit, regime (fechado ou semiaberto) e se inclui kit higiene    
+    
+    
+    '''
     detento = get_object_or_404(Relacao, id=detento_id)
     print(f'regime: {regime}')
     # Determinar o tipo de regime baseado no parâmetro
