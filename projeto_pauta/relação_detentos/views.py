@@ -31,7 +31,7 @@ from django.db.models.functions import Concat
 from django.utils import timezone
 
 from .process_table import process_pdf, process_regime_pdf, exctrai_date_exit
-from .models import Relacao, DescricaoKitHigiene
+from .models import Relacao, DescricaoKitHigiene, Descricao_termo_rouparia
 
 from PyPDF2 import PdfReader, PdfWriter
 from PyPDF2.generic import NameObject, createStringObject
@@ -228,16 +228,26 @@ def view_termo_rouparia(request):
     ipen = request.GET.get('ipen')
     numero_rouparia = request.GET.get('numero_rouparia')
     escolha_tipo_regime = request.GET.get('escolha_tipo_regime')
-    com_kit_higiene = request.GET.get('com_higiene')
+    com_higiene = request.GET.get('com_higiene')
 
     # Usar o form alternativo que funciona melhor
-    form = TermoRoupariaForm()
+    initial_data = {}
     
-    # Se há dados do GET, popular o form
     if escolha_tipo_regime == 'on':
-        form = TermoRoupariaForm(initial={'escolha_tipo_regime': True})
+        initial_data['escolha_tipo_regime'] = True
+        regime_selecionado = 'fechado'
     else:
-        form = TermoRoupariaForm(initial={'escolha_tipo_regime': False})
+        initial_data['escolha_tipo_regime'] = False
+        regime_selecionado = 'semiaberto'
+        
+    if com_higiene == 'on':
+        initial_data['com_higiene'] = True
+        com_kit_higiene = True
+    else:
+        initial_data['com_higiene'] = False
+        com_kit_higiene = False
+    
+    form = TermoRoupariaForm(initial=initial_data)
     
     # Busca o detento se IPEN foi fornecido
     if ipen:
@@ -245,12 +255,6 @@ def view_termo_rouparia(request):
             detento = Relacao.objects.get(IPEN=ipen)
         except Relacao.DoesNotExist:
             detento = None
-    
-    # Determina o regime selecionado baseado no toggle
-    if escolha_tipo_regime == 'on':
-        regime_selecionado = 'fechado'
-    else:
-        regime_selecionado = 'semiaberto'
     
     return render(request, 'gerador_rouparia.html', {
         'detento': detento,
@@ -260,7 +264,7 @@ def view_termo_rouparia(request):
         'form': form,
     })
 
-def gerar_termo_rouparia(request, detento_id, numero_kit, regime):
+def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, com_higiene:str):
     """
     Gera o termo de rouparia para o detento
     """
@@ -268,21 +272,25 @@ def gerar_termo_rouparia(request, detento_id, numero_kit, regime):
     
     # Determinar o tipo de regime baseado no parâmetro
     if regime == 'on' or regime == 'True' or regime == 'fechado':
-        regime_texto = "Fechado"
-        # Buscar descrição do fechado do modelo
+        
         try:
             descricao_obj = Descricao_termo_rouparia.objects.first()
             descricao_rouparia = descricao_obj.descricao_fechado if descricao_obj else "Kit de rouparia padrão do regime fechado"
         except:
-            descricao_rouparia = "Kit de rouparia padrão do regime fechado"
+            descricao_rouparia = "ERRO"
     else:
-        regime_texto = "Semiaberto"
-        # Buscar descrição do semiaberto do modelo
+        
         try:
             descricao_obj = Descricao_termo_rouparia.objects.first()
             descricao_rouparia = descricao_obj.descricao_semiaberto if descricao_obj else "Kit de rouparia padrão do regime semiaberto"
         except:
-            descricao_rouparia = "Kit de rouparia padrão do regime semiaberto"
+            descricao_rouparia = "ERRO"
+    
+    # Processar o valor do kit higiene
+    if com_higiene == 'on' or com_higiene == 'True' or com_higiene == '1':
+        incluir_higiene = True
+    else:
+        incluir_higiene = False
     
     # Criar PDF
     buffer = io.BytesIO()
@@ -306,6 +314,17 @@ def gerar_termo_rouparia(request, detento_id, numero_kit, regime):
         leading=18,
         spaceAfter=20
     )
+
+    estilo_subtitulo = ParagraphStyle(
+        name='Subtitulo',
+        parent=estilos['Normal'],
+        alignment=TA_JUSTIFY,
+        fontName='Arial-Bold',
+        fontSize=12,
+        leading=15,
+        spaceAfter=12
+    )
+
     
     estilo_justificado = ParagraphStyle(
         name='Justificado',
@@ -326,37 +345,166 @@ def gerar_termo_rouparia(request, detento_id, numero_kit, regime):
         leading=15
     )
 
+    descricao_kit_higiene = DescricaoKitHigiene.objects.first().descricao
+    checked_data = DescricaoKitHigiene.objects.first().checked_data_recebido
+    
+
     elementos = []
-
-    # Espaço do cabeçalho
-    elementos.append(Spacer(1, 2 * cm))
-
-    # Título
-    elementos.append(Paragraph("<b>TERMO DE ENTREGA DE ROUPARIA</b>", estilo_titulo))
+    elementos.append(Spacer(1, 1.5 * cm))
+        
+        # Título
+    elementos.append(Paragraph("<b>TERMO DE RECEBIMENTO</b>", estilo_titulo))
     elementos.append(Spacer(1, 0.5 * cm))
+    texto = "Instruções:"
+    elementos.append(Paragraph(texto, estilo_subtitulo))
 
-    # Conteúdo
-    texto = f"""Eu, <b>{detento.nome}</b>, IPEN <b>{detento.IPEN}</b>, recebi do Presídio Regional de Maravilha 
-    o kit de rouparia número <b>{numero_kit}</b>, destinado ao regime <b>{regime_texto}</b>, contendo: <b>{descricao_rouparia}</b>."""
+    texto = f" 01) Os internos devem assinar a opção com um X;<br/>02) Na opção “observação” descrever o que está sendo entregue (tamanho e quantidade de uniforme);<br/>03) O termo de recebimento, devidamente assinado, deverá ser digitalizado e arquivado no IPEN do interno."
     elementos.append(Paragraph(texto, estilo_justificado))
-    elementos.append(Spacer(1, 2 * cm))
+        
+    # Tabela 2x8 com estilo_justificado
+    # Tabela com estrutura específica
+    tabela_dados = []
+    data_atual = timezone.now().strftime('%d/%m/%Y')
 
+    # Linha 1: Duas colunas - INTERNO
+    tabela_dados.append([
+        Paragraph("INTERNO:", estilo_justificado),
+        Paragraph(f"{detento.nome}", estilo_justificado),
+        "",  # Célula vazia
+        ""   # Célula vazia
+    ])
+
+    # Linha 2: Quatro colunas - IPEN e DATA
+    tabela_dados.append([
+        Paragraph("IPEN:", estilo_justificado),
+        Paragraph(f"{detento.IPEN}", estilo_justificado),
+        Paragraph(f"DATA: {data_atual}", estilo_justificado),
+        ""
+    ])
+
+    # Linha 3: Duas colunas - X e Kit higiene
+    if incluir_higiene:
+        tabela_dados.append([
+            Paragraph("X", estilo_centralizado),
+            Paragraph("Kit higiene", estilo_justificado),
+            "",  # Célula vazia
+            ""   # Célula vazia
+        ])
+    else:
+        tabela_dados.append([
+            "",
+            Paragraph("Kit higiene", estilo_justificado),
+            "",  # Célula vazia
+            ""   # Célula vazia
+        ])
+
+    # Adicione mais linhas conforme necessário (continuando a estrutura anterior)
+    # Linha 4: Uniforme
+    tabela_dados.append([
+        Paragraph("X", estilo_centralizado),
+        Paragraph("Uniforme", estilo_justificado),
+        "",  # Célula vazia
+        ""   # Célula vazia
+    ])
+
+    # Linha 5: Cobertor
+    tabela_dados.append([
+        Paragraph("X", estilo_centralizado),
+        Paragraph("Cobertor", estilo_justificado),
+        "",  # Célula vazia
+        ""   # Célula vazia
+    ])
+
+    # Linha 6: Observação sobre uniforme
+    tabela_dados.append([
+        Paragraph("Observação:", estilo_subtitulo),
+        "",
+        "",  # Célula vazia
+        ""   # Célula vazia
+    ])
+
+    tabela_dados.append([
+        Paragraph("Se uniforme, quantidade e tamanho.", estilo_justificado),
+        "",
+        "",  # Célula vazia
+        ""   # Célula vazia
+    ])
+
+    # Linha 7: Descrição do kit
+    if incluir_higiene:
+        tabela_dados.append([
+        Paragraph(f"{descricao_rouparia}<br/> <br/>{descricao_kit_higiene}", estilo_justificado),
+        "",
+        "",  # Célula vazia
+        ""   # Célula vazia
+    ])
+    else:
+        tabela_dados.append([
+            Paragraph(f"{descricao_rouparia}", estilo_justificado),
+            "",
+            "",  # Célula vazia
+            ""   # Célula vazia
+        ])
+
+    tabela_dados.append([
+        Paragraph(f"Kit número: {numero_kit}", estilo_justificado),
+        "",
+        "",  # Célula vazia
+        ""   # Célula vazia
+    ])
+
+    
+
+    col_widths = [3 * cm, 7 * cm, 3 * cm, 3 * cm]
+    tabela = Table(tabela_dados, colWidths=col_widths, hAlign='LEFT')
+    tabela.setStyle(TableStyle([
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 3),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('SPAN', (1, 0), (3, 0)),  # Mesclar colunas 1-2 na linha 1
+        # Mesclar células vazias para melhor aparência
+        ('SPAN', (2, 1), (3, 1)),
+        ('SPAN', (2, 0), (3, 0)),  # Mesclar colunas 3-4 na linha 1
+        ('SPAN', (1, 2), (3, 2)),  # Mesclar colunas 3-4 na linha 3
+        ('SPAN', (1, 3), (3, 3)),  # Mesclar colunas 3-4 na linha 4
+        ('SPAN', (1, 4), (3, 4)),  # Mesclar colunas 3-4 na linha 5
+        ('SPAN', (1, 5), (3, 5)),  # Mesclar colunas 3-4 na linha 6
+        ('SPAN', (0, 6), (3, 6)),  # Mesclar colunas 3-4 na linha 7
+        ('SPAN', (0, 7), (3, 7)),  # Mesclar colunas 3-4 na linha 8
+        ('SPAN', (0, 8), (3, 8)),  # Mesclar colunas 3-4 na linha 9
+    ]))
+
+    elementos.append(tabela)
+    elementos.append(Spacer(1, 1 * cm))
+    
+        
     # Data
-    data_atual = timezone.now().strftime('%d de %B de %Y')
-    elementos.append(Paragraph(f"Maravilha, {data_atual}.", estilo_centralizado))
-    elementos.append(Spacer(1, 2 * cm))
+    if checked_data:
+        elementos.append(Paragraph(f"Recebido em {data_atual}", estilo_justificado))
+        elementos.append(Spacer(1, 0.75 * cm))
+    else:
+        elementos.append(Paragraph(f"Recebido em _____/_______/_______", estilo_justificado))
+        elementos.append(Spacer(1, 0.75 * cm))
 
     # Assinatura
-    elementos.append(Paragraph("_______________________________________", estilo_centralizado))
-    elementos.append(Paragraph(f"{detento.nome}", estilo_centralizado))
+    elementos.append(Paragraph("_______________________________________", estilo_justificado))
+    elementos.append(Paragraph(f"{detento.nome}", estilo_justificado))
+    elementos.append(Spacer(1, 0.75 * cm))  
 
+    # Assinatura
+    elementos.append(Paragraph("_______________________________________", estilo_justificado))
+    elementos.append(Paragraph(f"Assinatura do servidor (nome completo)", estilo_justificado))
+    elementos.append(Spacer(1, 0.75 * cm))
+    
     # Gerar o PDF
     doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
 
     buffer.seek(0)
     nome_arquivo = f'termo_rouparia_{detento.nome}_{numero_kit}.pdf'
     return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
-
 
 def view_termo_autorizacao(request, relacao_id):
     """
@@ -372,8 +520,6 @@ def view_termo_autorizacao(request, relacao_id):
         'relacao': relacao,
         'empresa': relacao.trampo_empresa
     })
-
-
 
 def cadastro_trampo_view(request):
     detento = None
@@ -616,8 +762,6 @@ def gerar_termo_kit_higiene(request):
     )
     return response
 
-
-
 def gerar_termo_autorizacao(request, detento_id, empresa_conveniada):
     # Busca o detento no banco de dados
     detento = get_object_or_404(Relacao, id=detento_id)
@@ -844,7 +988,6 @@ def cabecalho_e_rodape_ume(canvas, doc):
     )
 
     canvas.restoreState()
-
 
 def termo_monitorado(request, detento_ipen):
     """

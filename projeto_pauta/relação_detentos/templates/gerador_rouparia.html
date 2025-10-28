@@ -35,7 +35,7 @@
         </h1>
         
         <form method="get" class="mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                 <!-- IPEN Input -->
                 <div>
                     <label for="ipen" class="block text-sm font-medium mb-1">IPEN:</label>
@@ -59,12 +59,15 @@
                         {{ form.escolha_tipo_regime }}
                     </div>
                 </div>
+                <!-- checked para Kit Higiene -->
+
                 <div>
-                    <label class="block text-sm font-medium mb-1">Inclui Kit Higiene:</label>
-                    <div class="flex justify-center">
+                    <label class="block text-sm font-medium mb-1">Com Higiene:</label>
+                    <div class="flex justify-center items-center">
                         {{ form.com_higiene }}
                     </div>
                 </div>
+
                 <!-- Botão Buscar -->
                 <div>
                     <button type="submit" class="bg-violet-400 text-white px-6 py-2 rounded hover:bg-violet-600 w-full">
@@ -98,7 +101,7 @@
         </div>
         
         {% if numero_rouparia %}
-            <form method="post" action="{% url 'relação_detentos:gerar_termo_rouparia' detento.id numero_rouparia request.GET.escolha_tipo_regime|default:'semiaberto' %}">
+            <form method="post" action="{% url 'relação_detentos:gerar_termo_rouparia' detento.id numero_rouparia request.GET.escolha_tipo_regime|default:'semiaberto' request.GET.com_higiene|default:'0' %}">
                 {% csrf_token %}
                 <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full">
                     <i class="fas fa-file-pdf"></i>

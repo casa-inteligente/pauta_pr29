@@ -15,5 +15,5 @@ urlpatterns = [
     path('termo-monitorado/<int:detento_ipen>/', termo_monitorado, name='termo_monitorado'),
     path('termo-kit-higiene/', gerar_termo_kit_higiene, name='gerar_termo_kit_higiene'),
     path('termo-rouparia/', view_termo_rouparia, name='view_termo_rouparia'),
-    path('gerar-termo-rouparia/<int:detento_id>/<int:numero_kit>/<str:regime>/', gerar_termo_rouparia, name='gerar_termo_rouparia'),
+    path('gerar-termo-rouparia/<int:detento_id>/<int:numero_kit>/<str:regime>/<str:com_higiene>/', gerar_termo_rouparia, name='gerar_termo_rouparia'),
 ]

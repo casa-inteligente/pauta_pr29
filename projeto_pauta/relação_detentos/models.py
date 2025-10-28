@@ -34,8 +34,7 @@ class Descricao_termo_rouparia(models.Model):
     )
 
     def __str__(self):
-        return self.numero_kit_roupa
-
+        return f"Kit {self.numero_kit_roupa}"
     class Meta:
         ordering = ('numero_kit_roupa',)
         verbose_name = 'descrição do termo de rouparia'

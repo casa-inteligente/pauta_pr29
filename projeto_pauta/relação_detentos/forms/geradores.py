@@ -8,8 +8,8 @@ cor_inativa_toggle = "#2ed33c"  # Verde (Semiaberto)
 
 class DescricaoKitHigieneForm(forms.ModelForm):
     class Meta:
-        model = Descricao_termo_rouparia  # Corrigido para usar o modelo correto
-        fields = ['escolha_tipo_regime', 'com_higiene']  # Corrigido: remover __all__
+        model = Descricao_termo_rouparia 
+        fields = ['escolha_tipo_regime', 'com_higiene']  
         widgets = {
             'escolha_tipo_regime': ToggleSwitchWidget(
                 size='sm',
