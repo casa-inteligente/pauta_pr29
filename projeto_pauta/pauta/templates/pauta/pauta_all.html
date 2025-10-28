@@ -23,7 +23,7 @@
 
     <!-- Menu de navegação -->
     <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
-        <button onclick="alert('Para utilizar a LISTA DE FUNCIONALIDADES, atualize os dados através de relatórios do IPEN-1_9. Acesse a RELAÇÃO DE DETENTOS e importe os .pdf(Adicionar/Atualizar)')" class="bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
+        <button onclick="alert('Para utilizar a LISTA DE FUNCIONALIDADES, atualize os dados através de relatórios do IPEN-1_9. Acesse a RELAÇÃO DE DETENTOS e importe os .pdf(Adicionar/Atualizar)')" class="hover:bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
             <img src="{% static 'pauta/img/help.svg' %}" alt="Ajuda" class="h-5">
         </button>
         <a href="{% url 'admin:index' %}"
@@ -32,7 +32,7 @@
         </a>
 
         <div class="relative group">
-            <button class="bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
+            <button class="bg-indigo-300 px-3 py-2 rounded text-sm flex items-center gap-2 hover:bg-indigo-500">
                 {% comment %} <img src="{% static 'pauta/img/skill.png' %}" alt="Relação" class="h-4">   {% endcomment %}
                 <i class="fas fa-thin fa-list"></i>
                         Lista de Funcionalidades
@@ -83,8 +83,8 @@
             <img src="{% static 'pauta/img/folha_resenha.png' %}" alt="Folha" class="h-6 inline"> Resenhas
         </a>
 
-        <button onclick="window.print()" class="bg-gray-700 text-white px-3 py-2 rounded text-sm hover:bg-black">
-            <img src="{% static 'pauta/img/printer.png' %}" alt="Imprimir" class="h-4 inline"> Imprimir
+        <button onclick="window.print()" class="px-3 py-2 rounded text-sm hover:bg-black">
+            <img src="{% static 'pauta/img/printer.png' %}" alt="Imprimir" class="h-4 inline">
         </button>
     </nav>
 
@@ -97,10 +97,10 @@
             <table class="min-w-full table-auto border-collapse border border-gray-300">
                 <thead class="bg-gray-200">
                     <tr class="text-center text-sm">
-                        <th class="border p-2 w-[15%]">Data</th>
-                        <th class="border p-2 w-[15%]">Hora</th>
-                        <th class="border p-2 w-[35%]">Nome</th>
-                        <th class="border p-2 w-[35%]">Situação</th>
+                        <th class="border p-2 w-[15%]">📅 Data</th>
+                        <th class="border p-2 w-[15%]">🕒 Hora</th>
+                        <th class="border p-2 w-[35%]">👤 Nome</th>
+                        <th class="border p-2 w-[35%]">📋 Situação</th>
                     </tr>
                 </thead>
                 <tbody>
