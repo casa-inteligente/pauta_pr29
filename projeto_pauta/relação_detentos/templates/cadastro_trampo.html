@@ -9,45 +9,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+<body class="bg-slate-300 text-gray-800 font-sans min-h-screen p-8">
     <!-- Menu de navegação -->
     <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
         <a href="{% url 'admin:index' %}"
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
             <img src="{% static 'pauta/img/login.png' %}" alt="Login" class="h-4"> Admin
-        </a>
-
-        <div class="relative group">
-            <button class="bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
-                <img src="{% static 'pauta/img/skill.png' %}" alt="Relação" class="h-4"> Relações
-            </button>
-            <div class="absolute hidden group-hover:block bg-white border mt-2 rounded shadow">
-                <a href="{% url 'relação_detentos:relacao_list' %}"
-                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Relação de Detentos</a>
-                <a href="{% url 'relação_detentos:cadastro_trampo' %}"
-                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Termo Trabalho Externo</a>
-                <a href="#" class="block px-4 py-2 hover:bg-gray-100 text-sm">Geração de Ofícios</a>
-                <a href="https://github.com/casa-inteligente/doc-tornozeleiras" target="_blank"
-                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Modelo PDF (Git)</a>
-                
-                <div class="px-4 py-2 border-t">
-                    <input type="number" 
-                        id="ipen_termo_monitorado" 
-                        placeholder="Digite o IPEN" 
-                        class="w-full border rounded px-2 py-1 text-sm">
-                    <button onclick="gerarTermoMonitorado()" 
-                        class="w-full mt-2 bg-violet-300 text-white px-2 py-1 rounded text-sm hover:bg-blue-700">
-                    Gerar Termo Monitorado
-                    </button>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Botões adicionais -->
-        <a href="{% url 'pauta:index_7' %}"
-            class="bg-yellow-600 text-white px-3 py-2 rounded text-sm hover:bg-yellow-700">
-            <img src="{% static 'pauta/img/age-restriction-seven.png' %}" alt="7 dias" class="h-4 inline"> Pauta 7 Dias
         </a>
 
         <a href="{% url 'pauta:pauta_all' %}"
@@ -63,7 +30,7 @@
 
 
 
-    <div class="max-w-2xl mx-auto mt-8 bg-white rounded-2xl shadow p-8">
+    <div class="max-w-2xl mx-auto mt-8 bg-indigo-300 rounded-2xl shadow p-8">
         <h1 class="text-2xl font-bold mb-4">Termo de Autorização para Trabalho Externo</h1>
         <form method="get" class="mb-6 flex gap-2">
             <input type="text" name="ipen" placeholder="Digite o IPEN"
@@ -112,5 +79,9 @@
         {% endif %}
     </div>
 </body>
-
+<!-- Rodapé -->
+    <footer class="max-w-5xl mx-auto mt-12 mb-6 text-center text-sm text-gray-600 print:hidden">
+        &copy; {{ ano_corrente }} Presídio Regional de Maravilha. Todos os direitos reservados.
+        
+    </footer>
 </html>

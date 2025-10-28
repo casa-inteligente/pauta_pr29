@@ -51,7 +51,7 @@ arial_bold_path = os.path.join(settings.BASE_DIR, 'projeto_pauta', 'static', 'fo
 pdfmetrics.registerFont(TTFont('Arial', arial_path))
 pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 
-
+ANO_CORRENTE = timezone.now().year
 
 # @login_required
 def relacao_list(request):
@@ -256,12 +256,15 @@ def view_termo_rouparia(request):
         except Relacao.DoesNotExist:
             detento = None
     
+    
+
     return render(request, 'gerador_rouparia.html', {
         'detento': detento,
         'numero_rouparia': numero_rouparia,
         'regime_selecionado': regime_selecionado,
         'com_kit_higiene': com_kit_higiene,
         'form': form,
+        'ano_corrente': ANO_CORRENTE,
     })
 
 def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, com_higiene:str):
@@ -269,7 +272,7 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
     Gera o termo de rouparia para o detento
     """
     detento = get_object_or_404(Relacao, id=detento_id)
-    
+    print(f'regime: {regime}')
     # Determinar o tipo de regime baseado no parâmetro
     if regime == 'on' or regime == 'True' or regime == 'fechado':
         
@@ -278,13 +281,15 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
             descricao_rouparia = descricao_obj.descricao_fechado if descricao_obj else "Kit de rouparia padrão do regime fechado"
         except:
             descricao_rouparia = "ERRO"
-    else:
+    elif regime == 'off' or regime == 'False' or regime == 'semiaberto':
         
         try:
             descricao_obj = Descricao_termo_rouparia.objects.first()
             descricao_rouparia = descricao_obj.descricao_semiaberto if descricao_obj else "Kit de rouparia padrão do regime semiaberto"
         except:
             descricao_rouparia = "ERRO"
+    else:
+        descricao_rouparia = "ERRO"
     
     # Processar o valor do kit higiene
     if com_higiene == 'on' or com_higiene == 'True' or com_higiene == '1':

@@ -10,17 +10,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
-<body class="bg-gray-200 text-gray-800 font-sans min-h-screen">
+<body class="bg-gray-200 text-gray-800 font-sans min-h-screen p-8">
     <!-- Menu de navegação -->
     <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
+        <a href="{% url 'pauta:pauta_all' %}"
+            class="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-900">
+            <img src="{% static 'pauta/img/home.png' %}" alt="inicio" class="h-4 inline"> Início
+        </a>
         <a href="{% url 'admin:index' %}"
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
             <img src="{% static 'pauta/img/login.png' %}" alt="Login" class="h-4"> Admin
-        </a>
-
-        <a href="{% url 'pauta:pauta_all' %}"
-            class="bg-indigo-600 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700">
-            <img src="{% static 'pauta/img/home.png' %}" alt="inicio" class="h-4 inline"> Início
         </a>
 
         <button onclick="window.print()" class="bg-gray-700 text-white px-3 py-2 rounded text-sm hover:bg-black">
@@ -54,7 +53,7 @@
                 
                 <!-- Toggle Switch para Regime -->
                 <div>
-                    <label class="block text-sm font-medium mb-1">Tipo de Regime:</label>
+                    <label class="block text-sm font-medium mb-1">Alocado no:</label>
                     <div class="flex justify-center">
                         {{ form.escolha_tipo_regime }}
                     </div>
@@ -79,19 +78,19 @@
 
         {% if detento %}
         <div class="mb-6 bg-white rounded-lg p-4 shadow">
-            <h2 class="text-lg font-semibold mb-2">Dados do Interno</h2>
+            <h2 class="text-lg font-semibold mb-2">Dados do Interno:</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><strong>IPEN:</strong> {{ detento.IPEN }}</div>
                 <div><strong>Nome:</strong> {{ detento.nome }}</div>
                 <div><strong>Número do Kit:</strong> {{ numero_rouparia|default:"Não informado" }}</div>
-                <div><strong>Regime Selecionado:</strong> 
+                <div><strong>Alocado no:</strong> 
                     {% if request.GET.escolha_tipo_regime %}
                         Fechado
                     {% else %}
                         Semiaberto
                     {% endif %}
                 </div>
-                <div><strong>Incluir Kit Higiene:</strong> 
+                <div><strong>Inclui Kit Higiene:</strong> 
                     {% if com_kit_higiene %}
                         Sim
                     {% else %}
@@ -103,7 +102,7 @@
         {% if numero_rouparia %}
             <form method="post" action="{% url 'relação_detentos:gerar_termo_rouparia' detento.id numero_rouparia request.GET.escolha_tipo_regime|default:'semiaberto' request.GET.com_higiene|default:'0' %}">
                 {% csrf_token %}
-                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full">
+                <button type="submit" class="bg-teal-500 text-white px-4 py-2 rounded hover:bg-green-400 w-full">
                     <i class="fas fa-file-pdf"></i>
                     Gerar Termo da Rouparia (PDF)
                 </button>
@@ -122,6 +121,10 @@
         </div>
         {% endif %}
     </div>
+    <!-- Rodapé -->
+    
 </body>
-
+    <footer class="max-w-5xl mx-auto mt-12 mb-6 text-center text-sm text-gray-600 print:hidden">
+        &copy; {{ ano_corrente }} Presídio Regional de Maravilha. Todos os direitos reservados.
+    </footer>
 </html>
