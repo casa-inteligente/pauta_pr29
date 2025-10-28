@@ -2,6 +2,32 @@ from django.db import models
 from django.utils import timezone
 import re
 
+ANO_CORRENTE = timezone.now().year
+
+class ResenhaLivroManager(models.Manager):
+    """ 
+    Classe para gerenciar buscas de resenhas de livros
+    """
+    def search_by_aluno_nome(self, nome_aluno:str, ano=ANO_CORRENTE ):
+        """Busca resenhas pelo nome do aluno, ignorando maiúsculas/minúsculas e espaços, e pelo ano."""
+        nome_aluno_clean = re.sub(r'\s+', ' ', nome_aluno.strip().lower())
+        return self.filter(
+            aluno__nome__icontains=nome_aluno_clean,
+            periodoLeitura__data_resenha__year=ano
+        )
+    def search_periodo_leitura(self, periodo_leitura):
+        """Busca resenhas pelo período de leitura."""
+        return self.filter(
+            periodoLeitura__intervalo_leitura__icontains=periodo_leitura
+        )
+    def search_aprovada(self, aprovada=True):
+        """Busca resenhas aprovadas ou não aprovadas."""
+        return self.filter(
+            aprovada=aprovada
+        )
+    
+
+
 class Turma(models.Model):
     """Modelo para turma, sempres sera duas"""
     nome = models.CharField('Nome da Turma:', max_length=100, blank=False, null=False)
@@ -59,9 +85,21 @@ class ResenhaLivro(models.Model):
         on_delete=models.CASCADE, 
         related_name='resenhas'
         )
-    nomelivro = models.CharField('Obra:', max_length=200, blank=False, null=False)
-    nomeAutor = models.CharField('Autor:', max_length=100, blank=False, null=False)
-    periodoLeitura = models.ForeignKey(PeriodoLeitura, on_delete=models.CASCADE, related_name='resenhas')
+    nomelivro = models.CharField(
+        verbose_name='Obra:', 
+        max_length=200, 
+        blank=False, null=False
+    )
+    nomeAutor = models.CharField(
+        verbose_name='Autor:', 
+        max_length=100, 
+        blank=False, null=False
+    )
+    periodoLeitura = models.ForeignKey(
+        PeriodoLeitura, 
+        on_delete=models.CASCADE, 
+        related_name='resenhas'
+    )
     nomeProfessor = models.CharField('Nome do professor(a):', max_length=150, blank=False, null=False, default='Terlene Bolzan')
     aprovada = models.BooleanField('Aprovada', default=True)
 
@@ -73,6 +111,9 @@ class ResenhaLivro(models.Model):
         """Modelo para data da resenha"""
         return self.periodoLeitura.data_resenha
 
+    #busca no banco de dados personalizada
+    objects = ResenhaLivroManager()
+
     class Meta:
         ordering = ('aluno',)
         verbose_name = 'resenha de livro'
@@ -80,7 +121,7 @@ class ResenhaLivro(models.Model):
         
 
     def format_data_resenha(self):
-        """Modelo para formatar a data da resenha, no modelo Brasileiro"""
+        """Modelo para formatar a data da resenha, no modelo"""
         if self.dataResenha:
             return self.dataResenha.strftime('%d/%m/%Y')
     format_data_resenha.short_description = 'Data da Resenha'

@@ -8,6 +8,8 @@
     <title>{{ titulo }}</title>
     <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body class="bg-gray-50 text-gray-800 font-sans">
@@ -21,34 +23,47 @@
 
     <!-- Menu de navegação -->
     <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
+        <button onclick="alert('Para utilizar a LISTA DE FUNCIONALIDADES, atualize os dados através de relatórios do IPEN-1_9. Acesse a RELAÇÃO DE DETENTOS e importe os .pdf(Adicionar/Atualizar)')" class="hover:bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
+            <img src="{% static 'pauta/img/help.svg' %}" alt="Ajuda" class="h-5">
+        </button>
         <a href="{% url 'admin:index' %}"
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
             <img src="{% static 'pauta/img/login.png' %}" alt="Login" class="h-4"> Admin
         </a>
 
         <div class="relative group">
-            <button class="bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
-                <img src="{% static 'pauta/img/skill.png' %}" alt="Relação" class="h-4"> Relações
+            <button class="bg-indigo-300 px-3 py-2 rounded text-sm flex items-center gap-2 hover:bg-indigo-500">
+                {% comment %} <img src="{% static 'pauta/img/skill.png' %}" alt="Relação" class="h-4">   {% endcomment %}
+                <i class="fas fa-thin fa-list"></i>
+                        Lista de Funcionalidades
             </button>
             <div class="absolute hidden group-hover:block bg-white border mt-2 rounded shadow">
                 <a href="{% url 'relação_detentos:relacao_list' %}"
-                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Relação de Detentos</a>
+                    class="block px-4 py-2 hover:bg-gray-100 text-sm"> Relação de Detentos</a>
                 <a href="{% url 'relação_detentos:cadastro_trampo' %}"
                     class="block px-4 py-2 hover:bg-gray-100 text-sm">Termo Trabalho Externo</a>
-                <a href="#" class="block px-4 py-2 hover:bg-gray-100 text-sm">Geração de Ofícios</a>
-                <a href="https://github.com/casa-inteligente/doc-tornozeleiras" target="_blank"
-                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Modelo PDF (Git)</a>
-                
+                <a href="#" class="block px-4 py-2 hover:bg-gray-100 text-sm">
+                    <i class="fas fa-solid fa-sheet-plastic"></i>
+                    Geração de Ofícios
+                </a>
+                <a href="{% url 'relação_detentos:gerar_termo_kit_higiene' %}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-sm">
+                    <i class="fas fa-solid fa-shower"></i>
+                    Termo Kit Higiene
+                </a>
+                <a href="{% url 'relação_detentos:view_termo_rouparia' %}"
+                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Termo Rouparia</a>
+
                 <div class="px-4 py-2 border-t">
                     <input type="number" 
                         id="ipen_termo_monitorado" 
-                        placeholder="Digite o IPEN" 
+                        placeholder="Digite o IPEN (6 dígitos)" 
                         class="w-full border rounded px-2 py-1 text-sm">
-                    <button onclick="gerarTermoMonitorado()" 
+                    <button onclick="window.location.href='{% url 'relação_detentos:termo_monitorado' 0 %}'.replace('0', document.getElementById('ipen_termo_monitorado').value)"
                         class="w-full mt-2 bg-violet-300 text-white px-2 py-1 rounded text-sm hover:bg-blue-700">
-                Gerar Termo Monitorado
-            </button>
-        </div>
+                    Gerar Termo Monitorado
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -68,8 +83,8 @@
             <img src="{% static 'pauta/img/folha_resenha.png' %}" alt="Folha" class="h-6 inline"> Resenhas
         </a>
 
-        <button onclick="window.print()" class="bg-gray-700 text-white px-3 py-2 rounded text-sm hover:bg-black">
-            <img src="{% static 'pauta/img/printer.png' %}" alt="Imprimir" class="h-4 inline"> Imprimir
+        <button onclick="window.print()" class="px-3 py-2 rounded text-sm hover:bg-black">
+            <img src="{% static 'pauta/img/printer.png' %}" alt="Imprimir" class="h-4 inline">
         </button>
     </nav>
 
@@ -82,10 +97,10 @@
             <table class="min-w-full table-auto border-collapse border border-gray-300">
                 <thead class="bg-gray-200">
                     <tr class="text-center text-sm">
-                        <th class="border p-2 w-[15%]">Data</th>
-                        <th class="border p-2 w-[15%]">Hora</th>
-                        <th class="border p-2 w-[35%]">Nome</th>
-                        <th class="border p-2 w-[35%]">Situação</th>
+                        <th class="border p-2 w-[15%]">📅 Data</th>
+                        <th class="border p-2 w-[15%]">🕒 Hora</th>
+                        <th class="border p-2 w-[35%]">👤 Nome</th>
+                        <th class="border p-2 w-[35%]">📋 Situação</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -147,14 +162,6 @@
             document.getElementById('document-url').innerText = documentURL;
         });
 
-        function gerarTermoMonitorado() {
-            const ipen = document.getElementById('ipen_termo_monitorado').value;
-            if (ipen) {
-                window.open(`{% url 'relação_detentos:termo_monitorado' 0 %}`.replace('0', ipen), '_blank');
-            } else{
-                alert('Por favor, insira um IPEN válido.');
-            }
-        }
     </script>
 </body>
 

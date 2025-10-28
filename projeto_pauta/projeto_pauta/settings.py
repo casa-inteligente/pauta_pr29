@@ -157,6 +157,11 @@ DATABASES = {
         'PASSWORD': 'pa1debatata',
         'HOST': 'localhost', #IP da aplicação
         'PORT': '5432', #Porta padrão
+        'CONN_MAX_AGE': 600,
+        'ATOMIC_REQUESTS': False,
+        'OPTIONS': {
+            'connect_timeout': 10,
+        }
     },
 }
 
@@ -167,6 +172,9 @@ DATABASE_ROUTERS = ['projeto_pauta.routers.NovoBancoRouter']
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
+    {#Criado Autentificador próprio
+        'NAME': 'pauta.validators.MinimumNumericPasswordValidator',
+    },
     # {
     #     "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     # },
@@ -179,12 +187,9 @@ AUTH_PASSWORD_VALIDATORS = [
     # {
     #     "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     # },
-    # {
+    #{
     #     "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     # },
-    {#Criado Autentificador próprio
-        'NAME': 'pauta.validators.MinimumNumericPasswordValidator',
-    },
 ]
 
 
