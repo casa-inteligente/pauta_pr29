@@ -24,11 +24,11 @@
     <!-- Menu de navegação -->
     <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
         <button onclick="alert('Para utilizar a LISTA DE FUNCIONALIDADES, atualize os dados através de relatórios do IPEN-1_9. Acesse a RELAÇÃO DE DETENTOS e importe os .pdf(Adicionar/Atualizar)')" class="hover:bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-2">
-            <img src="{% static 'pauta/img/help.svg' %}" alt="Ajuda" class="h-5">
+            <img src="{% static 'img/help.svg' %}" alt="Ajuda" class="h-5">
         </button>
         <a href="{% url 'admin:index' %}"
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
-            <img src="{% static 'pauta/img/login.png' %}" alt="Login" class="h-4"> Admin
+            <img src="{% static 'img/login.png' %}" alt="Login" class="h-4"> Admin
         </a>
 
         <div class="relative group">
@@ -70,21 +70,21 @@
         <!-- Botões adicionais -->
         <a href="{% url 'pauta:index_7' %}"
             class="bg-yellow-600 text-white px-3 py-2 rounded text-sm hover:bg-yellow-700">
-            <img src="{% static 'pauta/img/age-restriction-seven.png' %}" alt="7 dias" class="h-4 inline"> Pauta 7 Dias
+            <img src="{% static 'img/age-restriction-seven.png' %}" alt="7 dias" class="h-4 inline"> Pauta 7 Dias
         </a>
 
         <a href="{% url 'estatisticas:estatisticas_view' %}"
             class="bg-indigo-600 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700">
-            <img src="{% static 'pauta/img/estatisticas.png' %}" alt="Estatísticas" class="h-4 inline"> Estatísticas
+            <img src="{% static 'img/estatisticas.png' %}" alt="Estatísticas" class="h-4 inline"> Estatísticas
         </a>
 
         <a href="{% url 'resenha_livro:listar_alunos' %}"
-            class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700">
-            <img src="{% static 'pauta/img/folha_resenha.png' %}" alt="Folha" class="h-6 inline"> Resenhas
+            class="transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 hover:bg-green-900 duration-300 bg-green-600 text-white px-3 py-2 rounded text-sm">
+            <img src="{% static 'img/folha_resenha.png' %}" alt="Folha" class="h-6 inline"> Resenhas
         </a>
 
         <button onclick="window.print()" class="px-3 py-2 rounded text-sm hover:bg-black">
-            <img src="{% static 'pauta/img/printer.png' %}" alt="Imprimir" class="h-4 inline">
+            <img src="{% static 'img/printer.png' %}" alt="Imprimir" class="h-4 inline">
         </button>
     </nav>
 
@@ -149,7 +149,7 @@
     </div>
 
     <a href="#topo" class="fixed bottom-6 right-6 z-50 print:hidden">
-        <img src="{% static 'pauta/img/arrow-circle-up.png' %}" alt="Topo" class="h-10 w-10 hover:scale-110 transition">
+        <img src="{% static 'img/arrow-circle-up.png' %}" alt="Topo" class="h-10 w-10 hover:scale-110 transition">
     </a>
 
 

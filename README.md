@@ -14,7 +14,7 @@ Sistema web desenvolvido em Django para gerenciamento de pautas e administraçã
 ### 👥 Gestão de Detentos
 
 - [x] Cadastro completo de internos
-- [x] Controle de regime prisional (Fechado/Semiaberto)
+- [x] Classificação de regime prisional (Fechado/Semiaberto)
 - [x] Geração de termos e documentos oficiais
 - [x] Upload e processamento de PDFs
 
@@ -29,7 +29,6 @@ Sistema web desenvolvido em Django para gerenciamento de pautas e administraçã
 
 - [x] Toggle switches para seleção de regime
 - [x] Upload de arquivos PDF com extração de dados
-- [x] Sistema de progressão de pena
 - [x] Interface administrativa completa
 
 ## 🚀 Roadmap
@@ -38,7 +37,7 @@ Sistema web desenvolvido em Django para gerenciamento de pautas e administraçã
 - [ ] Sistema de notificações push
 - [ ] Dashboard com métricas e estatísticas
 - [ ] API REST para integração externa
-- [ ] Sistema de backup automático
+- [x] Sistema de backup automático
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -46,7 +45,7 @@ Sistema web desenvolvido em Django para gerenciamento de pautas e administraçã
 - **Frontend**: HTML5, CSS3, JavaScript
 - **Styling**: Tailwind CSS
 - **PDF Generation**: ReportLab
-- **Database**: SQLite (desenvolvimento) / PostgreSQL (produção)
+- **Database**: SQLite / PostgreSQL
 - **Icons**: Font Awesome
 - **Python**: 3.11+
 
@@ -169,7 +168,6 @@ Sistema de toggle switches para seleção intuitiva entre regimes prisionais:
 - Cabeçalhos e rodapés oficiais
 - Layouts responsivos
 - Dados dinâmicos dos internos
-- Assinaturas digitais
 
 ### Upload Inteligente de Arquivos
 
@@ -189,7 +187,6 @@ Sistema de toggle switches para seleção intuitiva entre regimes prisionais:
 - Logs detalhados de operações
 - Sistema de auditoria integrado
 - Rastreamento de alterações
-- Relatórios de uso
 
 ## 🤝 Contribuição
 
@@ -220,6 +217,6 @@ Para suporte técnico ou dúvidas:
 
 ---
 
-**Versão**: 1.0.0  
+**Versão**: 1.0.1
 **Status**: Em desenvolvimento ativo  
 **Última atualização**: Outubro 2025

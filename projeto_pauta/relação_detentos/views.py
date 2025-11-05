@@ -14,6 +14,9 @@ from reportlab.pdfgen import canvas
 import pandas as pd
 import json
 import datetime
+import locale
+import io 
+import os
 
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -36,9 +39,7 @@ from .models import Relacao, DescricaoKitHigiene, Descricao_termo_rouparia
 from PyPDF2 import PdfReader, PdfWriter
 from PyPDF2.generic import NameObject, createStringObject
 
-import io 
-
-import os
+locale.setlocale(locale.LC_ALL, 'pt_BR.utf8')
 
 
 # Registre Arial e Arial-Bold (se quiser usar negrito)
@@ -314,7 +315,7 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
     
     '''
     detento = get_object_or_404(Relacao, id=detento_id)
-    print(f'regime: {regime}')
+    #print(f'regime: {regime}')
     # Determinar o tipo de regime baseado no parâmetro
     if regime == 'on' or regime == 'True' or regime == 'fechado':
         
@@ -416,7 +417,7 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
     # Linha 1: Duas colunas - INTERNO
     tabela_dados.append([
         Paragraph("INTERNO:", estilo_justificado),
-        Paragraph(f"{detento.nome}", estilo_justificado),
+        Paragraph(f"{detento.nome}", estilo_subtitulo),
         "",  # Célula vazia
         ""   # Célula vazia
     ])
@@ -424,7 +425,7 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
     # Linha 2: Quatro colunas - IPEN e DATA
     tabela_dados.append([
         Paragraph("IPEN:", estilo_justificado),
-        Paragraph(f"{detento.IPEN}", estilo_justificado),
+        Paragraph(f"{detento.IPEN}", estilo_subtitulo),
         Paragraph(f"DATA: {data_atual}", estilo_justificado),
         ""
     ])
@@ -877,8 +878,8 @@ def gerar_termo_autorizacao(request, detento_id, empresa_conveniada):
     elementos.append(Spacer(1, 0.5 * cm))
 
     # Parágrafo 1
-    paragrafo1 = f"""No Presídio Regional de Maravilha, nesta data, o interno <b>{detento.nome}</b>, <b>{detento.IPEN}</b>, 
-    participou de instrução e ciência dos termos e condições para ingresso no trabalho externo junto à Empresa <b>{empresa_nome}</b>, 
+    paragrafo1 = f"""No Presídio Regional de Maravilha, nesta data, o interno <b> {detento.nome} </b> - <b> {detento.IPEN} </b>, 
+    participou de instrução e ciência dos termos e condições para ingresso no trabalho externo junto à Empresa <b> {empresa_nome} </b>, 
     na qual passará trabalhar."""
     elementos.append(Paragraph(paragrafo1, estilo_justificado))
 
@@ -924,7 +925,7 @@ def gerar_termo_autorizacao(request, detento_id, empresa_conveniada):
 
     # Assinatura
     elementos.append(Paragraph("_______________________________________", estilo_centralizado))
-    elementos.append(Paragraph(f"{detento.nome}", estilo_centralizado))
+    elementos.append(Paragraph(f"<b> {detento.nome} </b>", estilo_centralizado))
 
     # Gerar o PDF
     doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)

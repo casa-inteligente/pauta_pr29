@@ -15,15 +15,15 @@
     <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
         <a href="{% url 'pauta:pauta_all' %}"
             class="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-900">
-            <img src="{% static 'pauta/img/home.png' %}" alt="inicio" class="h-4 inline"> Início
+            <img src="{% static 'img/home.png' %}" alt="inicio" class="h-4 inline"> Início
         </a>
         <a href="{% url 'admin:index' %}"
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
-            <img src="{% static 'pauta/img/login.png' %}" alt="Login" class="h-4"> Admin
+            <img src="{% static 'img/login.png' %}" alt="Login" class="h-4"> Admin
         </a>
 
-        <button onclick="window.print()" class="bg-gray-700 text-white px-3 py-2 rounded text-sm hover:bg-black">
-            <img src="{% static 'pauta/img/printer.png' %}" alt="Imprimir" class="h-4 inline"> Imprimir
+        <button onclick="window.print()" class="bg-0 text-white px-3 py-2 rounded text-sm hover:bg-black">
+            <img src="{% static 'img/printer.png' %}" alt="Imprimir" class="h-4 inline">
         </button>
     </nav>
 

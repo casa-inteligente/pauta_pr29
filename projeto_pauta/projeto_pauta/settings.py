@@ -23,13 +23,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')
 print(f'Usuário: {os.getlogin()} - {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
-
-if platform.system() == 'Windows':
-    # Configura o locale para Windows
-    locale.setlocale(locale.LC_ALL, 'Portuguese_Brazil.1252')
-else:
-    # Configura o locale para sistemas Unix/Linux
-    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+try:
+    if platform.system() == 'Windows':
+        # Configura o locale para Windows
+        locale.setlocale(locale.LC_ALL, 'Portuguese_Brazil.1252')
+    else:
+        # Tenta configurar o locale para sistemas Unix/Linux
+        try:
+            locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+        except locale.Error:
+            try:
+                locale.setlocale(locale.LC_ALL, 'pt_BR.utf8')
+            except locale.Error:
+                # Força o uso do Django para formatação
+                #print("Aviso: Locale pt_BR não encontrado, usando formatação do Django")
+                os.environ['LC_ALL'] = 'pt_BR.UTF-8'
+                os.environ['LANG'] = 'pt_BR.UTF-8'
+except Exception as e:
+    print(f"Erro ao configurar locale: {e}")
 
 
 
@@ -202,7 +213,13 @@ TIME_ZONE = "America/Sao_Paulo"
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
+
+DATE_FORMAT = 'd/m/Y'
+DATETIME_FORMAT = 'd/m/Y H:i:s'
+SHORT_DATE_FORMAT = 'd/m/Y'
 
 #linguagem do summernote
 SUMMERNOTE_CONFIG = {
