@@ -67,6 +67,18 @@ def relacao_list(request):
     Template:
         pauta/template/relacao_list.html
     '''
+
+    # Ordem para local_alocacao (A, B, D)
+    local_alocacao_order = Case(
+        When(local_alocacao='A', then=Value(1)),
+        When(local_alocacao='B', then=Value(2)),
+        When(local_alocacao='C', then=Value(3)),
+        When(local_alocacao='D', then=Value(4)),
+        When(local_alocacao='E', then=Value(5)),
+    )
+    
+
+
     regime_order = Case(
         When(regime='PRO', then=Value(1)),
         When(regime='PRE', then=Value(2)),
@@ -75,8 +87,9 @@ def relacao_list(request):
     )
 
     relacoes = Relacao.objects.all().annotate(
+        local_alocacao_order=local_alocacao_order,
         regime_order=regime_order
-    ).order_by('regime_order', 'previsao_saida', 'local_alocacao', 'nome')
+    ).order_by('local_alocacao_order', 'local_residencia', 'nome')
 
     regime_map = {
         'PRO': 'Temporária',
@@ -599,8 +612,8 @@ def gerar_termo_kit_higiene(request):
     #detentos = Relacao.objects.all().order_by('local_alocacao', 'regime','nome')
     detentos = (
         Relacao.objects
-        .only('IPEN', 'nome', 'local_alocacao', 'regime')  # Busca apenas campos necessários
-        .order_by('local_alocacao', 'regime', 'nome')
+        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia')  # Busca apenas campos necessários
+        .order_by('local_alocacao', 'local_residencia', 'nome')
     )
     
 

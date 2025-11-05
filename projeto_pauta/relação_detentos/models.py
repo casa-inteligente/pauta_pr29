@@ -142,6 +142,11 @@ class Relacao(models.Model):
         default='F',
         max_length=3
     )
+    local_residencia = models.IntegerField(
+        verbose_name='Local de Residência',
+        
+    )
+
     observacoes = models.CharField(
         verbose_name='Observações',
         max_length=150,

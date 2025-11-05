@@ -92,6 +92,8 @@ def process_pdf(file_path):
         first_col = df.iloc[:, 0].astype(str).reset_index(drop=True) # Coluna que contém IPEN e NOME
         third_col = df.iloc[:, 2].reset_index(drop=True) # Coluna que contém data de ingresso
         fifth_col = df.iloc[:, 4].reset_index(drop=True) # Coluna que contém a alocação
+        col_residencia = df.iloc[:, 8].reset_index(drop=True) # Coluna que contém a residencia
+        #print(f'Residência extraída:\t {col_residencia}')
 
         added_records = []
         ipens_no_pdf = set()
@@ -104,12 +106,14 @@ def process_pdf(file_path):
                 nome = ipen_nome[1].replace('\n', ' ')
                 ingresso = pd.to_datetime(third_col[i], format='%d/%m/%Y').date()
                 local_alocacao = map_local_alocacao(fifth_col[i])
+                local_residencia = col_residencia[i]#Apenas numero
 
                 # Verificar se o IPEN já está cadastrado
                 relacao, created = Relacao.objects.get_or_create(IPEN=ipen, defaults={
                     'nome': nome,
                     'ingresso': ingresso,
                     'local_alocacao': local_alocacao,
+                    'local_residencia': local_residencia,
                     'atualizado': timezone.now()
                 })
 

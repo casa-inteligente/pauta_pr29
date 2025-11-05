@@ -23,6 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')
 print(f'Usuário: {os.getlogin()} - {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
+
 try:
     if platform.system() == 'Windows':
         # Configura o locale para Windows
