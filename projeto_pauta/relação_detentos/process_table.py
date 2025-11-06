@@ -85,7 +85,7 @@ def process_pdf(file_path):
 
         if diferenca_total_dados != 0:
             #print('Possui divergencia de informações')
-            raise ValueError('Ao final das concatenações das tabelas esta faltando informações')
+            raise ValueError('Ao final das concatenações das tabelas esta faltando informações \n\n O pdf gerado esta incompleto na sua concepção ou houve erro na leitura das tabelas.')
             #print('Possui divergencia de informações')
 
         # Pegar as colunas necessárias

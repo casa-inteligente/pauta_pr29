@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     'relação_detentos', #Para o controle dos prazos
     'resenha_livro', #para o controle de resenhas
     'estatisticas', #para o controle de estatisticas
+    'servidores', #para o controle de servidores
 ]
 
 MIDDLEWARE = [
