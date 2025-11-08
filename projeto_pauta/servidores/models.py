@@ -144,7 +144,13 @@ class ServidorFolgaCompensatoria(models.Model):
         verbose_name='Data da folga compensatória',
         blank=False,
         null=False
-    )   
+    )
+    observacao_folga = models.TextField(
+        verbose_name='Observação da folga compensatória',
+        max_length=300,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return f'Folga compensatória de {self.servidor.nome} em {self.data_folga}'
