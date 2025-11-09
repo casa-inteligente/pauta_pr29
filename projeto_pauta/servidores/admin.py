@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria
+from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra
 
 @admin.register(Servidores)
 class ServidoresAdmin(admin.ModelAdmin):
@@ -27,6 +27,13 @@ class ServidorAtestadoMedicoAdmin(admin.ModelAdmin):
 @admin.register(ServidorFolgaCompensatoria)
 class ServidorFolgaCompensatoriaAdmin(admin.ModelAdmin):
     list_display = ['servidor', 'data_folga']
+    list_filter = ['servidor']
+    search_fields = ['servidor__nome']
+    ordering = ['servidor']
+
+@admin.register(ServidoresExtra)
+class ServidoresExtraAdmin(admin.ModelAdmin):
+    list_display = ['servidor', 'data_extra', 'periodo_extra']
     list_filter = ['servidor']
     search_fields = ['servidor__nome']
     ordering = ['servidor']

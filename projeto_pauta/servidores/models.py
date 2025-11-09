@@ -11,15 +11,33 @@ class ServidoresPlantao(models.TextChoices):
     PLANTAO_D = 'PLANTAO_D', 'Plantão D'
     ADMINISTRATIVO = 'ADMINISTRATIVO', 'Administrativo'
 
+class HorariosExtras(models.TextChoices):
+    PRIMEIRO_HORARIO = 'PRIMEIRO_HORARIO', '08h00 às 12h00'
+    SEGUNDO_HORARIO = 'SEGUNDO_HORARIO', '12h00 às 16h00'
+    TERCEIRO_HORARIO = 'TERCEIRO_HORARIO', '16h00 às 00h00'
+
 class Servidores(models.Model):
 
-
     nome = models.CharField(
-        verbose_name='Nome do servidor',
+        verbose_name='Nome:',
         max_length=100,
         blank=False,
         null=False
     )
+    sobrenome = models.CharField(
+        verbose_name='Sobrenome:',
+        max_length=100,
+        blank=False,
+        null=False
+    )
+
+    nome_exibir = models.CharField(
+        verbose_name='Nome para exibição',
+        max_length=150,
+        blank=False,
+        null=False
+    )
+    
     matricula = models.IntegerField(
         verbose_name='Matrícula do servidor',
         blank=False,
@@ -41,6 +59,7 @@ class Servidores(models.Model):
     setor = models.CharField(
         verbose_name='Setor do servidor',
         choices=ServidoresPlantao.choices,
+        max_length=20,
         blank=False,
         null=False
     )
@@ -159,3 +178,34 @@ class ServidorFolgaCompensatoria(models.Model):
         ordering = ('servidor', 'data_folga',)
         verbose_name = 'folga compensatória do servidor'
         verbose_name_plural = 'folgas compensatórias dos servidores'
+
+
+class ServidoresExtra(models.Model):
+
+    servidor = models.ForeignKey(
+        Servidores,
+        on_delete=models.CASCADE,
+        verbose_name='Plantonista'
+    )
+    data_extra = models.DateField(
+        verbose_name='Data',
+        blank=False,
+        null=False
+    )
+    periodo_extra = models.CharField(
+        verbose_name='Período do extra',
+        choices=HorariosExtras.choices,
+        max_length=20,
+        blank=False,
+        null=False
+    )
+   
+   
+
+    def __str__(self):
+        return f'Hora extra de {self.servidor.nome} em {self.data_extra}'
+
+    class Meta:
+        ordering = ('data_extra', 'servidor',)
+        verbose_name = 'Plantonista extra'
+        verbose_name_plural = 'Plantonistas extras'
