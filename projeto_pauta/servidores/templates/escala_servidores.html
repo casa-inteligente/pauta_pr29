@@ -154,27 +154,27 @@
                 <!-- ... resto da tabela permanece igual ao código anterior ... -->
                 <thead>
                     <tr class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold">
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold print:border-black print:px-1 print:py-1">
                             <i class="fas fa-calendar-day no-print"></i><br>Dia
                         </th>
-                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold">
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold print:border-black print:px-1 print:py-1">
                             <i class="fas fa-clock no-print"></i><br>Semana
                         </th>
-                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold">
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold print:border-black print:px-1 print:py-1">
                             <i class="fas fa-shield-alt no-print"></i><br>Plantão
                         </th>
-                        <th class="border border-gray-300 px-4 py-3 text-center font-semibold min-w-48">
+                        <th class="border border-gray-300 px-4 py-3 text-center font-semibold min-w-48 print:border-black print:px-1 print:py-1">
                             <i class="fas fa-users no-print"></i><br>Plantonistas
                         </th>
-                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs">
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs print:border-black print:px-1 print:py-1">
                             <i class="fas fa-plus-circle no-print"></i><br>Extra 1º Horário<br>
                             <span class="text-xs font-normal">(00h00 às 08h00)</span>
                         </th>
-                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs">
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs print:border-black print:px-1 print:py-1">
                             <i class="fas fa-plus-circle no-print"></i><br>Extra 2º Horário<br>
                             <span class="text-xs font-normal">(08h00 às 16h00)</span>
                         </th>
-                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs">
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs print:border-black print:px-1 print:py-1">
                             <i class="fas fa-plus-circle no-print"></i><br>Extra 3º Horário<br>
                             <span class="text-xs font-normal">(16h00 às 00h00)</span>
                         </th>
@@ -195,15 +195,15 @@
                         {% endif %}
                         transition-colors duration-200">
                         
-                        <td class="border border-gray-300 px-3 py-2 text-center">
+                        <td class="border border-gray-300 px-3 py-2 text-center print:border-black">
                             <span class="text-lg font-bold text-gray-800">{{ linha.dia }}</span>
                         </td>
                         
-                        <td class="border border-gray-300 px-3 py-2 text-center capitalize">
+                        <td class="border border-gray-300 px-3 py-2 text-center capitalize print:border-black">
                             {{ linha.nome_dia_semana }}
                         </td>
                         
-                        <td class="border border-gray-300 px-3 py-2 text-center">
+                        <td class="border border-gray-300 px-3 py-2 text-center print:border-black">
                             <span class="
                                 {% if linha.plantao == 'A' %}bg-pink-500
                                 {% elif linha.plantao == 'B' %}bg-green-500
@@ -215,7 +215,7 @@
                             </span>
                         </td>
                         
-                        <td class="border border-gray-300 px-4 py-2 text-left max-w-48">
+                        <td class="border border-gray-300 px-4 py-2 text-left max-w-48 print:border-black">
                             {% if linha.servidores_lista %}
                                 <div class="text-sm">
                                     {% for servidor in linha.servidores_lista %}
@@ -234,7 +234,7 @@
                             {% endif %}
                         </td>
                         
-                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32">
+                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32 print:border-black">
                             {% if linha.extras_primeiro_lista %}
                                 {% for extra in linha.extras_primeiro_lista %}
                                     <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
@@ -246,7 +246,7 @@
                             {% endif %}
                         </td>
                         
-                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32">
+                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32 print:border-black">
                             {% if linha.extras_segundo_lista %}
                                 {% for extra in linha.extras_segundo_lista %}
                                     <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
@@ -258,7 +258,7 @@
                             {% endif %}
                         </td>
                         
-                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32">
+                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32 print:border-black">
                             {% if linha.extras_terceiro_lista %}
                                 {% for extra in linha.extras_terceiro_lista %}
                                     <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
