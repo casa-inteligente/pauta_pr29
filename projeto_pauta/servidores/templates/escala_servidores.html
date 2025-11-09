@@ -92,9 +92,11 @@
                 {% endif %}
 
                 <!-- Título do Mês Atual -->
+                {% if tipo_visualizacao == 'atual' or tipo_visualizacao == 'proximo' %}
                 <div class="text-lg font-bold text-gray-800 px-4 py-2">
                     {{ nome_mes }} {{ ano_corrente }}
                 </div>
+                {% endif %}
 
                 <!-- Botão Próximo Mês -->
                 {% if tipo_visualizacao == 'historico' %}
@@ -181,8 +183,7 @@
                 <tbody>
                     {% for linha in escala_dados %}
                     <tr class="
-                        {% if linha.nome_dia_semana == 'sábado' or linha.nome_dia_semana == 'domingo' %}
-                            bg-red-100 hover:bg-red-200 font-semibold
+                        {% if linha.nome_dia_semana == 'sábado' or linha.nome_dia_semana == 'domingo' %}bg-red-100 hover:bg-red-200 font-semibold print:font-normal
                         {% elif linha.plantao == 'A' %}
                             bg-pink-50 hover:bg-pink-100
                         {% elif linha.plantao == 'B' %}
