@@ -30,14 +30,20 @@ def gerar_escala_mes(ano, mes):
             status_ativo=True
         )
     
+    # Data de referência para calcular sequência contínua (01/01/2024 = Plantão A)
+    data_referencia = date(2025, 10, 31)  # Esta data será plantão A
+    
     # Gerar dados da escala
     escala_dados = []
     
     for dia in range(1, num_dias_mes + 1):
         data_dia = date(ano, mes, dia)
         
-        # Determinar o plantão do dia (A, B, C, D em ciclo)
-        plantao_indice = (dia - 1) % 4
+        # Calcular quantos dias se passaram desde a data de referência
+        dias_desde_referencia = (data_dia - data_referencia).days
+        
+        # Determinar o plantão baseado na sequência contínua A,B,C,D
+        plantao_indice = dias_desde_referencia % 4
         plantao_dia = plantoes[plantao_indice]
         plantao_key = f'PLANTAO_{plantao_dia}'
         
