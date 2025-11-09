@@ -1,0 +1,269 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escala Plantonista</title>
+    <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { margin: 0; padding: 0; }
+            .escala-table { font-size: 8px !important; }
+            .escala-table th, .escala-table td { padding: 4px !important; }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-200 text-gray-800 font-sans min-h-screen p-4">
+    <!-- Menu de navegação -->
+    <nav class="max-w-7xl mx-auto mb-6 flex flex-wrap justify-center gap-3 no-print" id="topo">
+        <a href="{% url 'pauta:pauta_all' %}"
+            class="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-900 flex items-center gap-2">
+            <img src="{% static 'img/home.png' %}" alt="inicio" class="h-4"> Início
+        </a>
+        <a href="{% url 'admin:index' %}"
+            class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
+            <img src="{% static 'img/login.png' %}" alt="Login" class="h-4"> Admin
+        </a>
+        <button onclick="window.print()" 
+            class="bg-gray-800 text-white px-3 py-2 rounded text-sm hover:bg-black flex items-center gap-2">
+            <img src="{% static 'img/printer.png' %}" alt="Imprimir" class="h-4"> Imprimir
+        </button>
+        <a href="{% url 'servidores:lista_escala_servidores' %}"
+            class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 flex items-center gap-2">
+            <i class="fas fa-sync-alt"></i> Atualizar
+        </a>
+    </nav>
+
+    <!-- Container principal -->
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6">
+        <!-- Cabeçalho -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-calendar-alt text-blue-600"></i>
+                Escala de Servidores
+            </h1>
+            <h2 class="text-xl text-gray-600">{{ nome_mes }} de {{ ano_corrente }}</h2>
+        </div>
+
+        <!-- Filtros/Controles -->
+        <div class="mb-6 bg-gray-50 rounded-lg p-4 no-print">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                <div class="text-sm">
+                    <span class="font-semibold">Total de dias:</span> {{ escala_dados|length }}
+                </div>
+                <div class="text-sm">
+                    <span class="font-semibold">Plantões:</span> A, B, C, D
+                </div>
+                <div class="text-sm">
+                    <span class="font-semibold">Última atualização:</span> 
+                    <span id="last-update"></span>
+                </div>
+                <div class="flex justify-end">
+                    <button onclick="toggleLegenda()" 
+                        class="bg-indigo-500 text-white px-3 py-1 rounded text-sm hover:bg-indigo-600">
+                        <i class="fas fa-info-circle"></i> Ver Legenda
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela da Escala -->
+        <div class="overflow-x-auto shadow-md rounded-lg">
+            <table class="escala-table w-full border-collapse bg-white">
+                <thead>
+                    <tr class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold">
+                            <i class="fas fa-calendar-day"></i><br>Dia
+                        </th>
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold">
+                            <i class="fas fa-clock"></i><br>Semana
+                        </th>
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold">
+                            <i class="fas fa-shield-alt"></i><br>Plantão
+                        </th>
+                        <th class="border border-gray-300 px-4 py-3 text-center font-semibold min-w-48">
+                            <i class="fas fa-users"></i><br>Plantonistas
+                        </th>
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs">
+                            <i class="fas fa-plus-circle"></i><br>Extra 1º Horário<br>
+                            <span class="text-xs font-normal">(08h00 às 12h00)</span>
+                        </th>
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs">
+                            <i class="fas fa-plus-circle"></i><br>Extra 2º Horário<br>
+                            <span class="text-xs font-normal">(12h00 às 16h00)</span>
+                        </th>
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs">
+                            <i class="fas fa-plus-circle"></i><br>Extra 3º Horário<br>
+                            <span class="text-xs font-normal">(16h00 às 00h00)</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linha in escala_dados %}
+                    <tr class="
+                        {% if linha.nome_dia_semana == 'sábado' or linha.nome_dia_semana == 'domingo' %}
+                            bg-red-100 hover:bg-red-200 font-semibold
+                        {% elif linha.plantao == 'A' %}
+                            bg-pink-50 hover:bg-pink-100
+                        {% elif linha.plantao == 'B' %}
+                            bg-green-50 hover:bg-green-100
+                        {% elif linha.plantao == 'C' %}
+                            bg-orange-50 hover:bg-orange-100
+                        {% elif linha.plantao == 'D' %}
+                            bg-blue-50 hover:bg-blue-100
+                        {% endif %}
+                        transition-colors duration-200">
+                        
+                        <td class="border border-gray-300 px-3 py-2 text-center">
+                            <span class="text-lg font-bold text-gray-800">{{ linha.dia }}</span>
+                        </td>
+                        
+                        <td class="border border-gray-300 px-3 py-2 text-center capitalize">
+                            {{ linha.nome_dia_semana }}
+                        </td>
+                        
+                        <td class="border border-gray-300 px-3 py-2 text-center">
+                            <span class="
+                                {% if linha.plantao == 'A' %}bg-pink-500
+                                {% elif linha.plantao == 'B' %}bg-green-500
+                                {% elif linha.plantao == 'C' %}bg-orange-500
+                                {% elif linha.plantao == 'D' %}bg-blue-500
+                                {% endif %}
+                                text-white px-2 py-1 rounded-full font-bold text-sm">
+                                {{ linha.plantao }}
+                            </span>
+                        </td>
+                        
+                        <td class="border border-gray-300 px-4 py-2 text-left max-w-48">
+                            {% if linha.servidores %}
+                                <div class="text-sm">
+                                    {% for servidor in linha.servidores %}
+                                        <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-xs mb-1 mr-1">
+                                            <i class="fas fa-user text-gray-600"></i> {{ servidor }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center">
+                                    <span class="text-red-500 italic text-xs">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Nenhum servidor disponível
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32">
+                            {% if linha.extras_primeiro %}
+                                {% for extra in linha.extras_primeiro %}
+                                    <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
+                                        {{ extra }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32">
+                            {% if linha.extras_segundo %}
+                                {% for extra in linha.extras_segundo %}
+                                    <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
+                                        {{ extra }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32">
+                            {% if linha.extras_terceiro %}
+                                {% for extra in linha.extras_terceiro %}
+                                    <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
+                                        {{ extra }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Legenda -->
+        <div id="legenda" class="mt-6 bg-gray-50 rounded-lg p-4 no-print hidden">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                <i class="fas fa-info-circle text-blue-600"></i>
+                Legenda e Informações
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold mb-2 text-gray-700">Cores dos Plantões:</h4>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-pink-500 text-white px-2 py-1 rounded text-sm font-bold">A</span>
+                            <span class="text-sm">Plantão A - Rosa</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-green-500 text-white px-2 py-1 rounded text-sm font-bold">B</span>
+                            <span class="text-sm">Plantão B - Verde</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-orange-500 text-white px-2 py-1 rounded text-sm font-bold">C</span>
+                            <span class="text-sm">Plantão C - Laranja</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-blue-500 text-white px-2 py-1 rounded text-sm font-bold">D</span>
+                            <span class="text-sm">Plantão D - Azul</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-red-200 px-2 py-1 rounded text-sm font-bold">Weekend</span>
+                            <span class="text-sm">Fins de semana - Vermelho</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-2 text-gray-700">Observações Importantes:</h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li><i class="fas fa-check text-green-600"></i> Servidores em férias, atestado médico ou folga não aparecem na escala</li>
+                        <li><i class="fas fa-sync text-blue-600"></i> Os plantões seguem a ordem A, B, C, D em ciclo durante todo o mês</li>
+                        <li><i class="fas fa-plus text-yellow-600"></i> Extras são adicionais aos servidores do plantão regular</li>
+                        <li><i class="fas fa-clock text-purple-600"></i> Horários de extra: 08h-12h, 12h-16h, 16h-00h</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="max-w-7xl mx-auto mt-8 mb-6 text-center text-sm text-gray-600 no-print">
+        &copy; {{ ano_corrente }} Presídio Regional de Maravilha. Todos os direitos reservados.
+    </footer>
+
+    <script>
+        function toggleLegenda() {
+            const legenda = document.getElementById('legenda');
+            legenda.classList.toggle('hidden');
+        }
+
+        // Atualizar timestamp
+        document.getElementById('last-update').textContent = new Date().toLocaleString('pt-BR');
+
+        // Template tag personalizado para split (adicione no seu templatetags se necessário)
+        // Ou remova as referências a split e use apenas {{ linha.servidores }}
+    </script>
+</body>
+</html>
