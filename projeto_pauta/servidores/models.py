@@ -10,10 +10,11 @@ class ServidoresPlantao(models.TextChoices):
     PLANTAO_C = 'PLANTAO_C', 'Plantão C'
     PLANTAO_D = 'PLANTAO_D', 'Plantão D'
     ADMINISTRATIVO = 'ADMINISTRATIVO', 'Administrativo'
+    OUTRAS = 'OUTRAS', 'Outras'
 
 class HorariosExtras(models.TextChoices):
-    PRIMEIRO_HORARIO = 'PRIMEIRO_HORARIO', '08h00 às 12h00'
-    SEGUNDO_HORARIO = 'SEGUNDO_HORARIO', '12h00 às 16h00'
+    PRIMEIRO_HORARIO = 'PRIMEIRO_HORARIO', '00h00 às 08h00'
+    SEGUNDO_HORARIO = 'SEGUNDO_HORARIO', '08h00 às 16h00'
     TERCEIRO_HORARIO = 'TERCEIRO_HORARIO', '16h00 às 00h00'
 
 class Servidores(models.Model):

@@ -15,7 +15,7 @@
             .no-print { display: none !important; }
             body { margin: 0; padding: 0; }
             .escala-table { font-size: 8px !important; }
-            .escala-table th, .escala-table td { padding: 4px !important; }
+            .escala-table th, .escala-table td { padding: 2px !important; }
         }
     </style>
 </head>
@@ -45,7 +45,7 @@
     <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6">
         <!-- Cabeçalho -->
         <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2 print:text-xl print:mb-1">
                 <i class="fas fa-calendar-alt text-blue-600"></i>
                 Escala de Servidores
             </h1>
@@ -80,27 +80,27 @@
                 <thead>
                     <tr class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
                         <th class="border border-gray-300 px-3 py-3 text-center font-semibold">
-                            <i class="fas fa-calendar-day"></i><br>Dia
+                            <i class="fas fa-calendar-day no-print"></i><br>Dia
                         </th>
                         <th class="border border-gray-300 px-3 py-3 text-center font-semibold">
-                            <i class="fas fa-clock"></i><br>Semana
+                            <i class="fas fa-clock no-print"></i><br>Semana
                         </th>
                         <th class="border border-gray-300 px-3 py-3 text-center font-semibold">
-                            <i class="fas fa-shield-alt"></i><br>Plantão
+                            <i class="fas fa-shield-alt no-print"></i><br>Plantão
                         </th>
                         <th class="border border-gray-300 px-4 py-3 text-center font-semibold min-w-48">
-                            <i class="fas fa-users"></i><br>Plantonistas
+                            <i class="fas fa-users no-print"></i><br>Plantonistas
                         </th>
                         <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs">
-                            <i class="fas fa-plus-circle"></i><br>Extra 1º Horário<br>
-                            <span class="text-xs font-normal">(08h00 às 12h00)</span>
+                            <i class="fas fa-plus-circle no-print"></i><br>Extra 1º Horário<br>
+                            <span class="text-xs font-normal">(00h00 às 08h00)</span>
                         </th>
                         <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs">
-                            <i class="fas fa-plus-circle"></i><br>Extra 2º Horário<br>
-                            <span class="text-xs font-normal">(12h00 às 16h00)</span>
+                            <i class="fas fa-plus-circle no-print"></i><br>Extra 2º Horário<br>
+                            <span class="text-xs font-normal">(08h00 às 16h00)</span>
                         </th>
                         <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs">
-                            <i class="fas fa-plus-circle"></i><br>Extra 3º Horário<br>
+                            <i class="fas fa-plus-circle no-print"></i><br>Extra 3º Horário<br>
                             <span class="text-xs font-normal">(16h00 às 00h00)</span>
                         </th>
                     </tr>
@@ -142,9 +142,9 @@
                         </td>
                         
                         <td class="border border-gray-300 px-4 py-2 text-left max-w-48">
-                            {% if linha.servidores %}
+                            {% if linha.servidores_lista %}
                                 <div class="text-sm">
-                                    {% for servidor in linha.servidores %}
+                                    {% for servidor in linha.servidores_lista %}
                                         <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-xs mb-1 mr-1">
                                             <i class="fas fa-user text-gray-600"></i> {{ servidor }}
                                         </span>
@@ -161,8 +161,8 @@
                         </td>
                         
                         <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32">
-                            {% if linha.extras_primeiro %}
-                                {% for extra in linha.extras_primeiro %}
+                            {% if linha.extras_primeiro_lista %}
+                                {% for extra in linha.extras_primeiro_lista %}
                                     <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
                                         {{ extra }}
                                     </span>
@@ -173,8 +173,8 @@
                         </td>
                         
                         <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32">
-                            {% if linha.extras_segundo %}
-                                {% for extra in linha.extras_segundo %}
+                            {% if linha.extras_segundo_lista %}
+                                {% for extra in linha.extras_segundo_lista %}
                                     <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
                                         {{ extra }}
                                     </span>
@@ -185,8 +185,8 @@
                         </td>
                         
                         <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32">
-                            {% if linha.extras_terceiro %}
-                                {% for extra in linha.extras_terceiro %}
+                            {% if linha.extras_terceiro_lista %}
+                                {% for extra in linha.extras_terceiro_lista %}
                                     <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
                                         {{ extra }}
                                     </span>
@@ -261,9 +261,6 @@
 
         // Atualizar timestamp
         document.getElementById('last-update').textContent = new Date().toLocaleString('pt-BR');
-
-        // Template tag personalizado para split (adicione no seu templatetags se necessário)
-        // Ou remova as referências a split e use apenas {{ linha.servidores }}
     </script>
 </body>
 </html>

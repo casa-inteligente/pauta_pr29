@@ -1,9 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra
 from django.http import HttpResponse
+
+from projeto_pauta.permission_group import grupos_permitidos
+
 from datetime import date, timedelta
+
+
 import calendar
 
+
+#@grupos_permitidos('relacao',)
 def lista_escala_servidores(request):
     ano_corrente = date.today().year
     mes_corrente = date.today().month
@@ -67,32 +74,37 @@ def lista_escala_servidores(request):
             ).exists()
             
             if not (em_ferias or com_atestado or de_folga):
-                servidores_disponiveis.append(servidor.nome)
+                # Usar nome_exibir em vez de nome
+                servidores_disponiveis.append(servidor.nome_exibir)
         
-        # Obter extras por horário
-        extras_primeiro = ServidoresExtra.objects.filter(
+        # Obter extras por horário - usando nome_exibir
+        extras_primeiro = list(ServidoresExtra.objects.filter(
             data_extra=data_dia,
             periodo_extra='PRIMEIRO_HORARIO'
-        ).values_list('servidor__nome', flat=True)
+        ).values_list('servidor__nome_exibir', flat=True))
         
-        extras_segundo = ServidoresExtra.objects.filter(
+        extras_segundo = list(ServidoresExtra.objects.filter(
             data_extra=data_dia,
             periodo_extra='SEGUNDO_HORARIO'
-        ).values_list('servidor__nome', flat=True)
+        ).values_list('servidor__nome_exibir', flat=True))
         
-        extras_terceiro = ServidoresExtra.objects.filter(
+        extras_terceiro = list(ServidoresExtra.objects.filter(
             data_extra=data_dia,
             periodo_extra='TERCEIRO_HORARIO'
-        ).values_list('servidor__nome', flat=True)
+        ).values_list('servidor__nome_exibir', flat=True))
         
         escala_dados.append({
             'dia': dia,
             'nome_dia_semana': nome_dia_semana,
             'plantao': plantao_dia,
-            'servidores': ', '.join(servidores_disponiveis),
-            'extras_primeiro': ', '.join(extras_primeiro),
-            'extras_segundo': ', '.join(extras_segundo),
-            'extras_terceiro': ', '.join(extras_terceiro),
+            'servidores_lista': servidores_disponiveis,  # Lista para iteração no template
+            'servidores': ', '.join(servidores_disponiveis),  # String para exibição simples
+            'extras_primeiro_lista': extras_primeiro,  # Lista para iteração no template
+            'extras_primeiro': ', '.join(extras_primeiro),  # String para exibição simples
+            'extras_segundo_lista': extras_segundo,  # Lista para iteração no template
+            'extras_segundo': ', '.join(extras_segundo),  # String para exibição simples
+            'extras_terceiro_lista': extras_terceiro,  # Lista para iteração no template
+            'extras_terceiro': ', '.join(extras_terceiro),  # String para exibição simples
             'data': data_dia,
         })
     
