@@ -70,7 +70,7 @@ class Servidores(models.Model):
         default=True
     )
     def __str__(self):
-        return self.nome
+        return (f'{self.nome_exibir} - {self.setor}')
 
     class Meta:
         ordering = ('nome', 'setor',)

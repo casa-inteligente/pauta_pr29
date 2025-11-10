@@ -68,13 +68,7 @@ def gerar_escala_mes(ano, mes):
                 data_fim__gte=data_dia
             ).exists()
             
-            # Verificar se não está de folga compensatória
-            de_folga = ServidorFolgaCompensatoria.objects.filter(
-                servidor=servidor,
-                data_folga=data_dia
-            ).exists()
-            
-            if not (em_ferias or com_atestado or de_folga):
+            if not (em_ferias or com_atestado):
                 servidores_disponiveis.append(servidor.nome_exibir)
         
         # Obter extras por horário - usando nome_exibir
