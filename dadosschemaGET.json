@@ -1,8 +1,8 @@
 {
-  "$id": "https://presidio.sc.gov.br/api/monitorados.schema.json",
+  "$id": "https://ipen.sc.gov.br/api/monitorados.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Dados Monitorados API Response",
-  "description": "Schema para resposta da API de dados de monitorados do sistema penitenciário",
+  "description": "Schema para resposta da API para preencher formulários do monitoramento",
   "type": "object",
   "required": ["success", "total", "dados_monitorados"],
   "properties": {
@@ -73,12 +73,14 @@
           "type": "string",
           "maxLength": 2,
           "enum": ["BC", "PD", "PR", "IN", "AM", "ND"],
-          "description": "Raça/Cor: BC=Branco(a), PD=Pardo(a), PR=Preto(a), IN=Indígena, AM=Amarelo(a), ND=Não declarado"
+          "description": "Raça/Cor: BC=Branco(a), PD=Pardo(a), PR=Preto(a), IN=Indígena, AM=Amarelo(a), ND=Não declarado",
+          "$comment": "Segue um padrão utilizado pelo dataJUD"
         },
         "estado_civil": {
           "type": "string",
-          "enum": ["Solteiro(a)", "Casado(a)", "Divorciado(a)", "Viúvo(a)", "União Estável", "Não Informado"],
-          "description": "Estado civil da pessoa"
+          "maxLength": 2,
+          "enum": ["SO", "CA", "DI", "VI", "UE", "NI"],
+          "description": "Estado civil da pessoa: SO=Solteiro(a), CA=Casado(a), DI=Divorciado(a), VI=Viúvo(a), UE=União Estável, NI=Não Informado"
         },
         "conjuge": {
           "type": ["string", "null"],
@@ -91,7 +93,7 @@
           "description": "Nome do pai"
         },
         "mae": {
-          "type": ["string", "null"],
+          "type": ["string"],
           "maxLength": 200,
           "description": "Nome da mãe"
         },
@@ -103,7 +105,7 @@
         "idade": {
           "type": "integer",
           "minimum": 0,
-          "maximum": 150,
+          "maximum": 120,
           "description": "Idade calculada em anos"
         },
         "naturalidade": {
@@ -114,14 +116,15 @@
         },
         "uf": {
           "type": "string",
+          "maxLength": 2,
           "pattern": "^[A-Z]{2}$",
           "description": "Unidade Federativa (sigla com 2 letras)"
         },
         "nacionalidade": {
           "type": "string",
-          "minLength": 3,
-          "maxLength": 50,
-          "description": "Nacionalidade da pessoa"
+          "pattern": "^[A-Z]{3}$",
+          "maxLength": 3,
+          "description": "Sigla da nacionalidade (3 letras), ISO 3166-1 alpha-3"
         }
       },
       "additionalProperties": false

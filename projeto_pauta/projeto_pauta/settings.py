@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "django.contrib.auth", # Regras de sautentificações
     "django.contrib.contenttypes",
     "django.contrib.sessions", # Controle de seções
+    "rest_framework", # Adicionado para API REST
     "django.contrib.messages",
     'django_summernote', #Editor de texto
     "django.contrib.staticfiles", # Arquivos staticos
@@ -107,6 +108,15 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Para futuro (django-axes) limita as tentativas de login
 # para futuro (django-otp) au0tentificações em multifatores
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+}
+
 
 ##ADICIONADO permissão cruzada
 CORS_ALLOW_ALL_ORIGINS = True
