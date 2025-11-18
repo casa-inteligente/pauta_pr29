@@ -4,7 +4,7 @@
   "title": "Dados Monitorados API Response",
   "description": "Schema para solicitação da API para preencher formulários do monitoramento",
   "type": "object",
-  "properties": {
+  "properties": {         
     "user": {
       "type": "string",
       "description": "Usuario de acesso"
