@@ -47,6 +47,7 @@ def gerar_escala_mes(ano, mes):
         plantao_dia = plantoes[plantao_indice]
         plantao_key = f'PLANTAO_{plantao_dia}'
         
+        
         # Obter dia da semana
         dia_semana_num = data_dia.weekday()  # 0=segunda, 6=domingo
         nome_dia_semana = dias_semana[dia_semana_num]
@@ -110,7 +111,10 @@ def lista_escala_servidores(request):
     """View para escala do mês atual"""
     hoje = date.today()
     escala_dados = gerar_escala_mes(hoje.year, hoje.month)
+    fim_do_mes = date(hoje.year, hoje.month, calendar.monthrange(hoje.year, hoje.month)[1])
     
+    
+    #print(f'Fim do mes data:{fim_do_mes}')
     # Calcular mês anterior e próximo para navegação
     if hoje.month == 1:
         mes_anterior = {'ano': hoje.year - 1, 'mes': 12}
@@ -122,6 +126,19 @@ def lista_escala_servidores(request):
     else:
         mes_proximo = {'ano': hoje.year, 'mes': hoje.month + 1}
     
+    servidores_em_ferias = ServidorFerias.objects.filter(
+        inicio_ferias__lte=hoje,
+        fim_ferias__gte=fim_do_mes
+    ).select_related('servidor')
+
+    if servidores_em_ferias:
+        nomes_ferias = [servidor.servidor.nome_exibir for servidor in servidores_em_ferias]
+        
+        print(f'Servidores em ferias: {", ".join(nomes_ferias)}')
+        print(f'de {servidores_em_ferias[0].inicio_ferias.strftime("%d/%m/%Y")} até {servidores_em_ferias[0].fim_ferias.strftime("%d/%m/%Y")}')
+    else:
+        print('Nenhum servidor em ferias')
+
     contexto = {
         'escala_dados': escala_dados,
         'ano_corrente': hoje.year,
@@ -130,7 +147,8 @@ def lista_escala_servidores(request):
         'mes_anterior': mes_anterior,
         'mes_proximo': mes_proximo,
         'tipo_visualizacao': 'atual',
-        'titulo_pagina': f'Escala {calendar.month_name[hoje.month]}'
+        'titulo_pagina': f'Escala {calendar.month_name[hoje.month]}',
+        'servidores_em_ferias': servidores_em_ferias,
     }
     return render(request, 'escala_servidores.html', contexto)
 

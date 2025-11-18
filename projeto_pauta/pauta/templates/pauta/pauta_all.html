@@ -120,14 +120,17 @@
 
         <!-- Inserção de novos compromissos -->
         <section class="print:hidden">
-            <h3 class="text-lg font-medium mb-3 text-center">Inserir Compromisso</h3>
+            <h3 class="text-lg font-medium mb-3 text-center">
+                📅📋📝
+                Inserir Compromisso
+            </h3>
             <form method="post" action="{% url 'pauta:pauta_all' %}"
                 class="space-y-4 bg-white p-4 border rounded shadow">
                 {% csrf_token %}
                 {{ form.as_p }}
 
                 <button type="submit"
-                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Salvar</button>
+                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">💾 Salvar</button>
                 <p class="text-sm mt-2">
                     Lembre-se de lançar o compromisso no
                     <a href="https://www.sc.gov.br/sap/ipen/signin" target="_blank"

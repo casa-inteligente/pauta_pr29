@@ -236,13 +236,35 @@ SHORT_DATE_FORMAT = 'd/m/Y'
 #linguagem do summernote
 SUMMERNOTE_CONFIG = {
     'lang': 'pt-BR',
-    'summernote':   {
+    'summernote': {
         'width': '100%',
-        'height':   '300px',
-        'defaultFontSize':  '12pt',
+        'height': '300px',
+        'defaultFontSize': '12pt',
     },
+    # Adicione estas configurações importantes
+    #'disable_attachment': True,
+    'iframe': False,
+    'lazy': True,
     
-    #'disable_cleaner': True,
+    # Configuração do Bleach (IMPORTANTE)
+    'bleach': {
+        'allowed_tags': [
+            'p', 'b', 'i', 'u', 'a', 'ul', 'ol', 'li', 'br', 'span',
+            'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'table', 'thead', 'tbody', 'tr', 'th', 'td',
+            'div', 'blockquote', 'code', 'pre', 'hr'
+        ],
+        'allowed_attributes': {
+            'a': ['href', 'title', 'target'],
+            'span': ['style'],
+            'p': ['style'],
+            'div': ['class'],
+            'table': ['class'],
+            'th': ['colspan', 'rowspan'],
+            'td': ['colspan', 'rowspan'],
+        },
+        'strip': True,
+    },
 }
 
 # Static files (CSS, JavaScript, Images)
