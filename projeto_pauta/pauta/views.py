@@ -104,57 +104,6 @@ def api_pauta_por_data(request):
         return Response({
             'success': False,
             'error': str(e)
-        }, status=400)# ============================================
-# API REST - Pauta de 4 dias
-# ============================================
-
-@api_view(['GET'])
-def api_pauta_4dias(request):
-    """
-    API que retorna as pautas dos próximos 4 dias
-    Endpoint: GET /api/pauta/4dias/
-    """
-    today = timezone.now().date()
-    end_date = today + timedelta(days=4)
-    pautas = Pauta.objects.filter(data__range=[today, end_date]).order_by('data', 'hora')
-    serializer = PautaSerializer(pautas, many=True)
-    
-    return Response({
-        'success': True,
-        'total': pautas.count(),
-        'data_inicio': today.isoformat(),
-        'data_fim': end_date.isoformat(),
-        'pautas': serializer.data
-    })
-
-
-@api_view(['GET'])
-def api_pauta_por_data(request):
-    """
-    API que retorna pautas filtradas por data
-    Endpoint: GET /api/pauta/data/?data_inicio=2024-11-01&data_fim=2024-11-30
-    """
-    data_inicio = request.GET.get('data_inicio', timezone.now().date().isoformat())
-    data_fim = request.GET.get('data_fim', (timezone.now().date() + timedelta(days=4)).isoformat())
-    
-    try:
-        pautas = Pauta.objects.filter(
-            data__range=[data_inicio, data_fim]
-        ).order_by('data', 'hora')
-        
-        serializer = PautaSerializer(pautas, many=True)
-        
-        return Response({
-            'success': True,
-            'total': pautas.count(),
-            'data_inicio': data_inicio,
-            'data_fim': data_fim,
-            'pautas': serializer.data
-        })
-    except Exception as e:
-        return Response({
-            'success': False,
-            'error': str(e)
         }, status=400)
 
 # View para renderizar a página de visualização da API
