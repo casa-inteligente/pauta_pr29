@@ -13,4 +13,10 @@ urlpatterns = [
     path('password_change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
     path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
    
+   # APIs REST
+    path('api/4dias/', views.api_pauta_4dias, name='api_pauta_4dias'),
+    path('api/data/', views.api_pauta_por_data, name='api_pauta_por_data'),
+
+    # Visualizador da API
+    path('api/viewer/', views.pauta_api_viewer, name='api_viewer'),
 ]

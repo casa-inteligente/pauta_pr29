@@ -1,0 +1,339 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo_pagina }}</title>
+    <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { margin: 0; padding: 0; }
+            .escala-table { font-size: 8px !important; }
+            .escala-table th, .escala-table td { padding: 2px !important; }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-200 text-gray-800 font-sans min-h-screen p-4">
+    <!-- Menu de navegação principal -->
+    <nav class="max-w-7xl mx-auto mb-6 flex flex-wrap justify-center gap-3 no-print" id="topo">
+        <a href="{% url 'pauta:pauta_all' %}"
+            class="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-900 flex items-center gap-2">
+            <img src="{% static 'img/home.png' %}" alt="inicio" class="h-4"> Início
+        </a>
+        <a href="{% url 'admin:index' %}"
+            class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
+            <img src="{% static 'img/login.png' %}" alt="Login" class="h-4"> Admin
+        </a>
+        <button onclick="window.print()" 
+            class="bg-gray-800 text-white px-3 py-2 rounded text-sm hover:bg-black flex items-center gap-2">
+            <img src="{% static 'img/printer.png' %}" alt="Imprimir" class="h-4"> Imprimir
+        </button>
+    </nav>
+
+    <!-- Navegação entre visualizações -->
+    <div class="max-w-7xl mx-auto mb-6 no-print">
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex flex-wrap justify-center gap-2 mb-4">
+                <a href="{% url 'servidores:lista_escala_servidores' %}"
+                    class="{% if tipo_visualizacao == 'atual' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
+                    <i class="fas fa-calendar-check"></i> Mês Atual
+                </a>
+                <a href="{% url 'servidores:escala_proximo_mes' %}"
+                    class="{% if tipo_visualizacao == 'proximo' %}bg-green-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
+                    <i class="fas fa-calendar-plus"></i> Próximo Mês
+                </a>
+                <a href="{% url 'servidores:escala_historico' %}"
+                    class="{% if tipo_visualizacao == 'historico' %}bg-purple-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
+                    <i class="fas fa-history"></i> Histórico
+                </a>
+            </div>
+
+            <!-- Navegação entre meses -->
+            <div class="flex flex-wrap justify-center items-center gap-3">
+                <!-- Botão Mês Anterior -->
+                {% if tipo_visualizacao == 'historico' %}
+                    <a href="{% url 'servidores:escala_historico' %}?ano={{ mes_anterior.ano }}&mes={{ mes_anterior.mes }}"
+                {% elif tipo_visualizacao == 'proximo' %}
+                    <a href="{% url 'servidores:escala_proximo_mes' %}"
+                {% else %}
+                    <a href="{% url 'servidores:escala_historico' %}?ano={{ mes_anterior.ano }}&mes={{ mes_anterior.mes }}"
+                {% endif %}
+                    class="bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 flex items-center gap-2">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </a>
+
+                <!-- Seletor de Ano/Mês (apenas no histórico) -->
+                {% if tipo_visualizacao == 'historico' %}
+                <form method="get" class="flex items-center gap-2">
+                    <select name="mes" onchange="this.form.submit()" 
+                        class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {% for mes_num, mes_nome in meses_disponiveis %}
+                            <option value="{{ mes_num }}" {% if mes_num == mes_corrente %}selected{% endif %}>
+                                {{ mes_nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <select name="ano" onchange="this.form.submit()"
+                        class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {% for ano_opcao in anos_disponiveis %}
+                            <option value="{{ ano_opcao }}" {% if ano_opcao == ano_corrente %}selected{% endif %}>
+                                {{ ano_opcao }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+                {% endif %}
+
+                <!-- Título do Mês Atual -->
+                {% if tipo_visualizacao == 'atual' or tipo_visualizacao == 'proximo' %}
+                <div class="text-lg font-bold text-gray-800 px-4 py-2">
+                    {{ nome_mes }} {{ ano_corrente }}
+                </div>
+                {% endif %}
+
+                <!-- Botão Próximo Mês -->
+                {% if tipo_visualizacao == 'historico' %}
+                    <a href="{% url 'servidores:escala_historico' %}?ano={{ mes_proximo.ano }}&mes={{ mes_proximo.mes }}"
+                {% elif tipo_visualizacao == 'atual' %}
+                    <a href="{% url 'servidores:escala_proximo_mes' %}"
+                {% else %}
+                    <a href="{% url 'servidores:escala_historico' %}?ano={{ mes_proximo.ano }}&mes={{ mes_proximo.mes }}"
+                {% endif %}
+                    class="bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600 flex items-center gap-2">
+                    Próximo <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container principal -->
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-6">
+        <!-- Cabeçalho -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2 print:text-xl print:mb-1">
+                <i class="fas fa-calendar-alt 
+                    {% if tipo_visualizacao == 'atual' %}text-blue-600
+                    {% elif tipo_visualizacao == 'proximo' %}text-green-600
+                    {% else %}text-purple-600{% endif %}"></i>
+                {{ titulo_pagina }}
+            </h1>
+        </div>
+
+        <!-- Informações da escala -->
+        <div class="mb-6 bg-gray-50 rounded-lg p-4 no-print">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                <div class="text-sm">
+                    <span class="font-semibold">Total de dias:</span> {{ escala_dados|length }}
+                </div>
+                <div class="text-sm">
+                    <span class="font-semibold">Plantões:</span> A, B, C, D
+                </div>
+                <div class="text-sm">
+                    <span class="font-semibold">Última atualização:</span> 
+                    <span id="last-update"></span>
+                </div>
+                <div class="flex justify-end">
+                    <button onclick="toggleLegenda()" 
+                        class="bg-indigo-500 text-white px-3 py-1 rounded text-sm hover:bg-indigo-600">
+                        <i class="fas fa-info-circle"></i> Ver Legenda
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela da Escala (mantém a mesma estrutura da tabela anterior) -->
+        <div class="overflow-x-auto shadow-md rounded-lg">
+            <table class="escala-table w-full border-collapse bg-white">
+                <!-- ... resto da tabela permanece igual ao código anterior ... -->
+                <thead>
+                    <tr class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold print:border-black print:px-1 print:py-1">
+                            <i class="fas fa-calendar-day no-print"></i><br>Dia
+                        </th>
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold print:border-black print:px-1 print:py-1">
+                            <i class="fas fa-clock no-print"></i><br>Semana
+                        </th>
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold print:border-black print:px-1 print:py-1">
+                            <i class="fas fa-shield-alt no-print"></i><br>Plantão
+                        </th>
+                        <th class="border border-gray-300 px-4 py-3 text-center font-semibold min-w-48 print:border-black print:px-1 print:py-1">
+                            <i class="fas fa-users no-print"></i><br>Plantonistas
+                        </th>
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs print:border-black print:px-1 print:py-1">
+                            <i class="fas fa-plus-circle no-print"></i><br>Extra 1º Horário<br>
+                            <span class="text-xs font-normal">(00h00 às 08h00)</span>
+                        </th>
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs print:border-black print:px-1 print:py-1">
+                            <i class="fas fa-plus-circle no-print"></i><br>Extra 2º Horário<br>
+                            <span class="text-xs font-normal">(08h00 às 16h00)</span>
+                        </th>
+                        <th class="border border-gray-300 px-3 py-3 text-center font-semibold text-xs print:border-black print:px-1 print:py-1">
+                            <i class="fas fa-plus-circle no-print"></i><br>Extra 3º Horário<br>
+                            <span class="text-xs font-normal">(16h00 às 00h00)</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linha in escala_dados %}
+                    <tr class="
+                        {% if linha.nome_dia_semana == 'sábado' or linha.nome_dia_semana == 'domingo' %}bg-red-100 hover:bg-red-200 font-semibold print:font-normal
+                        {% elif linha.plantao == 'A' %}
+                            bg-pink-50 hover:bg-pink-100
+                        {% elif linha.plantao == 'B' %}
+                            bg-green-50 hover:bg-green-100
+                        {% elif linha.plantao == 'C' %}
+                            bg-orange-50 hover:bg-orange-100
+                        {% elif linha.plantao == 'D' %}
+                            bg-blue-50 hover:bg-blue-100
+                        {% endif %}
+                        transition-colors duration-200">
+                        
+                        <td class="border border-gray-300 px-3 py-2 text-center print:border-black">
+                            <span class="text-lg font-bold text-gray-800">{{ linha.dia }}</span>
+                        </td>
+                        
+                        <td class="border border-gray-300 px-3 py-2 text-center capitalize print:border-black">
+                            {{ linha.nome_dia_semana }}
+                        </td>
+                        
+                        <td class="border border-gray-300 px-3 py-2 text-center print:border-black">
+                            <span class="
+                                {% if linha.plantao == 'A' %}bg-pink-500
+                                {% elif linha.plantao == 'B' %}bg-green-500
+                                {% elif linha.plantao == 'C' %}bg-orange-500
+                                {% elif linha.plantao == 'D' %}bg-blue-500
+                                {% endif %}
+                                text-white px-2 py-1 rounded-full font-bold text-sm">
+                                {{ linha.plantao }}
+                            </span>
+                        </td>
+                        
+                        <td class="border border-gray-300 px-4 py-2 text-left max-w-48 print:border-black">
+                            {% if linha.servidores_lista %}
+                                <div class="text-sm">
+                                    {% for servidor in linha.servidores_lista %}
+                                        <span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-xs mb-1 mr-1">
+                                            <i class="fas fa-user text-gray-600"></i> {{ servidor }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center">
+                                    <span class="text-red-500 italic text-xs">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Nenhum servidor disponível
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32 print:border-black">
+                            {% if linha.extras_primeiro_lista %}
+                                {% for extra in linha.extras_primeiro_lista %}
+                                    <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
+                                        {{ extra }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32 print:border-black">
+                            {% if linha.extras_segundo_lista %}
+                                {% for extra in linha.extras_segundo_lista %}
+                                    <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
+                                        {{ extra }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="border border-gray-300 px-2 py-2 text-center text-xs max-w-32 print:border-black">
+                            {% if linha.extras_terceiro_lista %}
+                                {% for extra in linha.extras_terceiro_lista %}
+                                    <span class="inline-block bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded text-xs mb-1">
+                                        {{ extra }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Legenda (mantém a mesma estrutura anterior) -->
+        <div id="legenda" class="mt-6 bg-gray-50 rounded-lg p-4 no-print hidden">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800">
+                <i class="fas fa-info-circle text-blue-600"></i>
+                Legenda e Informações
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold mb-2 text-gray-700">Cores dos Plantões:</h4>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-pink-500 text-white px-2 py-1 rounded text-sm font-bold">A</span>
+                            <span class="text-sm">Plantão A - Rosa</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-green-500 text-white px-2 py-1 rounded text-sm font-bold">B</span>
+                            <span class="text-sm">Plantão B - Verde</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-orange-500 text-white px-2 py-1 rounded text-sm font-bold">C</span>
+                            <span class="text-sm">Plantão C - Laranja</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-blue-500 text-white px-2 py-1 rounded text-sm font-bold">D</span>
+                            <span class="text-sm">Plantão D - Azul</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="bg-red-200 px-2 py-1 rounded text-sm font-bold">Fins de semana</span>
+                            <span class="text-sm">Fins de semana - Vermelho</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-2 text-gray-700">Observações Importantes:</h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li><i class="fas fa-check text-green-600"></i> Servidores em férias, atestado médico ou folga não aparecem na escala</li>
+                        <li><i class="fas fa-sync text-blue-600"></i> Os plantões seguem a ordem A, B, C, D em ciclo durante todo o mês</li>
+                        <li><i class="fas fa-clock text-purple-600"></i> Horários de extra: 00h-08h, 08h-16h, 16h-00h</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="max-w-7xl mx-auto mt-8 mb-6 text-center text-sm text-gray-600 no-print">
+        &copy; {{ ano_corrente }} Presídio Regional de Maravilha. Todos os direitos reservados.
+    </footer>
+
+    <script>
+        function toggleLegenda() {
+            const legenda = document.getElementById('legenda');
+            legenda.classList.toggle('hidden');
+        }
+
+        // Atualizar timestamp
+        document.getElementById('last-update').textContent = new Date().toLocaleString('pt-BR');
+    </script>
+</body>
+</html>

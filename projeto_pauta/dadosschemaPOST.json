@@ -1,0 +1,32 @@
+{
+  "$id": "https://ipen.sc.gov.br/api/monitorados.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Dados Monitorados API Response",
+  "description": "Schema para solicitação da API para preencher formulários do monitoramento",
+  "type": "object",
+  "properties": {         
+    "user": {
+      "type": "string",
+      "description": "Usuario de acesso"
+    },
+    "senha": {
+      "type": "string",
+      "description": "Senha de acesso",
+      "$comment": "minhaSenhaGOV ou MeuCodigoVerificadoEMAIL"
+    },
+    "list_ipen": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "description": "Lista de números de matrícula IPEN",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{6}$",
+        "description": "Matrícula IPEN com 6 dígitos"
+      }
+    }
+  }
+  ,
+  "additionalProperties": false
+}

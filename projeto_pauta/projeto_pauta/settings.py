@@ -23,6 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')
 print(f'Usuário: {os.getlogin()} - {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
+
 try:
     if platform.system() == 'Windows':
         # Configura o locale para Windows
@@ -76,6 +77,7 @@ INSTALLED_APPS = [
     "django.contrib.auth", # Regras de sautentificações
     "django.contrib.contenttypes",
     "django.contrib.sessions", # Controle de seções
+    "rest_framework", # Adicionado para API REST
     "django.contrib.messages",
     'django_summernote', #Editor de texto
     "django.contrib.staticfiles", # Arquivos staticos
@@ -85,6 +87,7 @@ INSTALLED_APPS = [
     'relação_detentos', #Para o controle dos prazos
     'resenha_livro', #para o controle de resenhas
     'estatisticas', #para o controle de estatisticas
+    'servidores', #para o controle de servidores
 ]
 
 MIDDLEWARE = [
@@ -105,6 +108,15 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Para futuro (django-axes) limita as tentativas de login
 # para futuro (django-otp) au0tentificações em multifatores
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+}
+
 
 ##ADICIONADO permissão cruzada
 CORS_ALLOW_ALL_ORIGINS = True
@@ -224,13 +236,35 @@ SHORT_DATE_FORMAT = 'd/m/Y'
 #linguagem do summernote
 SUMMERNOTE_CONFIG = {
     'lang': 'pt-BR',
-    'summernote':   {
+    'summernote': {
         'width': '100%',
-        'height':   '300px',
-        'defaultFontSize':  '12pt',
+        'height': '300px',
+        'defaultFontSize': '12pt',
     },
+    # Adicione estas configurações importantes
+    #'disable_attachment': True,
+    'iframe': False,
+    'lazy': True,
     
-    #'disable_cleaner': True,
+    # Configuração do Bleach (IMPORTANTE)
+    'bleach': {
+        'allowed_tags': [
+            'p', 'b', 'i', 'u', 'a', 'ul', 'ol', 'li', 'br', 'span',
+            'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'table', 'thead', 'tbody', 'tr', 'th', 'td',
+            'div', 'blockquote', 'code', 'pre', 'hr'
+        ],
+        'allowed_attributes': {
+            'a': ['href', 'title', 'target'],
+            'span': ['style'],
+            'p': ['style'],
+            'div': ['class'],
+            'table': ['class'],
+            'th': ['colspan', 'rowspan'],
+            'td': ['colspan', 'rowspan'],
+        },
+        'strip': True,
+    },
 }
 
 # Static files (CSS, JavaScript, Images)
