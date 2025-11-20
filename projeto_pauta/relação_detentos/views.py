@@ -36,6 +36,7 @@ from django.utils import timezone
 from .process_table import process_pdf, process_regime_pdf, exctrai_date_exit
 from .models import Relacao, DescricaoKitHigiene, Descricao_termo_rouparia
 
+
 from PyPDF2 import PdfReader, PdfWriter
 from PyPDF2.generic import NameObject, createStringObject
 
@@ -54,7 +55,15 @@ pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 
 ANO_CORRENTE = timezone.now().year
 
-# @login_required
+if settings.DEBUG:
+    from projeto_pauta.decoradores.calcula_tempo import calcula_tempo, calcula_tempo_fun
+    checked_debug_decorador = calcula_tempo
+    print_debug = True
+else:
+    print_debug = False
+    checked_debug_decorador = login_required
+
+@checked_debug_decorador
 def relacao_list(request):
     '''
     Exibe uma lista com os detentos e suas informações
@@ -257,6 +266,8 @@ def exctrai_date_exit_view(request):
         return redirect(f'/relacoes/?message={message}')
     return render(request, 'relacao_list.html')
 
+
+@checked_debug_decorador
 def view_termo_rouparia(request):
     '''
     Busca e configura as informações para gerar o termo de rouparia
@@ -316,6 +327,7 @@ def view_termo_rouparia(request):
         'ano_corrente': ANO_CORRENTE,
     })
 
+@checked_debug_decorador
 def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, com_higiene:str):
     '''
     Gera e baixa um documento no formato PDF do termo de rouparia do detento
@@ -567,6 +579,7 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
     nome_arquivo = f'termo_rouparia_{detento.nome}_{numero_kit}.pdf'
     return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
 
+@checked_debug_decorador
 def view_termo_autorizacao(request, relacao_id):
     """
     Visualiza o termo de autorização de trabalho do detento.
@@ -582,6 +595,8 @@ def view_termo_autorizacao(request, relacao_id):
         'empresa': relacao.trampo_empresa
     })
 
+
+@checked_debug_decorador
 def cadastro_trampo_view(request):
     detento = None
     empresa_conveniada_nome = None
@@ -607,6 +622,8 @@ def cadastro_trampo_view(request):
         'empresas_conveniadas': Relacao.empresas_conveniadas
     })
 
+
+@checked_debug_decorador
 def gerar_termo_kit_higiene(request):
     #print("Gerando termo kit higiene...")
     #detentos = Relacao.objects.all().order_by('local_alocacao', 'regime','nome')
@@ -823,6 +840,7 @@ def gerar_termo_kit_higiene(request):
     )
     return response
 
+@checked_debug_decorador
 def gerar_termo_autorizacao(request, detento_id, empresa_conveniada):
     # Busca o detento no banco de dados
     detento = get_object_or_404(Relacao, id=detento_id)

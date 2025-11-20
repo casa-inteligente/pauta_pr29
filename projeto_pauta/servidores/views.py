@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.http import HttpResponse
 
+from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra
 from projeto_pauta.permission_group import grupos_permitidos
 
 from datetime import date, timedelta
@@ -10,8 +12,22 @@ from collections import defaultdict
 
 from projeto_pauta.decoradores.calcula_tempo import calcula_tempo, calcula_tempo_fun
 
+if settings.DEBUG:
+    from projeto_pauta.decoradores.calcula_tempo import calcula_tempo, calcula_tempo_fun
+    checked_debug_decorador = calcula_tempo
+    checked_debug_decorador_fun = calcula_tempo_fun
+    checked_login_required = lambda x: x
+    print_debug = True
+else:
+    print_debug = False
+    checked_login_required = login_required
+    checked_debug_decorador = lambda x: x
+    checked_debug_decorador_fun = lambda x: x  # Decorador vazio
 
-@calcula_tempo_fun
+
+
+@checked_login_required
+@checked_debug_decorador_fun
 def gerar_escala_mes(ano, mes):
     """Função auxiliar para gerar dados da escala de um mês específico"""
     # Obter o número de dias do mês
@@ -85,6 +101,9 @@ def gerar_escala_mes(ano, mes):
     
     for extra in extras_db:
         extras_map[extra['data_extra']][extra['periodo_extra']].append(extra['servidor__nome_exibir'])
+        if print_debug:
+            print('+'*60)
+            print(f"Extra carregado: {extra['data_extra']} - {extra['periodo_extra']} - {extra['servidor__nome_exibir']}")
 
     # Data de referência (01/01/2024 = Plantão A) - Ajuste conforme sua lógica
     data_referencia = date(2025, 10, 31)
@@ -136,7 +155,8 @@ def gerar_escala_mes(ano, mes):
 
 
 #@grupos_permitidos('relacao',)
-@calcula_tempo
+@checked_debug_decorador
+@checked_login_required
 def lista_escala_servidores(request):
     """View para escala do mês atual"""
     hoje = date.today()
@@ -184,6 +204,8 @@ def lista_escala_servidores(request):
 
 
 #@grupos_permitidos('relacao',)
+@checked_debug_decorador
+@checked_login_required
 def escala_proximo_mes(request):
     """View para escala do próximo mês"""
     hoje = date.today()
@@ -222,6 +244,7 @@ def escala_proximo_mes(request):
 
 
 #@grupos_permitidos('relacao',)
+@checked_debug_decorador
 def escala_historico(request):
     """View para histórico de escalas"""
     ano = request.GET.get('ano', date.today().year)

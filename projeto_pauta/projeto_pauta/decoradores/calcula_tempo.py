@@ -1,5 +1,23 @@
 """
     Decorador para calcular o tempo de execução de uma função & o IP do acesso.
+
+    USO: utilize condição para verificar se o DEBUG está ativo no settings.py
+    
+
+    ```python 
+    if settings.DEBUG:
+        from projeto_pauta.decoradores.calcula_tempo import calcula_tempo, calcula_tempo_fun
+        checked_debug_decorador = calcula_tempo
+        checked_debug_decorador_fun = calcula_tempo_fun
+        print_debug = True
+    else:
+        print_debug = False
+        checked_debug_decorador = lambda x: x  # Decorador vazio
+        checked_debug_decorador_fun = lambda x: x  # Decorador vazio
+
+    @checked_debug_decorador
+    ```
+    
 """
 import time
 import socket
@@ -27,12 +45,14 @@ def calcula_tempo(funcao):
         resultado = funcao(request, *args, **kwargs)
         fim = time.time()
         
-        print('----------------------------------------')
+        print('---------- FUNÇÃO COM VIEWS-------------')
         print(f'Tempo: {time.strftime("%d-%m-%Y %H:%M:%S")}')
         print(f'IP do cliente: {ip_cliente}')
         #print(f'IP do servidor: {ip_servidor}\tHostname: {hostname_servidor}\tMAC: {uuid.getnode()}')
         print(f"Tempo de execução do {funcao.__name__}: {fim - inicio:.4f} segundos")
         print('----------------------------------------')
+        print('='*60)
+        
         
         return resultado
     return wrapper
@@ -51,7 +71,8 @@ def calcula_tempo_fun(funcao):
         resultado = funcao(*args, **kwargs)
         
         fim = time.time()
-        
+
+        print('\n'*4)
         print('---------- FUNÇÃO AUXILIAR -----------')
         print(f'Tempo: {time.strftime("%d-%m-%Y %H:%M:%S")}')
         print(f"Execução de '{funcao.__name__}': {fim - inicio:.4f} segundos")
