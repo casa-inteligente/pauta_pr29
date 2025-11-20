@@ -6,12 +6,18 @@ from projeto_pauta.permission_group import grupos_permitidos
 
 from datetime import date, timedelta
 import calendar
+from collections import defaultdict
+
+from projeto_pauta.decoradores.calcula_tempo import calcula_tempo, calcula_tempo_fun
 
 
+@calcula_tempo_fun
 def gerar_escala_mes(ano, mes):
     """Função auxiliar para gerar dados da escala de um mês específico"""
     # Obter o número de dias do mês
     num_dias_mes = calendar.monthrange(ano, mes)[1]
+    data_inicio = date(ano, mes, 1)
+    data_fim = date(ano, mes, num_dias_mes)
     
     # Lista dos plantões em ordem
     plantoes = ['A', 'B', 'C', 'D']
@@ -22,16 +28,66 @@ def gerar_escala_mes(ano, mes):
         'quinta-feira', 'sexta-feira', 'sábado', 'domingo'
     ]
     
-    # Obter servidores por plantão (ativos)
-    servidores_por_plantao = {}
-    for plantao in ['PLANTAO_A', 'PLANTAO_B', 'PLANTAO_C', 'PLANTAO_D']:
-        servidores_por_plantao[plantao] = Servidores.objects.filter(
-            setor=plantao,
-            status_ativo=True
-        )
+    # 1. Obter servidores por plantão (apenas ID e Nome para otimização)
+    # Precisamos do ID para cruzar com as tabelas de férias/atestados
+    servidores_por_plantao = defaultdict(list)
+    servidores_query = Servidores.objects.filter(
+        status_ativo=True
+    ).values('id', 'nome_exibir', 'setor')
     
-    # Data de referência para calcular sequência contínua (01/01/2024 = Plantão A)
-    data_referencia = date(2025, 10, 31)  # Esta data será plantão A
+    # Mapa auxiliar: ID -> Nome (para uso rápido)
+    mapa_nomes = {}
+    
+    for s in servidores_query:
+        servidores_por_plantao[s['setor']].append(s)
+        mapa_nomes[s['id']] = s['nome_exibir']
+            
+    # 2. Carregar Ausências (Férias e Atestados) em memória para evitar queries no loop
+    # Set de tuplas (servidor_id, data)
+    ausencias = set()
+    
+    # Buscar Férias
+    ferias = ServidorFerias.objects.filter(
+        inicio_ferias__lte=data_fim,
+        fim_ferias__gte=data_inicio
+    ).values('servidor_id', 'inicio_ferias', 'fim_ferias')
+    
+    for f in ferias:
+        inicio = max(f['inicio_ferias'], data_inicio)
+        fim = min(f['fim_ferias'], data_fim)
+        curr = inicio
+        while curr <= fim:
+            ausencias.add((f['servidor_id'], curr))
+            curr += timedelta(days=1)
+            
+    # Buscar Atestados
+    atestados = ServidorAtestadoMedico.objects.filter(
+        data_inicio__lte=data_fim,
+        data_fim__gte=data_inicio
+    ).values('servidor_id', 'data_inicio', 'data_fim')
+    
+    for a in atestados:
+        inicio = max(a['data_inicio'], data_inicio)
+        fim = min(a['data_fim'], data_fim)
+        curr = inicio
+        while curr <= fim:
+            ausencias.add((a['servidor_id'], curr))
+            curr += timedelta(days=1)
+
+    # 3. Carregar Extras em memória
+    # Dicionário: data -> periodo -> lista de nomes
+    extras_map = defaultdict(lambda: defaultdict(list))
+    
+    extras_db = ServidoresExtra.objects.filter(
+        data_extra__year=ano,
+        data_extra__month=mes
+    ).values('data_extra', 'periodo_extra', 'servidor__nome_exibir')
+    
+    for extra in extras_db:
+        extras_map[extra['data_extra']][extra['periodo_extra']].append(extra['servidor__nome_exibir'])
+
+    # Data de referência (01/01/2024 = Plantão A) - Ajuste conforme sua lógica
+    data_referencia = date(2025, 10, 31)
     
     # Gerar dados da escala
     escala_dados = []
@@ -39,54 +95,27 @@ def gerar_escala_mes(ano, mes):
     for dia in range(1, num_dias_mes + 1):
         data_dia = date(ano, mes, dia)
         
-        # Calcular quantos dias se passaram desde a data de referência
+        # Calcular plantão do dia
         dias_desde_referencia = (data_dia - data_referencia).days
-        
-        # Determinar o plantão baseado na sequência contínua A,B,C,D
         plantao_indice = dias_desde_referencia % 4
         plantao_dia = plantoes[plantao_indice]
         plantao_key = f'PLANTAO_{plantao_dia}'
         
-        
-        # Obter dia da semana
-        dia_semana_num = data_dia.weekday()  # 0=segunda, 6=domingo
+        # Dia da semana
+        dia_semana_num = data_dia.weekday()
         nome_dia_semana = dias_semana[dia_semana_num]
         
-        # Servidores do plantão que estão disponíveis
+        # Filtrar servidores disponíveis (usando dados em memória)
         servidores_disponiveis = []
-        for servidor in servidores_por_plantao.get(plantao_key, []):
-            # Verificar se não está de férias
-            em_ferias = ServidorFerias.objects.filter(
-                servidor=servidor,
-                inicio_ferias__lte=data_dia,
-                fim_ferias__gte=data_dia
-            ).exists()
-            
-            # Verificar se não está com atestado
-            com_atestado = ServidorAtestadoMedico.objects.filter(
-                servidor=servidor,
-                data_inicio__lte=data_dia,
-                data_fim__gte=data_dia
-            ).exists()
-            
-            if not (em_ferias or com_atestado):
-                servidores_disponiveis.append(servidor.nome_exibir)
+        lista_servidores = servidores_por_plantao.get(plantao_key, [])
         
-        # Obter extras por horário - usando nome_exibir
-        extras_primeiro = list(ServidoresExtra.objects.filter(
-            data_extra=data_dia,
-            periodo_extra='PRIMEIRO_HORARIO'
-        ).values_list('servidor__nome_exibir', flat=True))
+        for servidor in lista_servidores:
+            # Verifica se o par (id, data) está no set de ausências
+            if (servidor['id'], data_dia) not in ausencias:
+                servidores_disponiveis.append(servidor['nome_exibir'])
         
-        extras_segundo = list(ServidoresExtra.objects.filter(
-            data_extra=data_dia,
-            periodo_extra='SEGUNDO_HORARIO'
-        ).values_list('servidor__nome_exibir', flat=True))
-        
-        extras_terceiro = list(ServidoresExtra.objects.filter(
-            data_extra=data_dia,
-            periodo_extra='TERCEIRO_HORARIO'
-        ).values_list('servidor__nome_exibir', flat=True))
+        # Obter extras do mapa em memória
+        extras_dia = extras_map[data_dia]
         
         escala_dados.append({
             'dia': dia,
@@ -94,12 +123,12 @@ def gerar_escala_mes(ano, mes):
             'plantao': plantao_dia,
             'servidores_lista': servidores_disponiveis,
             'servidores': ', '.join(servidores_disponiveis),
-            'extras_primeiro_lista': extras_primeiro,
-            'extras_primeiro': ', '.join(extras_primeiro),
-            'extras_segundo_lista': extras_segundo,
-            'extras_segundo': ', '.join(extras_segundo),
-            'extras_terceiro_lista': extras_terceiro,
-            'extras_terceiro': ', '.join(extras_terceiro),
+            'extras_primeiro_lista': extras_dia['PRIMEIRO_HORARIO'],
+            'extras_primeiro': ', '.join(extras_dia['PRIMEIRO_HORARIO']),
+            'extras_segundo_lista': extras_dia['SEGUNDO_HORARIO'],
+            'extras_segundo': ', '.join(extras_dia['SEGUNDO_HORARIO']),
+            'extras_terceiro_lista': extras_dia['TERCEIRO_HORARIO'],
+            'extras_terceiro': ', '.join(extras_dia['TERCEIRO_HORARIO']),
             'data': data_dia,
         })
     
@@ -107,6 +136,7 @@ def gerar_escala_mes(ano, mes):
 
 
 #@grupos_permitidos('relacao',)
+@calcula_tempo
 def lista_escala_servidores(request):
     """View para escala do mês atual"""
     hoje = date.today()
@@ -134,8 +164,8 @@ def lista_escala_servidores(request):
     if servidores_em_ferias:
         nomes_ferias = [servidor.servidor.nome_exibir for servidor in servidores_em_ferias]
         
-        print(f'Servidores em ferias: {", ".join(nomes_ferias)}')
-        print(f'de {servidores_em_ferias[0].inicio_ferias.strftime("%d/%m/%Y")} até {servidores_em_ferias[0].fim_ferias.strftime("%d/%m/%Y")}')
+        #print(f'Servidores em ferias: {", ".join(nomes_ferias)}')
+        #print(f'de {servidores_em_ferias[0].inicio_ferias.strftime("%d/%m/%Y")} até {servidores_em_ferias[0].fim_ferias.strftime("%d/%m/%Y")}')
     else:
         print('Nenhum servidor em ferias')
 

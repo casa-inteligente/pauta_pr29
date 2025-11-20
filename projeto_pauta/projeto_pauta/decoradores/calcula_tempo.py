@@ -1,0 +1,61 @@
+"""
+    Decorador para calcular o tempo de execução de uma função & o IP do acesso.
+"""
+import time
+import socket
+import uuid
+from functools import wraps
+
+def calcula_tempo(funcao):
+    @wraps(funcao)
+    def wrapper(request, *args, **kwargs):
+        
+        
+        # Captura o IP real do cliente considerando proxies reversos
+        ip_cliente = request.META.get('HTTP_X_FORWARDED_FOR')
+        if ip_cliente:
+            # Em caso de múltiplos proxies, pega o primeiro IP
+            ip_cliente = ip_cliente.split(',')[0].strip()
+        else:
+            # Fallback para REMOTE_ADDR se não houver proxy
+            ip_cliente = request.META.get('REMOTE_ADDR', 'IP não disponível')
+        
+        # Captura informações do servidor (para debug)
+        ip_servidor = socket.gethostbyname(socket.gethostname())
+        hostname_servidor = socket.gethostname()
+        inicio = time.time()
+        resultado = funcao(request, *args, **kwargs)
+        fim = time.time()
+        
+        print('----------------------------------------')
+        print(f'Tempo: {time.strftime("%d-%m-%Y %H:%M:%S")}')
+        print(f'IP do cliente: {ip_cliente}')
+        #print(f'IP do servidor: {ip_servidor}\tHostname: {hostname_servidor}\tMAC: {uuid.getnode()}')
+        print(f"Tempo de execução do {funcao.__name__}: {fim - inicio:.4f} segundos")
+        print('----------------------------------------')
+        
+        return resultado
+    return wrapper
+
+
+def calcula_tempo_fun(funcao):
+    """
+    Decorador simplificado para calcular tempo de funções auxiliares
+    que NÃO recebem o objeto 'request'.
+    """
+    @wraps(funcao)
+    def wrapper(*args, **kwargs):
+        inicio = time.time()
+        
+        # Executa a função original
+        resultado = funcao(*args, **kwargs)
+        
+        fim = time.time()
+        
+        print('---------- FUNÇÃO AUXILIAR -----------')
+        print(f'Tempo: {time.strftime("%d-%m-%Y %H:%M:%S")}')
+        print(f"Execução de '{funcao.__name__}': {fim - inicio:.4f} segundos")
+        print('--------------------------------------')
+        
+        return resultado
+    return wrapper
