@@ -9,8 +9,12 @@ from projeto_pauta.permission_group import grupos_permitidos
 from datetime import date, timedelta
 import calendar
 from collections import defaultdict
+import logging
 
 from projeto_pauta.decoradores.calcula_tempo import calcula_tempo, calcula_tempo_fun
+
+
+logger = logging.getLogger(__name__)
 
 if settings.DEBUG:
     from projeto_pauta.decoradores.calcula_tempo import calcula_tempo, calcula_tempo_fun

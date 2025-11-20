@@ -4,9 +4,9 @@
   "title": "Dados Monitorados API Response",
   "description": "Schema para resposta da API para preencher formulários do monitoramento",
   "type": "object",
-  "required": ["success", "total", "dados_monitorados"],
+  "required": ["status", "total", "dados_monitorados"],
   "properties": {
-    "success": {
+    "status": {
       "type": "boolean",
       "description": "Indica se a requisição foi bem-sucedida"
     },
