@@ -107,7 +107,7 @@ def gerar_escala_mes(ano, mes):
     folgas = ServidorFolgaCompensatoria.objects.filter(
         data_folga__year=ano,
         data_folga__month=mes
-    ).values('servidor_id', 'data_folga')
+    ).values('servidor_id', 'data_folga', 'observacao_folga')
     
     for folga in folgas:
         ausencias_ids.add((folga['servidor_id'], folga['data_folga']))
@@ -115,7 +115,8 @@ def gerar_escala_mes(ano, mes):
         chave = f"{folga['servidor_id']}_{folga['data_folga']}"
         ausencias_por_tipo[folga['data_folga']]['folgas'][chave] = {
             'nome': nome_servidor,
-            'data': folga['data_folga']
+            'data': folga['data_folga'],
+            'observacao_folga': folga.get('observacao_folga', '')
         }
 
     # 3. Carregar Extras
@@ -254,7 +255,7 @@ def escala_proximo_mes(request):
         proximo_ano = hoje.year
         proximo_mes = hoje.month + 1
     
-    escala_dados, todas_ausencias = gerar_escala_mes(proximo_ano, proximo_mes)  # <-- MUDOU AQUI
+    escala_dados, todas_ausencias = gerar_escala_mes(proximo_ano, proximo_mes) 
     
     # Calcular navegação
     if proximo_mes == 1:
