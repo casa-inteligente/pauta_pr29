@@ -28,11 +28,39 @@
     </nav>
 
     <div class="max-w-4xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
-        <h1 class="text-2xl font-bold mb-4 text-center">
-            <i class="fas fa-solid fa-shirt"></i>
-            Termo de Rouparia
-        </h1>
-        
+        <div class="mb-6 border-b-2 border-gray-300 pb-4 grid grid-cols-3">
+            
+            <h1 class="text-2xl font-bold mb-4 text-center">
+                <i class="fas fa-solid fa-shirt"></i>
+                Termo de Rouparia
+            </h1>
+           
+            <h6 class="text-sm text-gray-600 text-center italic">
+                <details>
+                    <summary>
+                        Atualização de Detentos
+                    </summary>
+                    {% comment %} <span>Relatório 1.9 do IPEN</span> {% endcomment %}
+                    <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
+                        action="{% url 'relação_detentos:upload_pdf' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="pdfFile">Relatório 1.9 do IPEN</label>
+                            <input type="file" class="form-control-file" id="pdfFile" name="pdfFile" accept="application/pdf"
+                            required>
+                        </div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                    
+                    Enviar
+                </button>
+            </form>
+
+
+
+
+                </details>
+            </h6>
+        </div>
         <form method="get" class="mb-6">
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                 <!-- IPEN Input -->
