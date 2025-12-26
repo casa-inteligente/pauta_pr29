@@ -275,6 +275,142 @@
             </table>
         </div>
 
+        <!-- Tabela de Ausências -->
+        {% if todas_ausencias.ferias or todas_ausencias.atestados or todas_ausencias.folgas %}
+        <div class="mt-6 no-print">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-clipboard-list text-blue-600"></i>
+                Resumo de Ausências do Mês
+            </h3>
+            
+            <div class="overflow-x-auto shadow-md rounded-lg">
+                <table class="w-full border-collapse bg-white">
+                    <thead>
+                        <tr class="bg-gradient-to-r from-gray-700 to-gray-900 text-white">
+                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold">
+                                <i class="fas fa-user"></i> Nome do Servidor
+                            </th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold">
+                                <i class="fas fa-tag"></i> Tipo
+                            </th>
+                            <th class="border border-gray-300 px-4 py-3 text-center font-semibold">
+                                <i class="fas fa-calendar-alt"></i> Período
+                            </th>
+                            <th class="border border-gray-300 px-4 py-3 text-left font-semibold">
+                                <i class="fas fa-comment"></i> Observação
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Férias -->
+                        {% for dados in todas_ausencias.ferias %}
+                        <tr class="bg-blue-50 hover:bg-blue-100 transition-colors">
+                            <td class="border border-gray-300 px-4 py-3">
+                                <span class="font-semibold text-gray-800">{{ dados.nome }}</span>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-3 text-center">
+                                <span class="inline-block bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-umbrella-beach"></i> Férias
+                                </span>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-3 text-center">
+                                {% if dados.inicio == dados.fim %}
+                                    <span class="text-sm">{{ dados.inicio|date:"d/m/Y" }}</span>
+                                {% else %}
+                                    <span class="text-sm">{{ dados.inicio|date:"d/m/Y" }} <i class="fas fa-arrow-right text-gray-500"></i> {{ dados.fim|date:"d/m/Y" }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="border border-gray-300 px-4 py-3 text-gray-500 italic text-sm">
+                                -
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        
+                        <!-- Atestados -->
+                        {% for dados in todas_ausencias.atestados %}
+                        <tr class="bg-red-50 hover:bg-red-100 transition-colors">
+                            <td class="border border-gray-300 px-4 py-3">
+                                <span class="font-semibold text-gray-800">{{ dados.nome }}</span>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-3 text-center">
+                                <span class="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-notes-medical"></i> Atestado
+                                </span>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-3 text-center">
+                                {% if dados.inicio == dados.fim %}
+                                    <span class="text-sm">{{ dados.inicio|date:"d/m/Y" }}</span>
+                                {% else %}
+                                    <span class="text-sm">{{ dados.inicio|date:"d/m/Y" }} <i class="fas fa-arrow-right text-gray-500"></i> {{ dados.fim|date:"d/m/Y" }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="border border-gray-300 px-4 py-3 text-gray-500 italic text-sm">
+                                -
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        
+                        <!-- Folgas -->
+                        {% for dados in todas_ausencias.folgas %}
+                        <tr class="bg-green-50 hover:bg-green-100 transition-colors">
+                            <td class="border border-gray-300 px-4 py-3">
+                                <span class="font-semibold text-gray-800">{{ dados.nome }}</span>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-3 text-center">
+                                <span class="inline-block bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-calendar-check"></i> Folga
+                                </span>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-3 text-center">
+                                <span class="text-sm">{{ dados.data|date:"d/m/Y" }}</span>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-3 text-sm">
+                                {% if dados.observacao_folga %}
+                                    <i class="fas fa-comment-dots text-green-600"></i> {{ dados.observacao_folga }}
+                                {% else %}
+                                    <span class="text-gray-500 italic">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Resumo de totais -->
+            <div class="mt-4 flex flex-wrap gap-4 justify-center">
+                {% if todas_ausencias.ferias %}
+                <div class="bg-blue-100 px-4 py-2 rounded-lg text-sm">
+                    <span class="font-semibold text-blue-800">Total de Férias:</span> 
+                    <span class="text-blue-900 font-bold">{{ todas_ausencias.ferias|length }}</span>
+                </div>
+                {% endif %}
+                {% if todas_ausencias.atestados %}
+                <div class="bg-red-100 px-4 py-2 rounded-lg text-sm">
+                    <span class="font-semibold text-red-800">Total de Atestados:</span> 
+                    <span class="text-red-900 font-bold">{{ todas_ausencias.atestados|length }}</span>
+                </div>
+                {% endif %}
+                {% if todas_ausencias.folgas %}
+                <div class="bg-green-100 px-4 py-2 rounded-lg text-sm">
+                    <span class="font-semibold text-green-800">Total de Folgas:</span> 
+                    <span class="text-green-900 font-bold">{{ todas_ausencias.folgas|length }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="mt-6 bg-green-50 border-l-4 border-green-500 p-4 no-print">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-check-circle text-green-600 text-3xl"></i>
+                <div>
+                    <h4 class="text-lg font-semibold text-green-800">Sem Ausências</h4>
+                    <p class="text-sm text-green-700">Nenhum registro de folgas, férias ou atestados médicos para este período.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Legenda (mantém a mesma estrutura anterior) -->
         <div id="legenda" class="mt-6 bg-gray-50 rounded-lg p-4 no-print hidden">
             <h3 class="text-lg font-semibold mb-4 text-gray-800">

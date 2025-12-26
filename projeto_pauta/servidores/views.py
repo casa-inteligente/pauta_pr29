@@ -58,29 +58,34 @@ def gerar_escala_mes(ano, mes):
     ausencias_por_tipo = defaultdict(lambda: {'ferias': {}, 'atestados': {}, 'folgas': {}})
     ausencias_ids = set()  # Para filtrar da escala principal
     
+    try:
     # Férias
-    ferias = ServidorFerias.objects.filter(
-        inicio_ferias__lte=data_fim,
-        fim_ferias__gte=data_inicio
-    ).values('servidor_id', 'inicio_ferias', 'fim_ferias')
-    
-    for f in ferias:
-        inicio = max(f['inicio_ferias'], data_inicio)
-        fim = min(f['fim_ferias'], data_fim)
-        curr = inicio
-        nome_servidor = mapa_id_para_nome.get(f['servidor_id'], 'Desconhecido')
+        ferias = ServidorFerias.objects.filter(
+            inicio_ferias__lte=data_fim,
+            fim_ferias__gte=data_inicio
+        ).values('servidor_id', 'inicio_ferias', 'fim_ferias')
         
-        while curr <= fim:
-            ausencias_ids.add((f['servidor_id'], curr))
-            # Armazena com chave única para evitar duplicatas
-            chave = f"{f['servidor_id']}_{f['inicio_ferias']}_{f['fim_ferias']}"
-            ausencias_por_tipo[curr]['ferias'][chave] = {
-                'nome': nome_servidor,
-                'inicio': f['inicio_ferias'],
-                'fim': f['fim_ferias']
-            }
-            curr += timedelta(days=1)
-    
+        for f in ferias:
+            inicio = max(f['inicio_ferias'], data_inicio)
+            fim = min(f['fim_ferias'], data_fim)
+            curr = inicio
+            nome_servidor = mapa_id_para_nome.get(f['servidor_id'], 'Desconhecido')
+            
+            while curr <= fim:
+                ausencias_ids.add((f['servidor_id'], curr))
+                # Armazena com chave única para evitar duplicatas
+                chave = f"{f['servidor_id']}_{f['inicio_ferias']}_{f['fim_ferias']}"
+                ausencias_por_tipo[curr]['ferias'][chave] = {
+                    'nome': nome_servidor,
+                    'inicio': f['inicio_ferias'],
+                    'fim': f['fim_ferias']
+                }
+                curr += timedelta(days=1)
+    except Exception as e:
+        if print_debug:
+            print('Erro ao carregar férias:', e)
+        ferias = []
+
     # Atestados
     atestados = ServidorAtestadoMedico.objects.filter(
         data_inicio__lte=data_fim,
