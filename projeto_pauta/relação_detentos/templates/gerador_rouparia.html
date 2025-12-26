@@ -14,7 +14,7 @@
     <!-- Menu de navegação -->
     <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
         <a href="{% url 'pauta:pauta_all' %}"
-            class="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-900">
+            class="bg-indigo-500 text-white px-3 py-2 rounded text-sm hover:bg-indigo-900 flex items-center gap-2">
             <img src="{% static 'img/home.png' %}" alt="inicio" class="h-4 inline"> Início
         </a>
         <a href="{% url 'admin:index' %}"
@@ -25,19 +25,10 @@
         <button onclick="window.print()" class="bg-0 text-white px-3 py-2 rounded text-sm hover:bg-black">
             <img src="{% static 'img/printer.png' %}" alt="Imprimir" class="h-4 inline">
         </button>
-    </nav>
-
-    <div class="max-w-4xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
-        <div class="mb-6 border-b-2 border-gray-300 pb-4 grid grid-cols-3">
-            
-            <h1 class="text-2xl font-bold mb-4 text-center">
-                <i class="fas fa-solid fa-shirt"></i>
-                Termo de Rouparia
-            </h1>
-           
-            <h6 class="text-sm text-gray-600 text-center italic">
-                <details>
-                    <summary>
+        {% comment %} Atualiza detentos {% endcomment %}
+        <h6 class="text-sm text-gray-600 text-center italic">
+                <details class="border border-transparent rounded-2xl open:border-black/10 open:bg-green-100">
+                    <summary class="">
                         Atualização de Detentos
                     </summary>
                     {% comment %} <span>Relatório 1.9 do IPEN</span> {% endcomment %}
@@ -45,22 +36,25 @@
                         action="{% url 'relação_detentos:upload_pdf' %}">
                         {% csrf_token %}
                         <div class="form-group">
-                            <label for="pdfFile">Relatório 1.9 do IPEN</label>
+                            <label for="pdfFile">Relatório 1.9 do IPEN</label> <br>
                             <input type="file" class="form-control-file" id="pdfFile" name="pdfFile" accept="application/pdf"
                             required>
                         </div>
-                    <button type="submit" class="btn btn-primary btn-sm">
-                    
-                    Enviar
-                </button>
-            </form>
-
-
-
-
+                        <button type="submit" class="bg-fuchsia-500 text-white px-3 py-2 rounded text-sm hover:bg-slate-700">
+                            Enviar
+                        </button>
+                    </form>
                 </details>
             </h6>
-        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
+               
+        <h1 class="text-2xl font-bold mb-4 text-center">
+            <i class="fas fa-solid fa-shirt"></i>
+            Termo de Rouparia
+        </h1>
+                             
         <form method="get" class="mb-6">
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                 <!-- IPEN Input -->
