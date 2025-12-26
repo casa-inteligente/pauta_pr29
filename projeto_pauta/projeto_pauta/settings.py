@@ -20,9 +20,14 @@ import locale
 BASE_DIR = Path(__file__).resolve().parent.parent
 # print(f'o Dir é:\t {BASE_DIR}')
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+#DEBUG = True
+DEBUG = [True, False][0]
 
-print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')
-print(f'Usuário: {os.getlogin()} - {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
+if DEBUG:
+    print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')
+    print(f'Usuário: {os.getlogin()} - {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
 
 try:
     if platform.system() == 'Windows':
@@ -59,9 +64,8 @@ LOGOUT_REDIRECT_URL = 'home'
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-pf=m^iio!47d@@%(%w4(-ef&cistro&@sil29+7_ao6fj22sok"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = False
-DEBUG = True
+
+
 ALLOWED_HOSTS = ['127.0.0.1', '10.40.22.46', 'localhost', '10.40.22.*']
 
 # Algumas configuraçãoes de segurança a mais

@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 if settings.DEBUG:
     from projeto_pauta.decoradores.calcula_tempo import calcula_tempo, calcula_tempo_fun
+    from django.db import connection
+    print(f'Banco de dados em uso: {connection.settings_dict["NAME"]}')
     checked_debug_decorador = calcula_tempo
     checked_debug_decorador_fun = calcula_tempo_fun
     checked_login_required = lambda x: x
@@ -26,9 +28,7 @@ else:
     print_debug = False
     checked_login_required = login_required
     checked_debug_decorador = lambda x: x
-    checked_debug_decorador_fun = lambda x: x  # Decorador vazio
-
-
+    checked_debug_decorador_fun = lambda x: x
 
 @checked_login_required
 @checked_debug_decorador_fun
