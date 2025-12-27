@@ -225,7 +225,7 @@ def upload_pdf(request):
 
         process_pdf(file_path)
 
-        return redirect('relação_detentos:relacao_list')
+        return redirect('relação_detentos:view_termo_rouparia')
     return render(request, 'relacao_list.html')
 
 def upload_regime_pdf(request):
