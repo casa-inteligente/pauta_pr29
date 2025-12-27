@@ -13,16 +13,21 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import platform
-from datetime import datetime 
+from datetime import datetime
 import locale
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # print(f'o Dir é:\t {BASE_DIR}')
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+#DEBUG = True
+DEBUG = [True, False][0]
 
-print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')
-print(f'Usuário: {os.getlogin()} - {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
+if DEBUG:
+    print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')
+    print(f'Usuário: {os.getlogin()} - {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
 
 try:
     if platform.system() == 'Windows':
@@ -59,10 +64,9 @@ LOGOUT_REDIRECT_URL = 'home'
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-pf=m^iio!47d@@%(%w4(-ef&cistro&@sil29+7_ao6fj22sok"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = False 
-DEBUG = True
-ALLOWED_HOSTS = ['127.0.0.1', '10.40.22.46']
+
+
+ALLOWED_HOSTS = ['127.0.0.1', '10.40.22.46', 'localhost', '10.40.22.*']
 
 # Algumas configuraçãoes de segurança a mais
 X_FRAME_OPTIONS = 'DENY'
@@ -91,6 +95,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', #Para acesso cruzado
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -98,10 +103,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware', #Para acesso cruzado
     'pauta.middleware.RestrictIPMiddleware', # Restringe IP
 ]
-
 ## Configura que a seção durará até ser fechado o navegador
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -121,12 +124,22 @@ REST_FRAMEWORK = {
 ##ADICIONADO permissão cruzada
 CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:8000",
-    "http://localhost:8000",
-    "http://10.40.22.46:8000"
-    # Adicione outras origens permitidas aqui
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:8080',
+#     "http://127.0.0.1:8000",
+#     "http://localhost:8000",
+#     "http://10.40.22.46:8000",
+#     "file://"
+#     # Adicione outras origens permitidas aqui
+# ]
+
+
+CORS_ALLOW_CREDENTIALS = False
+CORS_EXPOSE_HEADERS = [
+    'Content-Type',
+    'X-CSRFToken',
 ]
+
 #Configurações do simplui
 SIMPLEUI_LOGO = 'https://sap.sc.gov.br/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-12-at-13.37.50-1.jpeg'
 
@@ -245,7 +258,7 @@ SUMMERNOTE_CONFIG = {
     #'disable_attachment': True,
     'iframe': False,
     'lazy': True,
-    
+
     # Configuração do Bleach (IMPORTANTE)
     'bleach': {
         'allowed_tags': [
@@ -320,16 +333,21 @@ LOGGING = {
             'level': 'DEBUG', 'propagate': True,
         },
     },
+    'servidores': {
+        'handlers': ['file_debug', 'file_error', 'console'],
+        'level': 'DEBUG',
+        'propagate': False,
+    }
  }
 
-#  BACKUP do banco de dados 
-# Diretório onde os backups serão armazenados 
+#  BACKUP do banco de dados
+# Diretório onde os backups serão armazenados
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
-DBBACKUP_STORAGE_OPTIONS = { 
-    'location': os.path.join(BASE_DIR, 'backups'),     
+DBBACKUP_STORAGE_OPTIONS = {
+    'location': os.path.join(BASE_DIR, 'backups'),
 }
 
 #Define o padrão da data
 DBBACKUP_DATE_FORMAT = '%Y-%m-%d'
-# Define o padrão do nome do arquivo de backup .dump 
+# Define o padrão do nome do arquivo de backup .dump
 DBBACKUP_FILENAME_TEMPLATE = "backup_{datetime}.dump"

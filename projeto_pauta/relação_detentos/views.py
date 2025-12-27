@@ -58,12 +58,15 @@ ANO_CORRENTE = timezone.now().year
 if settings.DEBUG:
     from projeto_pauta.decoradores.calcula_tempo import calcula_tempo, calcula_tempo_fun
     checked_debug_decorador = calcula_tempo
+    check_login_required = lambda x: x
     print_debug = True
 else:
     print_debug = False
-    checked_debug_decorador = login_required
+    checked_debug_decorador = lambda x: x
+    check_login_required = login_required
 
 @checked_debug_decorador
+@check_login_required
 def relacao_list(request):
     '''
     Exibe uma lista com os detentos e suas informações
@@ -225,7 +228,7 @@ def upload_pdf(request):
 
         process_pdf(file_path)
 
-        return redirect('relação_detentos:relacao_list')
+        return redirect('relação_detentos:view_termo_rouparia')
     return render(request, 'relacao_list.html')
 
 def upload_regime_pdf(request):

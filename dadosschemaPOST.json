@@ -26,7 +26,7 @@
         "description": "Matrícula IPEN com 6 dígitos"
       }
     }
-  }
-  ,
+  },
+  "required": ["user", "senha", "list_ipen"],
   "additionalProperties": false
 }

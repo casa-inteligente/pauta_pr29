@@ -99,3 +99,11 @@ class PautaAdmin(SummernoteModelAdmin):
         return obj.hora.strftime('%H:%M')
     hora_formatada.admin_order_field = 'hora'
     hora_formatada.short_description = 'Hora'
+    
+    
+# ============================================================================
+# CUSTOMIZAÇÃO DO SITE ADMIN
+# ============================================================================
+admin.site.site_header = "PR29 - Administração"
+admin.site.site_title = "Funcionalidades para o Presídio Regional de Maravilha"
+admin.site.index_title = "Painel de Controle - Das Funcionalidades Do PR29"
