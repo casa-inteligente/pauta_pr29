@@ -60,13 +60,14 @@
                         placeholder="Digite o IPEN (6 dígitos)" 
                         class="w-full border rounded px-2 py-1 text-sm">
                     <button onclick="window.location.href='{% url 'relação_detentos:termo_monitorado' 0 %}'.replace('0', document.getElementById('ipen_termo_monitorado').value)"
-                        class="w-full mt-2 bg-violet-300 text-white px-2 py-1 rounded text-sm hover:bg-blue-700">
+                        class="w-full mt-2 bg-violet-300 text-white px-2 py-1 rounded-2xl text-sm hover:bg-blue-700">
                     Gerar Termo Monitorado
                     </button>
                 </div>
                 <a href="{% url 'servidores:lista_escala_servidores' %}"
-                    class="block px-4 py-2 hover:bg-gray-100 text-sm">Escala
+                    class="block px-4 py-2 hover:bg-gray-400 text-sm border rounded-2xl">Escala
                 </a>
+
 
             </div>
         </div>

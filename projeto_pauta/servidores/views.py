@@ -213,7 +213,8 @@ def gerar_escala_mes(ano, mes):
 def lista_escala_servidores(request):
     """View para escala do mês atual"""
     hoje = date.today()
-    escala_dados, todas_ausencias = gerar_escala_mes(hoje.year, hoje.month)  # <-- MUDOU AQUI
+    
+    escala_dados, todas_ausencias = gerar_escala_mes(hoje.year, hoje.month)
     fim_do_mes = date(hoje.year, hoje.month, calendar.monthrange(hoje.year, hoje.month)[1])
     
     # Calcular mês anterior e próximo para navegação
@@ -234,7 +235,7 @@ def lista_escala_servidores(request):
 
     contexto = {
         'escala_dados': escala_dados,
-        'todas_ausencias': todas_ausencias,  # <-- ADICIONE ESTA LINHA
+        'todas_ausencias': todas_ausencias,  
         'ano_corrente': hoje.year,
         'mes_corrente': hoje.month,
         'nome_mes': calendar.month_name[hoje.month],
@@ -275,7 +276,7 @@ def escala_proximo_mes(request):
     
     contexto = {
         'escala_dados': escala_dados,
-        'todas_ausencias': todas_ausencias,  # <-- ADICIONE ESTA LINHA
+        'todas_ausencias': todas_ausencias,  
         'ano_corrente': proximo_ano,
         'mes_corrente': proximo_mes,
         'nome_mes': calendar.month_name[proximo_mes],
@@ -302,7 +303,7 @@ def escala_historico(request):
         ano = date.today().year
         mes = date.today().month
     
-    escala_dados, todas_ausencias = gerar_escala_mes(ano, mes)  # <-- MUDOU AQUI
+    escala_dados, todas_ausencias = gerar_escala_mes(ano, mes) 
     
     # Calcular navegação
     if mes == 1:
@@ -320,7 +321,7 @@ def escala_historico(request):
     
     contexto = {
         'escala_dados': escala_dados,
-        'todas_ausencias': todas_ausencias,  # <-- ADICIONE ESTA LINHA
+        'todas_ausencias': todas_ausencias, 
         'ano_corrente': ano,
         'mes_corrente': mes,
         'nome_mes': calendar.month_name[mes],
