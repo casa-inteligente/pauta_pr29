@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 #DEBUG = True
-DEBUG = [True, False][0]
+
 
 if DEBUG:
     print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')
@@ -282,6 +282,9 @@ SUMMERNOTE_CONFIG = {
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+
+MEDIA_URL = 'anexos/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'anexos')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

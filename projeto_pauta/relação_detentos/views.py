@@ -10,6 +10,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
 
 import pandas as pd
 import json
@@ -222,7 +223,7 @@ def upload_pdf(request):
     '''
     if request.method == 'POST' and request.FILES.get('pdfFile'):
         pdf_file = request.FILES['pdfFile']
-        fs = FileSystemStorage()
+        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'relatorio1-9'))
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
 
@@ -254,7 +255,7 @@ def upload_regime_pdf(request):
 def exctrai_date_exit_view(request):
     if request.method == 'POST' and request.FILES.get('progressaoPdfFile'):
         pdf_file = request.FILES['progressaoPdfFile']
-        fs = FileSystemStorage()
+        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'relatorio_progressao'))
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
         # print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
@@ -969,7 +970,7 @@ def gerar_termo_autorizacao(request, detento_id, empresa_conveniada):
     return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
 
 def cabecalho_e_rodape(canvas, doc):
-    from reportlab.lib.utils import ImageReader
+    
    
 
     # Cabeçalho
@@ -1023,7 +1024,7 @@ def cabecalho_e_rodape(canvas, doc):
     canvas.restoreState()
 
 def cabecalho_e_rodape_ume(canvas, doc):
-    from reportlab.lib.utils import ImageReader
+    
    
 
     # Cabeçalho
