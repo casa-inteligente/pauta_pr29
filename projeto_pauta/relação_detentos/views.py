@@ -30,7 +30,7 @@ from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from .forms.geradores import DescricaoKitHigieneForm, TermoRoupariaForm 
 
-from django.db.models import Case, When, Value
+from django.db.models import Case, When, Value, Max
 from django.db.models.functions import Concat
 from django.utils import timezone
 
@@ -288,6 +288,14 @@ def view_termo_rouparia(request):
     numero_rouparia = None
     regime_selecionado = None
     com_kit_higiene = None
+
+    ultima_data_atualizado = (
+        Relacao.objects
+        .exclude(atualizado__isnull=True)
+        .aggregate(Max('atualizado')).get('atualizado__max')
+    )
+
+    print(f'Ultima data atualizado: {ultima_data_atualizado}')
     
     ipen = request.GET.get('ipen')
     numero_rouparia = request.GET.get('numero_rouparia')
@@ -327,6 +335,7 @@ def view_termo_rouparia(request):
         'numero_rouparia': numero_rouparia,
         'regime_selecionado': regime_selecionado,
         'com_kit_higiene': com_kit_higiene,
+        'ultima_data_atualizado': ultima_data_atualizado,
         'form': form,
         'ano_corrente': ANO_CORRENTE,
     })

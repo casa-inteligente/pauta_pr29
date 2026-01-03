@@ -21,8 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # print(f'o Dir é:\t {BASE_DIR}')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-#DEBUG = True
+#DEBUG = False
+DEBUG = True
 
 
 if DEBUG:
