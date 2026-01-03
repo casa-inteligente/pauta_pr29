@@ -144,7 +144,7 @@ class Relacao(models.Model):
     )
     local_residencia = models.IntegerField(
         verbose_name='Local de Residência',
-        
+        null=True, blank=True        
     )
 
     observacoes = models.CharField(
