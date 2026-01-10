@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import HttpResponse
 
-from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra
+from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra, ServidoresPlantao
 from projeto_pauta.permission_group import grupos_permitidos
 
 from datetime import date, timedelta
@@ -29,6 +29,10 @@ else:
     checked_login_required = login_required
     checked_debug_decorador = lambda x: x
     checked_debug_decorador_fun = lambda x: x
+
+ano_corrente = date.today().year
+mes_corrente = date.today().month
+
 
 @checked_login_required
 @checked_debug_decorador_fun
@@ -338,3 +342,32 @@ def escala_historico(request):
         'titulo_pagina': f'Histórico - {calendar.month_name[mes]} {ano}'
     }
     return render(request, 'escala_servidores.html', contexto)
+
+
+@checked_debug_decorador
+@checked_login_required
+def folha_ponto(request):
+    """View para exibir a folha de ponto dos servidores"""
+    
+    hoje = date.today()
+    ano = int(request.GET.get('ano', hoje.year))
+    mes = int(request.GET.get('mes', hoje.month))
+    
+    # Validação de mês
+    if mes < 1 or mes > 12:
+        mes = hoje.month
+    
+    servidores_ativos = Servidores.objects.filter(
+        status_ativo=True
+    ).exclude(setor='OUTRAS').order_by('setor', 'nome_exibir')
+    
+
+    
+    contexto = {
+        'servidores_ativos': servidores_ativos,
+        'ano_corrente': ano,
+        'mes_corrente': mes,
+        'titulo_pagina': 'Folha de Ponto dos Servidores',
+    }
+    
+    return render(request, 'folha_ponto.html', contexto)

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import lista_escala_servidores, escala_proximo_mes, escala_historico
+from .views import lista_escala_servidores, escala_proximo_mes, escala_historico, folha_ponto
 
 app_name = 'servidores'
 
@@ -17,4 +17,7 @@ urlpatterns = [
     #inserção de folga
 
     #inserção de férias
+
+    # Folha Ponto
+    path('folha-ponto/', folha_ponto, name='folha_ponto'),
 ]
