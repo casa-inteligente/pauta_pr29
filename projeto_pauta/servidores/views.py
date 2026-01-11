@@ -361,7 +361,9 @@ def folha_ponto(request):
         status_ativo=True
     ).exclude(setor='OUTRAS').order_by('setor', 'nome_exibir')
     
-
+    if print_debug:
+        print('-'*60)
+        print(f'Folha de Ponto - Ano: {ano}, Mês: {mes}, Servidores Ativos: {servidores_ativos.count()}')
     
     contexto = {
         'servidores_ativos': servidores_ativos,
