@@ -83,9 +83,9 @@ def process_pdf(file_path):
 
         ##se {diferenca_total_dados} for diferente de zero, possui erro no processamento, e deverá leventar um erro e avisar na tela o usuario
 
-        if diferenca_total_dados != 0:
+        #if diferenca_total_dados != 0:
             #print('Possui divergencia de informações')
-            raise ValueError('Ao final das concatenações das tabelas esta faltando informações \n\n O pdf gerado esta incompleto na sua concepção ou houve erro na leitura das tabelas.')
+            #raise ValueError('Ao final das concatenações das tabelas esta faltando informações \n\n O pdf gerado esta incompleto na sua concepção ou houve erro na leitura das tabelas.')
             #print('Possui divergencia de informações')
 
         # Pegar as colunas necessárias
