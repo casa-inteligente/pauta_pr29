@@ -1,7 +1,21 @@
+import os
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import HttpResponse
+
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib import colors
+from reportlab.pdfgen import canvas
+
 
 from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra, ServidoresPlantao
 from projeto_pauta.permission_group import grupos_permitidos
@@ -32,6 +46,16 @@ else:
 
 ano_corrente = date.today().year
 mes_corrente = date.today().month
+
+# Registre Arial e Arial-Bold (se quiser usar negrito)
+# Registre Arial e Arial-Bold (se quiser usar negrito)
+# Caminhos relativos à pasta base do projeto
+arial_path = os.path.join(settings.BASE_DIR, 'staticfiles', 'fonts', 'arial.ttf')
+arial_bold_path = os.path.join(settings.BASE_DIR, 'staticfiles', 'fonts', 'arialbd.ttf')
+
+# Registra as fontes
+pdfmetrics.registerFont(TTFont('Arial', arial_path))
+pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 
 
 @checked_login_required
@@ -357,19 +381,543 @@ def folha_ponto(request):
     if mes < 1 or mes > 12:
         mes = hoje.month
     
-    servidores_ativos = Servidores.objects.filter(
+    self_servidores_ativos = Servidores.objects.filter(
         status_ativo=True
     ).exclude(setor='OUTRAS').order_by('setor', 'nome_exibir')
     
     if print_debug:
         print('-'*60)
-        print(f'Folha de Ponto - Ano: {ano}, Mês: {mes}, Servidores Ativos: {servidores_ativos.count()}')
+        print(f'Folha de Ponto - Ano: {ano}, Mês: {mes}, Servidores Ativos: {self_servidores_ativos.count()}')
     
     contexto = {
-        'servidores_ativos': servidores_ativos,
+        'servidores_ativos': self_servidores_ativos,
         'ano_corrente': ano,
         'mes_corrente': mes,
-        'titulo_pagina': 'Folha de Ponto dos Servidores',
+        'titulo_pagina': 'Folha Ponto dos Servidores',
     }
     
     return render(request, 'folha_ponto.html', contexto)
+
+def todas_folhas_ponto(request, mes, ano):
+    """View para exibir todas as folhas de ponto dos servidores"""
+    
+    try:
+        ano = int(ano)
+        mes = int(mes)
+        if mes < 1 or mes > 12:
+            mes = date.today().month
+            ano = date.today().year
+    except (ValueError, TypeError):
+        ano = date.today().year
+        mes = date.today().month
+    
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="folha_ponto_todos_{mes}.pdf"'
+
+    pdf = canvas.Canvas(response, pagesize=A4)
+    pdf.setAuthor('OgliTech')
+    pdf.setLineWidth(0.5) # Espessura da linha
+    pdf.setStrokeColorRGB(0, 0, 0, 0.7) #Cor da linha
+    largura, altura = A4
+
+    self_servidores_ativos = Servidores.objects.filter(
+        status_ativo=True
+    ).exclude(setor='OUTRAS').order_by('setor', 'nome_exibir')
+
+    for servidor in self_servidores_ativos:
+        pdf.drawImage(
+            os.path.join(settings.BASE_DIR, 'staticfiles', 'servidores','img', 'logo.png'),
+            0.4 * cm,
+            27.8 * cm,
+            width=1.5 * cm,
+            height=1.5 * cm,
+        )
+        pdf.setFont("Arial-Bold", 10)
+        pdf.drawString(2 * cm, 28.9 * cm, "ESTADO DE SANTA CATARINA")
+        pdf.drawString(16.5 * cm, 29 * cm, "CONTROLE DE PONTO")
+        pdf.setFont("Arial", 8)
+        pdf.drawString(16 * cm, 28.3 * cm, "MÊS/ANO")
+        pdf.setFont("Arial", 9)
+        pdf.drawString(
+            16 * cm, 27.6 * cm, f"{mes}/{ano}"
+        )
+        pdf.rect(
+            15.9 * cm, 27.3 * cm, 4.7 * cm, 1.4 * cm, fill=0
+        )
+        pdf.setFont("Arial", 8)
+        pdf.drawString(16 * cm, 26.9 * cm, "LOTAÇÃO (SIGLA)")
+        pdf.setFont("Arial", 10)
+        pdf.drawString(
+            16.3 * cm, 26 * cm, "UPA20"
+        )
+        pdf.rect(
+            15.9 * cm, 25.9 * cm, 4.7 * cm, 1.4 * cm, fill=0
+        )  # para criar retangulo
+        pdf.setFont("Arial", 9)
+        pdf.drawString(3.6 * cm, 26.9 * cm, "ORGÃO")
+        pdf.setFont("Arial", 10)
+        pdf.drawString(
+            3.6 * cm, 26 * cm, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL",
+        )
+        pdf.rect(
+            3.5 * cm, 25.9 * cm, 12.4 * cm, 1.4 * cm, fill=0
+        )  # para criar retangulo
+        pdf.setFont("Arial", 9)
+        pdf.drawString(2.1 * cm, 26.9 * cm, "CÓDIGO")
+        pdf.rect(2 * cm, 25.9 * cm, 1.5 * cm, 1.4 * cm, fill=0)  # para criar retangulo
+
+        pdf.setFont("Arial-Bold", 10)
+        pdf.drawString(2 * cm, 25.5 * cm, "SERVIDOR")
+        pdf.setFont("Arial", 9)
+        pdf.drawString(2.1 * cm, 25 * cm, "MATRÍCULA")
+        pdf.drawString(2.1 * cm, 24.2 * cm, f"{servidor.matricula}")
+        pdf.rect(
+            2 * cm, 24 * cm, 2.1 * cm, 1.4 * cm, fill=0
+        )  # para criar retangulo
+        pdf.setFont("Arial", 9)
+        pdf.drawString(4.2 * cm, 25 * cm, "VÍNCULO")
+        pdf.drawString(4.2 * cm, 24.2 * cm, " ")
+        pdf.rect(
+            4.1 * cm, 24 * cm, 1.7 * cm, 1.4 * cm, fill=0
+        )  # para criar retangulo
+        pdf.setFont("Arial", 9)
+        pdf.drawString(5.9 * cm, 25 * cm, "NOME")
+        pdf.setFont("Arial", 10)
+        pdf.drawString(5.9 * cm, 24.2 * cm, f"{servidor.nome} {servidor.sobrenome}")
+        pdf.rect(
+            5.8 * cm, 24 * cm, 10.1 * cm, 1.4 * cm, fill=0
+        )  # para criar retangulo
+        pdf.setFont("Arial", 8)
+        pdf.drawString(16 * cm, 25 * cm, "CARGA HORÁRIA")
+        pdf.drawString(16 * cm, 24.7 * cm, "SEMANAL")
+        pdf.setFont("Arial", 10)
+        pdf.drawString(16 * cm, 24.2 * cm, f"{servidor.ch}")
+        pdf.rect(
+            15.9 * cm, 24 * cm, 3 * cm, 1.4 * cm, fill=0
+        )  # para criar retangulo
+        pdf.setFont("Arial", 8)
+        pdf.drawString(18.95 * cm, 25 * cm, "INTERVALO")
+        pdf.setFont("Arial", 10)
+        pdf.drawString(18.95 * cm, 24.2 * cm, " ")
+        pdf.rect(
+            18.9 * cm, 24 * cm, 1.7 * cm, 1.4 * cm, fill=0
+        )  # para criar retangulo
+        pdf.setFont("Arial", 9)
+        pdf.drawString(2.3 * cm, 23.2 * cm, "DIA")
+        pdf.rect(
+            2 * cm, 22.8 * cm, 1.3 * cm, 1.2 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(
+            3.3 * cm, 22.8 * cm, 1.2 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(3.4 * cm, 23 * cm, "HORA")
+        pdf.rect(
+            4.5 * cm, 22.8 * cm, 2.8 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(4.7 * cm, 23 * cm, "ASSINATURA")
+        pdf.rect(
+            3.3 * cm, 23.4 * cm, 4 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(4.3 * cm, 23.6 * cm, "ENTRADA")
+
+        pdf.rect(
+            7.3 * cm, 22.8 * cm, 1.2 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(7.4 * cm, 23 * cm, "HORA")
+        pdf.rect(
+            8.5 * cm, 22.8 * cm, 3.1 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(8.9 * cm, 23 * cm, "ASSINATURA")
+        pdf.rect(
+            11.6 * cm, 22.8 * cm, 1.2 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(11.8 * cm, 23 * cm, "HORA")
+        pdf.rect(
+            12.8 * cm, 22.8 * cm, 3.1 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(13.3 * cm, 23 * cm, "ASSINATURA")
+        pdf.rect(
+            7.3 * cm, 23.4 * cm, 8.6 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(9 * cm, 23.6 * cm, "REFEIÇÃO/DESCANSO")
+
+        pdf.rect(
+            15.9 * cm, 23.4 * cm, 4.7 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(18 * cm, 23.6 * cm, "SAÍDA")
+        pdf.rect(
+            15.9 * cm, 22.8 * cm, 1.3 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(16.1 * cm, 23 * cm, "HORA")
+        pdf.rect(
+            17.2 * cm, 22.8 * cm, 3.4 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.drawString(17.7 * cm, 23 * cm, "ASSINATURA")
+        # pdf.rect(3.3 * cm, 23.4 * cm, 4.3 * cm, 0.6 * cm, fill=0)  # para criar retangulo
+                # c.drawString(4.3 * cm, 23.6 * cm, "ENTRADA")
+
+            ##Para geração das linhas e datas do dia do mes
+        total = range(1, 31 + 1, 1)
+        x_alt = 22.2 + 0.6
+        x_alt_data = 22.4 + 0.6
+        for x in total:
+            x_alt = x_alt - 0.6
+            x_alt_data = x_alt_data - 0.6
+            pdf.setFont("Arial", 10)  # DIA
+            pdf.drawString(2.4 * cm, x_alt_data * cm, f"{x}")
+            pdf.rect(
+                2 * cm, x_alt * cm, 1.3 * cm, 0.6 * cm, fill=0
+            )  # para criar retangulo
+            pdf.rect(
+                3.3 * cm, x_alt * cm, 1.2 * cm, 0.6 * cm, fill=0
+            )  # para criar retangulo
+            pdf.rect(
+                4.5 * cm, x_alt * cm, 2.8 * cm, 0.6 * cm, fill=0
+            )  # para criar retangulo
+            pdf.rect(
+                7.3 * cm, x_alt * cm, 1.2 * cm, 0.6 * cm, fill=0
+            )  # para criar retangulo
+            pdf.rect(
+                8.5 * cm, x_alt * cm, 3.1 * cm, 0.6 * cm, fill=0
+            )  # para criar retangulo
+            pdf.rect(
+                11.6 * cm, x_alt * cm, 1.2 * cm, 0.6 * cm, fill=0
+            )  # para criar retangulo
+            pdf.rect(
+                12.8 * cm, x_alt * cm, 3.1 * cm, 0.6 * cm, fill=0
+            )  # para criar retangulo
+            pdf.rect(15.9 * cm, x_alt * cm, 1.3 * cm, 0.6 * cm, fill=0)
+            pdf.rect(
+                17.2 * cm, x_alt * cm, 3.4 * cm, 0.6 * cm, fill=0
+            )  # para criar retangulo
+
+        pdf.rect(
+            2 * cm, 0.6 * cm, 2.5 * cm, 3.5 * cm, fill=0
+        )  # para criar retangulo
+        pdf.setFont("Arial", 7.5)  # DIA
+        pdf.drawCentredString(3.25 * cm, 3.65 * cm, "EM CASO DE")
+        pdf.drawCentredString(3.25 * cm, 3.35 * cm, "ABONO A CHEFIA")
+        pdf.drawCentredString(3.25 * cm, 3.05 * cm, "IMEDIATA DEVERÁ")
+        pdf.drawCentredString(3.25 * cm, 2.75 * cm, "ESPECIFICAR O")
+        pdf.drawCentredString(3.25 * cm, 2.45 * cm, "DIA A SER")
+        pdf.drawCentredString(3.25 * cm, 2.15 * cm, "ABONADO,")
+        pdf.drawCentredString(3.25 * cm, 1.85 * cm, "DESCREVER O")
+        pdf.drawCentredString(3.25 * cm, 1.55 * cm, "MOTIVO E")
+        pdf.drawCentredString(3.25 * cm, 1.25 * cm, "ASSINAR.")
+
+        pdf.setFont("Arial", 8)  # DIA
+        pdf.drawCentredString(5.2 * cm, 3.65 * cm, "DIA")
+        pdf.drawCentredString(7.7 * cm, 3.65 * cm, "MOTIVO")
+        pdf.drawCentredString(11.5 * cm, 3.65 * cm, "ASSINATURA")
+        x_jus = 4.1
+        for x in range(0, 7, 1):
+            x_jus = x_jus - 0.5
+            pdf.rect(
+                4.5 * cm, x_jus * cm, 1.3 * cm, 0.5 * cm, fill=0
+            )  # para criar retangulo
+            pdf.rect(
+                5.8 * cm, x_jus * cm, 4.2 * cm, 0.5 * cm, fill=0
+            )  # para criar retangulo
+            pdf.rect(
+                10 * cm, x_jus * cm, 3 * cm, 0.5 * cm, fill=0
+            )  # para criar retangulo
+
+        pdf.setFont("Arial-Bold", 8)  # DIA
+        pdf.drawString(13.3 * cm, 3.7 * cm, "SERVIDOR")
+        pdf.setFont("Arial", 7)  # DIA
+        pdf.drawString(
+            13.3 * cm,
+            3.5 * cm,
+            "Reconheço como verdadeiras as anotações sobre a minha",
+        )
+        pdf.drawString(
+            13.3 * cm,
+            3.2 * cm,
+            "assiduidade e pontualidade e as assumo na integra.",
+        )
+        pdf.rect(
+            13.1 * cm, 3.1 * cm, 7.5 * cm, 1 * cm, fill=0
+        )  # para criar retangulo
+        pdf.setFont("Arial", 7)  # DIA
+        pdf.drawString(13.3 * cm, 2.8 * cm, "DATA")
+        pdf.drawString(16.3 * cm, 2.8 * cm, "ASSINATURA")
+        pdf.rect(
+            13.1 * cm, 2.1 * cm, 3 * cm, 1 * cm, fill=0
+        )  # para criar retangulo
+                # ADD DATA
+        pdf.rect(
+            16.1 * cm, 2.1 * cm, 4.5 * cm, 1 * cm, fill=0
+        )  # para criar retangulo
+
+        pdf.setFont("Arial-Bold", 8)  # DIA
+        pdf.drawString(13.1 * cm, 1.7 * cm, "CHEFIA IMEDIATA")
+        pdf.setFont("Arial", 7)  # DIA
+        pdf.drawString(13.3 * cm, 1.3 * cm, "DATA")
+        pdf.drawString(16.3 * cm, 1.3 * cm, "ASSINATURA")
+        pdf.rect(
+            13.1 * cm, 0.6 * cm, 3 * cm, 1 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(
+            16.1 * cm, 0.6 * cm, 4.5 * cm, 1 * cm, fill=0
+        )  # para criar retangulo
+        pdf.showPage()
+
+    pdf.save()
+
+    return response
+
+def folha_ponto_servidor(request, servidor_id, mes, ano):
+    """View para exibir a folha de ponto de um servidor específico"""
+    
+    servidor = get_object_or_404(Servidores, id=servidor_id)
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="folha_ponto_{servidor.nome_exibir}_{mes}.pdf"'
+    
+    pdf = canvas.Canvas(response, pagesize=A4)
+    pdf.setAuthor('OgliTech')
+    pdf.setLineWidth(0.5) # Espessura da linha
+    pdf.setStrokeColorRGB(0, 0, 0, 0.7) #Cor da linha
+    largura, altura = A4
+
+    pdf.drawImage(
+        os.path.join(settings.BASE_DIR, 'staticfiles', 'servidores','img', 'logo.png'),
+        0.4 * cm,
+        27.8 * cm,
+        width=1.5 * cm,
+        height=1.5 * cm,
+    )
+    pdf.setFont("Arial-Bold", 10)
+    pdf.drawString(2 * cm, 28.9 * cm, "ESTADO DE SANTA CATARINA")
+    pdf.drawString(16.5 * cm, 29 * cm, "CONTROLE DE PONTO")
+    pdf.setFont("Arial", 8)
+    pdf.drawString(16 * cm, 28.3 * cm, "MÊS/ANO")
+    pdf.setFont("Arial", 9)
+    pdf.drawString(
+        16 * cm, 27.6 * cm, f"{mes}/{ano}"
+    )
+    pdf.rect(
+        15.9 * cm, 27.3 * cm, 4.7 * cm, 1.4 * cm, fill=0
+    )
+    pdf.setFont("Arial", 8)
+    pdf.drawString(16 * cm, 26.9 * cm, "LOTAÇÃO (SIGLA)")
+    pdf.setFont("Arial", 10)
+    pdf.drawString(
+        16.3 * cm, 26 * cm, "UPA20"
+    )
+    pdf.rect(
+        15.9 * cm, 25.9 * cm, 4.7 * cm, 1.4 * cm, fill=0
+    )  # para criar retangulo
+    pdf.setFont("Arial", 9)
+    pdf.drawString(3.6 * cm, 26.9 * cm, "ORGÃO")
+    pdf.setFont("Arial", 10)
+    pdf.drawString(
+        3.6 * cm, 26 * cm, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL",
+    )
+    pdf.rect(
+        3.5 * cm, 25.9 * cm, 12.4 * cm, 1.4 * cm, fill=0
+    )  # para criar retangulo
+    pdf.setFont("Arial", 9)
+    pdf.drawString(2.1 * cm, 26.9 * cm, "CÓDIGO")
+    pdf.rect(2 * cm, 25.9 * cm, 1.5 * cm, 1.4 * cm, fill=0)  # para criar retangulo
+
+    pdf.setFont("Arial-Bold", 10)
+    pdf.drawString(2 * cm, 25.5 * cm, "SERVIDOR")
+    pdf.setFont("Arial", 9)
+    pdf.drawString(2.1 * cm, 25 * cm, "MATRÍCULA")
+    pdf.drawString(2.1 * cm, 24.2 * cm, f"{servidor.matricula}")
+    pdf.rect(
+        2 * cm, 24 * cm, 2.1 * cm, 1.4 * cm, fill=0
+    )  # para criar retangulo
+    pdf.setFont("Arial", 9)
+    pdf.drawString(4.2 * cm, 25 * cm, "VÍNCULO")
+    pdf.drawString(4.2 * cm, 24.2 * cm, " ")
+    pdf.rect(
+        4.1 * cm, 24 * cm, 1.7 * cm, 1.4 * cm, fill=0
+    )  # para criar retangulo
+    pdf.setFont("Arial", 9)
+    pdf.drawString(5.9 * cm, 25 * cm, "NOME")
+    pdf.setFont("Arial", 10)
+    pdf.drawString(5.9 * cm, 24.2 * cm, f"{servidor.nome} {servidor.sobrenome}")
+    pdf.rect(
+        5.8 * cm, 24 * cm, 10.1 * cm, 1.4 * cm, fill=0
+    )  # para criar retangulo
+    pdf.setFont("Arial", 8)
+    pdf.drawString(16 * cm, 25 * cm, "CARGA HORÁRIA")
+    pdf.drawString(16 * cm, 24.7 * cm, "SEMANAL")
+    pdf.setFont("Arial", 10)
+    pdf.drawString(16 * cm, 24.2 * cm, f"{servidor.ch}")
+    pdf.rect(
+        15.9 * cm, 24 * cm, 3 * cm, 1.4 * cm, fill=0
+    )  # para criar retangulo
+    pdf.setFont("Arial", 8)
+    pdf.drawString(18.95 * cm, 25 * cm, "INTERVALO")
+    pdf.setFont("Arial", 10)
+    pdf.drawString(18.95 * cm, 24.2 * cm, " ")
+    pdf.rect(
+        18.9 * cm, 24 * cm, 1.7 * cm, 1.4 * cm, fill=0
+    )  # para criar retangulo
+    pdf.setFont("Arial", 9)
+    pdf.drawString(2.3 * cm, 23.2 * cm, "DIA")
+    pdf.rect(
+        2 * cm, 22.8 * cm, 1.3 * cm, 1.2 * cm, fill=0
+    )  # para criar retangulo
+    pdf.rect(
+        3.3 * cm, 22.8 * cm, 1.2 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(3.4 * cm, 23 * cm, "HORA")
+    pdf.rect(
+        4.5 * cm, 22.8 * cm, 2.8 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(4.7 * cm, 23 * cm, "ASSINATURA")
+    pdf.rect(
+        3.3 * cm, 23.4 * cm, 4 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(4.3 * cm, 23.6 * cm, "ENTRADA")
+
+    pdf.rect(
+        7.3 * cm, 22.8 * cm, 1.2 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(7.4 * cm, 23 * cm, "HORA")
+    pdf.rect(
+        8.5 * cm, 22.8 * cm, 3.1 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(8.9 * cm, 23 * cm, "ASSINATURA")
+    pdf.rect(
+        11.6 * cm, 22.8 * cm, 1.2 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(11.8 * cm, 23 * cm, "HORA")
+    pdf.rect(
+        12.8 * cm, 22.8 * cm, 3.1 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(13.3 * cm, 23 * cm, "ASSINATURA")
+    pdf.rect(
+        7.3 * cm, 23.4 * cm, 8.6 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(9 * cm, 23.6 * cm, "REFEIÇÃO/DESCANSO")
+
+    pdf.rect(
+        15.9 * cm, 23.4 * cm, 4.7 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(18 * cm, 23.6 * cm, "SAÍDA")
+    pdf.rect(
+        15.9 * cm, 22.8 * cm, 1.3 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(16.1 * cm, 23 * cm, "HORA")
+    pdf.rect(
+        17.2 * cm, 22.8 * cm, 3.4 * cm, 0.6 * cm, fill=0
+    )  # para criar retangulo
+    pdf.drawString(17.7 * cm, 23 * cm, "ASSINATURA")
+    # pdf.rect(3.3 * cm, 23.4 * cm, 4.3 * cm, 0.6 * cm, fill=0)  # para criar retangulo
+            # c.drawString(4.3 * cm, 23.6 * cm, "ENTRADA")
+
+        ##Para geração das linhas e datas do dia do mes
+    total = range(1, 31 + 1, 1)
+    x_alt = 22.2 + 0.6
+    x_alt_data = 22.4 + 0.6
+    for x in total:
+        x_alt = x_alt - 0.6
+        x_alt_data = x_alt_data - 0.6
+        pdf.setFont("Arial", 10)  # DIA
+        pdf.drawString(2.4 * cm, x_alt_data * cm, f"{x}")
+        pdf.rect(
+            2 * cm, x_alt * cm, 1.3 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(
+            3.3 * cm, x_alt * cm, 1.2 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(
+            4.5 * cm, x_alt * cm, 2.8 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(
+            7.3 * cm, x_alt * cm, 1.2 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(
+            8.5 * cm, x_alt * cm, 3.1 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(
+            11.6 * cm, x_alt * cm, 1.2 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(
+            12.8 * cm, x_alt * cm, 3.1 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(15.9 * cm, x_alt * cm, 1.3 * cm, 0.6 * cm, fill=0)
+        pdf.rect(
+            17.2 * cm, x_alt * cm, 3.4 * cm, 0.6 * cm, fill=0
+        )  # para criar retangulo
+
+    pdf.rect(
+        2 * cm, 0.6 * cm, 2.5 * cm, 3.5 * cm, fill=0
+    )  # para criar retangulo
+    pdf.setFont("Arial", 7.5)  # DIA
+    pdf.drawCentredString(3.25 * cm, 3.65 * cm, "EM CASO DE")
+    pdf.drawCentredString(3.25 * cm, 3.35 * cm, "ABONO A CHEFIA")
+    pdf.drawCentredString(3.25 * cm, 3.05 * cm, "IMEDIATA DEVERÁ")
+    pdf.drawCentredString(3.25 * cm, 2.75 * cm, "ESPECIFICAR O")
+    pdf.drawCentredString(3.25 * cm, 2.45 * cm, "DIA A SER")
+    pdf.drawCentredString(3.25 * cm, 2.15 * cm, "ABONADO,")
+    pdf.drawCentredString(3.25 * cm, 1.85 * cm, "DESCREVER O")
+    pdf.drawCentredString(3.25 * cm, 1.55 * cm, "MOTIVO E")
+    pdf.drawCentredString(3.25 * cm, 1.25 * cm, "ASSINAR.")
+
+    pdf.setFont("Arial", 8)  # DIA
+    pdf.drawCentredString(5.2 * cm, 3.65 * cm, "DIA")
+    pdf.drawCentredString(7.7 * cm, 3.65 * cm, "MOTIVO")
+    pdf.drawCentredString(11.5 * cm, 3.65 * cm, "ASSINATURA")
+    x_jus = 4.1
+    for x in range(0, 7, 1):
+        x_jus = x_jus - 0.5
+        pdf.rect(
+            4.5 * cm, x_jus * cm, 1.3 * cm, 0.5 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(
+            5.8 * cm, x_jus * cm, 4.2 * cm, 0.5 * cm, fill=0
+        )  # para criar retangulo
+        pdf.rect(
+            10 * cm, x_jus * cm, 3 * cm, 0.5 * cm, fill=0
+        )  # para criar retangulo
+
+    pdf.setFont("Arial-Bold", 8)  # DIA
+    pdf.drawString(13.3 * cm, 3.7 * cm, "SERVIDOR")
+    pdf.setFont("Arial", 7)  # DIA
+    pdf.drawString(
+        13.3 * cm,
+        3.5 * cm,
+        "Reconheço como verdadeiras as anotações sobre a minha",
+    )
+    pdf.drawString(
+        13.3 * cm,
+        3.2 * cm,
+        "assiduidade e pontualidade e as assumo na integra.",
+    )
+    pdf.rect(
+        13.1 * cm, 3.1 * cm, 7.5 * cm, 1 * cm, fill=0
+    )  # para criar retangulo
+    pdf.setFont("Arial", 7)  # DIA
+    pdf.drawString(13.3 * cm, 2.8 * cm, "DATA")
+    pdf.drawString(16.3 * cm, 2.8 * cm, "ASSINATURA")
+    pdf.rect(
+        13.1 * cm, 2.1 * cm, 3 * cm, 1 * cm, fill=0
+    )  # para criar retangulo
+            # ADD DATA
+    pdf.rect(
+        16.1 * cm, 2.1 * cm, 4.5 * cm, 1 * cm, fill=0
+    )  # para criar retangulo
+
+    pdf.setFont("Arial-Bold", 8)  # DIA
+    pdf.drawString(13.1 * cm, 1.7 * cm, "CHEFIA IMEDIATA")
+    pdf.setFont("Arial", 7)  # DIA
+    pdf.drawString(13.3 * cm, 1.3 * cm, "DATA")
+    pdf.drawString(16.3 * cm, 1.3 * cm, "ASSINATURA")
+    pdf.rect(
+        13.1 * cm, 0.6 * cm, 3 * cm, 1 * cm, fill=0
+    )  # para criar retangulo
+    pdf.rect(
+        16.1 * cm, 0.6 * cm, 4.5 * cm, 1 * cm, fill=0
+    )  # para criar retangulo
+    pdf.showPage()
+
+    pdf.save()
+
+    return response

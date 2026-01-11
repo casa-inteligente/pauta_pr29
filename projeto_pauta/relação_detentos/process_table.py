@@ -88,7 +88,7 @@ def process_pdf(file_path):
             #raise ValueError('Ao final das concatenações das tabelas esta faltando informações \n\n O pdf gerado esta incompleto na sua concepção ou houve erro na leitura das tabelas.')
             #print('Possui divergencia de informações')
 
-        # Pegar as colunas necessárias
+        # Pegar as colunas necessáriasz
         first_col = df.iloc[:, 0].astype(str).reset_index(drop=True) # Coluna que contém IPEN e NOME
         third_col = df.iloc[:, 2].reset_index(drop=True) # Coluna que contém data de ingresso
         fifth_col = df.iloc[:, 4].reset_index(drop=True) # Coluna que contém a alocação

@@ -41,11 +41,16 @@
                 <div>
                     <label for="ano" class="block text-sm font-medium text-gray-700 mb-1">Ano:</label>
                     <input type="number" name="ano" id="ano" value="{{ ano_corrente }}" 
-                           min="2020" max="2030"
+                           min="2019" max="2030"
                            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 
-                <a href="#"
+                <button type="submit"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    🔍 Filtrar
+                </button>
+                
+                <a href="{% url 'servidores:folha_ponto_pdf' ano=ano_corrente mes=mes_corrente %}"
                    class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                     📄 Gerar Folhas Ponto
                 </a>
@@ -95,7 +100,7 @@
                                 <td class="p-2 border">{{ servidor.ch }}h</td>
                                 <td class="p-2 border">{{ servidor.get_setor_display }}</td>
                                 <td class="p-2 border whitespace-nowrap flex gap-1">
-                                    <a href="#"
+                                    <a href="{% url 'servidores:folha_ponto_servidor' servidor_id=servidor.id mes=mes_corrente ano=ano_corrente %}"
                                        class="bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600 text-xs">
                                         🖨️ Folha Ponto
                                     </a>
