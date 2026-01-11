@@ -10,6 +10,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
 
 import pandas as pd
 import json
@@ -29,7 +30,7 @@ from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from .forms.geradores import DescricaoKitHigieneForm, TermoRoupariaForm 
 
-from django.db.models import Case, When, Value
+from django.db.models import Case, When, Value, Max
 from django.db.models.functions import Concat
 from django.utils import timezone
 
@@ -222,7 +223,7 @@ def upload_pdf(request):
     '''
     if request.method == 'POST' and request.FILES.get('pdfFile'):
         pdf_file = request.FILES['pdfFile']
-        fs = FileSystemStorage()
+        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'relatorio1-9'))
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
 
@@ -254,7 +255,7 @@ def upload_regime_pdf(request):
 def exctrai_date_exit_view(request):
     if request.method == 'POST' and request.FILES.get('progressaoPdfFile'):
         pdf_file = request.FILES['progressaoPdfFile']
-        fs = FileSystemStorage()
+        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'relatorio_progressao'))
         filename = fs.save(pdf_file.name, pdf_file)
         file_path = fs.path(filename)
         # print(f'Nome do arquivo: {filename} \n Caminho do arquivo: {file_path}')
@@ -287,6 +288,14 @@ def view_termo_rouparia(request):
     numero_rouparia = None
     regime_selecionado = None
     com_kit_higiene = None
+
+    ultima_data_atualizado = (
+        Relacao.objects
+        .exclude(atualizado__isnull=True)
+        .aggregate(Max('atualizado')).get('atualizado__max')
+    )
+
+    print(f'Ultima data atualizado: {ultima_data_atualizado}')
     
     ipen = request.GET.get('ipen')
     numero_rouparia = request.GET.get('numero_rouparia')
@@ -326,6 +335,7 @@ def view_termo_rouparia(request):
         'numero_rouparia': numero_rouparia,
         'regime_selecionado': regime_selecionado,
         'com_kit_higiene': com_kit_higiene,
+        'ultima_data_atualizado': ultima_data_atualizado,
         'form': form,
         'ano_corrente': ANO_CORRENTE,
     })
@@ -969,7 +979,7 @@ def gerar_termo_autorizacao(request, detento_id, empresa_conveniada):
     return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
 
 def cabecalho_e_rodape(canvas, doc):
-    from reportlab.lib.utils import ImageReader
+    
    
 
     # Cabeçalho
@@ -1023,7 +1033,7 @@ def cabecalho_e_rodape(canvas, doc):
     canvas.restoreState()
 
 def cabecalho_e_rodape_ume(canvas, doc):
-    from reportlab.lib.utils import ImageReader
+    
    
 
     # Cabeçalho
