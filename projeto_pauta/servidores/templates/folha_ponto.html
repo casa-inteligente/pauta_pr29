@@ -46,8 +46,9 @@
                 </div>
                 
                 <button type="submit"
-                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    🔍 Filtrar
+                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <i class="fa fa-cogs" aria-hidden="true"></i>
+                    Aplicar
                 </button>
                 
                 <a href="{% url 'servidores:folha_ponto_pdf' ano=ano_corrente mes=mes_corrente %}"
@@ -64,7 +65,7 @@
         <section class="mb-6 bg-white p-4 rounded shadow">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <h2 class="text-lg font-semibold text-gray-700">
-                    👥 Setor: 
+                    👥 
                     {% if setor_grupo.grouper == 'PLANTAO_A' %}Plantão A
                     {% elif setor_grupo.grouper == 'PLANTAO_B' %}Plantão B
                     {% elif setor_grupo.grouper == 'PLANTAO_C' %}Plantão C
@@ -87,8 +88,6 @@
                             <tr>
                                 <th class="p-2 border">Matrícula</th>
                                 <th class="p-2 border">Nome</th>
-                                <th class="p-2 border">Carga Horária</th>
-                                <th class="p-2 border">Setor</th>
                                 <th class="p-2 border">Ações</th>
                             </tr>
                         </thead>
@@ -97,8 +96,6 @@
                             <tr class="hover:bg-yellow-50 even:bg-gray-100">
                                 <td class="p-2 border">{{ servidor.matricula }}</td>
                                 <td class="p-2 border">{{ servidor.nome_exibir }}</td>
-                                <td class="p-2 border">{{ servidor.ch }}h</td>
-                                <td class="p-2 border">{{ servidor.get_setor_display }}</td>
                                 <td class="p-2 border whitespace-nowrap flex gap-1">
                                     <a href="{% url 'servidores:folha_ponto_servidor' servidor_id=servidor.id mes=mes_corrente ano=ano_corrente %}"
                                        class="bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600 text-xs">

@@ -369,7 +369,6 @@ def escala_historico(request):
 
 
 @checked_debug_decorador
-@checked_login_required
 def folha_ponto(request):
     """View para exibir a folha de ponto dos servidores"""
     
@@ -667,6 +666,7 @@ def todas_folhas_ponto(request, mes, ano):
 
     return response
 
+@checked_debug_decorador
 def folha_ponto_servidor(request, servidor_id, mes, ano):
     """View para exibir a folha de ponto de um servidor específico"""
     
