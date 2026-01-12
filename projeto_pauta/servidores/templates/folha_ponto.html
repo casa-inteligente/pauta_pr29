@@ -66,12 +66,12 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <h2 class="text-lg font-semibold text-gray-700">
                     👥 
-                    {% if setor_grupo.grouper == 'PLANTAO_A' %}Plantão A
-                    {% elif setor_grupo.grouper == 'PLANTAO_B' %}Plantão B
-                    {% elif setor_grupo.grouper == 'PLANTAO_C' %}Plantão C
-                    {% elif setor_grupo.grouper == 'PLANTAO_D' %}Plantão D
-                    {% elif setor_grupo.grouper == 'ADMINISTRATIVO' %}Administrativo
-                    {% else %}{{ setor_grupo.grouper }}
+                    {% if setor_grupo.grouper == 'PLANTAO_A' %}Plantão A <span class="bg-gray-500 text-white rounded-full px-2 py-1 text-sm ml-1">{{ setor_grupo.list|length }}</span>
+                    {% elif setor_grupo.grouper == 'PLANTAO_B' %}Plantão B <span class="bg-gray-500 text-white rounded-full px-2 py-1 text-sm ml-1">{{ setor_grupo.list|length }}</span>
+                    {% elif setor_grupo.grouper == 'PLANTAO_C' %}Plantão C <span class="bg-gray-500 text-white rounded-full px-2 py-1 text-sm ml-1">{{ setor_grupo.list|length }}</span>
+                    {% elif setor_grupo.grouper == 'PLANTAO_D' %}Plantão D <span class="bg-gray-500 text-white rounded-full px-2 py-1 text-sm ml-1">{{ setor_grupo.list|length }}</span>
+                    {% elif setor_grupo.grouper == 'ADMINISTRATIVO' %}Administrativo <span class="bg-gray-500 text-white rounded-full px-2 py-1 text-sm ml-1">{{ setor_grupo.list|length }}</span>
+                    {% else %}{{ setor_grupo.grouper }} <span class="bg-gray-500 text-white rounded-full px-2 py-1 text-sm ml-1">{{ setor_grupo.list|length }}</span>
                     {% endif %}
                 </h2>
                 <button type="button"
