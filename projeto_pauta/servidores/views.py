@@ -389,6 +389,7 @@ def folha_ponto(request):
         print(f'Folha de Ponto - Ano: {ano}, Mês: {mes}, Servidores Ativos: {self_servidores_ativos.count()}')
     
     contexto = {
+        'user': request.user,
         'servidores_ativos': self_servidores_ativos,
         'ano_corrente': ano,
         'mes_corrente': mes,
