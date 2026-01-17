@@ -198,7 +198,7 @@ Sistema de toggle switches para seleção intuitiva entre regimes prisionais:
 
 ## 📝 Licença
 
-Este projeto está sob licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+Este projeto está sob licença AGPL-3.0. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ## 🆘 Suporte
 
@@ -219,4 +219,4 @@ Para suporte técnico ou dúvidas:
 
 **Versão**: 1.0.1
 **Status**: Em desenvolvimento ativo  
-**Última atualização**: Outubro 2025
+**Última atualização**: janeiro 2026
