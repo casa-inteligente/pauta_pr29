@@ -369,7 +369,6 @@ def escala_historico(request):
 
 
 @checked_debug_decorador
-@checked_login_required
 def folha_ponto(request):
     """View para exibir a folha de ponto dos servidores"""
     
@@ -390,6 +389,7 @@ def folha_ponto(request):
         print(f'Folha de Ponto - Ano: {ano}, Mês: {mes}, Servidores Ativos: {self_servidores_ativos.count()}')
     
     contexto = {
+        'user': request.user,
         'servidores_ativos': self_servidores_ativos,
         'ano_corrente': ano,
         'mes_corrente': mes,
@@ -667,6 +667,7 @@ def todas_folhas_ponto(request, mes, ano):
 
     return response
 
+@checked_debug_decorador
 def folha_ponto_servidor(request, servidor_id, mes, ano):
     """View para exibir a folha de ponto de um servidor específico"""
     
