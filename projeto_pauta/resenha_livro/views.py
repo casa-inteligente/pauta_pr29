@@ -19,7 +19,7 @@ def listar_alunos(request):
     """Listar todos os alunos e suas resenhas por período de leitura."""
     try:
         periodos = PeriodoLeitura.objects.all().order_by('-data_resenha')
-        print(periodos)
+        #print(periodos)
         if not periodos.exists():
             resenhas_por_periodo = {}
         else:
