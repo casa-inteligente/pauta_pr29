@@ -312,10 +312,11 @@
                                 <td class="p-2 border">{{ servidor.matricula }}</td>
                                 <td class="p-2 border">{{ servidor.nome_exibir }}</td>
                                 <td class="p-2 border whitespace-nowrap flex gap-1">
-                                    <a href="{% url 'servidores:folha_ponto_servidor' servidor_id=servidor.id mes=mes_corrente ano=ano_corrente %}"
-                                       class="bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600 text-xs">
+                                    <button type="button"
+                                            onclick="gerarPDFServidor({{ servidor.id }})"
+                                            class="bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600 text-xs">
                                         🖨️ Folha Ponto
-                                    </a>
+                                    </button>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -339,6 +340,11 @@
             const mes = document.getElementById('mes').value;
             const ano = document.getElementById('ano').value;
             window.location.href = `/servidores/folha-ponto/pdf/${mes}/${ano}/`;
+        }
+        function gerarPDFServidor(servidorId) {
+            const mes = document.getElementById('mes').value;
+            const ano = document.getElementById('ano').value;
+            window.location.href = `/servidores/folha-ponto/servidor/${servidorId}/${mes}/${ano}/`;
         }
 
         // Verificação de usuário e exibição do modal
