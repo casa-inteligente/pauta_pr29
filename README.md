@@ -216,6 +216,8 @@ Para suporte técnico ou dúvidas:
 - [Font Awesome](https://fontawesome.com/)
 
 ---
+Verde: bg-[#32A041]
+
 
 **Versão**: 1.0.1
 **Status**: Em desenvolvimento ativo  

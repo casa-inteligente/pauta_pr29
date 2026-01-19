@@ -3,6 +3,7 @@ from .models import Pauta
 from django.utils import timezone
 from datetime import timedelta
 from .forms import PautaForm
+import datetime
 
 
 # Imports para API
@@ -32,6 +33,7 @@ def pauta_all(request):
     
     return render(request, 'pauta/pauta_all.html', {
         'titulo': 'Pauta',
+        'ano_corrente': datetime.datetime.now().year,
         'nome_unidade': 'Presídio Regional de Maravilha',
         'pauta_all': pauta_alls,
         'form': form,
@@ -49,6 +51,7 @@ def index_7(request):
         'pautas': pautas,
         'titulo': 'Pauta 7 dias',
         'nome_unidade': 'Presídio Regional de Maravilha',
+        'ano_corrente': datetime.datetime.now().year,
         }
     )
 

@@ -41,10 +41,24 @@ class Turma(models.Model):
 
 class PeriodoLeitura(models.Model):
     """Modelo para periodo de leitura"""
-    turma = models.ForeignKey(Turma, on_delete=models.CASCADE, related_name='periodos')
-    intervalo_leitura = models.CharField('Periodo de leitura:', max_length=30, blank=False, null=False)
+    turma = models.ForeignKey(
+        Turma, 
+        on_delete=models.CASCADE, 
+        related_name='periodos'
+    )
+    intervalo_leitura = models.CharField(
+        'Periodo de leitura:', 
+        max_length=30, 
+        blank=False, 
+        null=False
+    )
     data_resenha = models.DateField('Data da Resenha:', blank=False, null=False)
-    aprovada = models.BooleanField('Aprovada:', default=True, blank=False, null=False)
+    aprovada = models.BooleanField(
+        'Aprovada:', 
+        default=True, 
+        blank=False, 
+        null=False
+    )
 
     class Meta:
         

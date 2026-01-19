@@ -413,7 +413,7 @@ def todas_folhas_ponto(request, mes, ano):
     
     
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="folha_ponto_todos_{mes}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="folha_ponto_todos_{mes}.pdf"'
 
     pdf = canvas.Canvas(response, pagesize=A4)
     pdf.setAuthor('OgliTech')
@@ -674,7 +674,7 @@ def folha_ponto_servidor(request, servidor_id, mes, ano):
     servidor = get_object_or_404(Servidores, id=servidor_id)
     
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="folha_ponto_{servidor.nome_exibir}_{mes}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="folha_ponto_{servidor.nome_exibir}_{mes}.pdf"'
     
     pdf = canvas.Canvas(response, pagesize=A4)
     pdf.setAuthor('OgliTech')
