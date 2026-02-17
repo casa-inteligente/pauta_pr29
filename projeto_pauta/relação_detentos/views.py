@@ -18,6 +18,8 @@ import datetime
 import locale
 import io 
 import os
+import math
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -815,16 +817,29 @@ def cadastro_trampo_view(request):
     })
 
 
-@checked_debug_decorador
-def gerar_termo_kit_higiene(request):
-    #print("Gerando termo kit higiene...")
-    #detentos = Relacao.objects.all().order_by('local_alocacao', 'regime','nome')
-    detentos = (
-        Relacao.objects
-        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia')  # Busca apenas campos necessários
-        .order_by('local_alocacao', 'local_residencia', 'nome')
-    )
+def _gerar_lote_kit_higiene(dados_lote):
+    """
+    Gera um PDF parcial para um lote de detentos (executado em processo separado).
+    Recebe um dict com os dados serializados (sem objetos Django).
+    Retorna bytes do PDF gerado.
+    """
+    # Re-registrar fontes no subprocesso
+    arial_path = dados_lote['arial_path']
+    arial_bold_path = dados_lote['arial_bold_path']
     
+    try:
+        pdfmetrics.getFont('Arial')
+    except:
+        pdfmetrics.registerFont(TTFont('Arial', arial_path))
+        pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
+
+    detentos_data = dados_lote['detentos']
+    descricao_kit_higiene = dados_lote['descricao_kit_higiene']
+    checked_data = dados_lote['checked_data']
+    checked_kit = dados_lote['checked_kit']
+    data_atual = dados_lote['data_atual']
+    caminho_logo = dados_lote['caminho_logo']
+    logo_existe = dados_lote['logo_existe']
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -836,196 +851,230 @@ def gerar_termo_kit_higiene(request):
         bottomMargin=2 * cm
     )
 
-    # Estilos
     estilos = getSampleStyleSheet()
     estilo_titulo = ParagraphStyle(
-        name='Titulo',
-        parent=estilos['Normal'],
-        alignment=TA_CENTER,
-        fontName='Arial-Bold',
-        fontSize=14,
-        leading=18,
-        spaceAfter=20
+        name='Titulo', parent=estilos['Normal'],
+        alignment=TA_CENTER, fontName='Arial-Bold',
+        fontSize=14, leading=18, spaceAfter=20
     )
-
     estilo_subtitulo = ParagraphStyle(
-        name='Subtitulo',
-        parent=estilos['Normal'],
-        alignment=TA_JUSTIFY,
-        fontName='Arial-Bold',
-        fontSize=12,
-        leading=15,
-        spaceAfter=12
+        name='Subtitulo', parent=estilos['Normal'],
+        alignment=TA_JUSTIFY, fontName='Arial-Bold',
+        fontSize=12, leading=15, spaceAfter=12
     )
-
-    
     estilo_justificado = ParagraphStyle(
-        name='Justificado',
-        parent=estilos['Normal'],
-        alignment=TA_JUSTIFY,
-        fontName='Arial',
-        fontSize=11,
-        leading=15,
-        spaceAfter=12
+        name='Justificado', parent=estilos['Normal'],
+        alignment=TA_JUSTIFY, fontName='Arial',
+        fontSize=11, leading=15, spaceAfter=12
     )
-
     estilo_centralizado = ParagraphStyle(
-        name='Centralizado',
-        parent=estilos['Normal'],
-        alignment=TA_CENTER,
-        fontName='Arial',
-        fontSize=11,
-        leading=15
+        name='Centralizado', parent=estilos['Normal'],
+        alignment=TA_CENTER, fontName='Arial',
+        fontSize=11, leading=15
     )
 
-    descricao_kit_higiene = DescricaoKitHigiene.objects.first().descricao
-    checked_data = DescricaoKitHigiene.objects.first().checked_data_recebido
-    checked_kit = DescricaoKitHigiene.objects.first().checked_kit_higiene
+    # Elementos estáticos reutilizáveis
+    p_kit_higiene = Paragraph("Kit higiene", estilo_justificado)
+    p_uniforme = Paragraph("Uniforme", estilo_justificado)
+    p_cobertor = Paragraph("Cobertor", estilo_justificado)
+    p_observacao = Paragraph("Observação:", estilo_subtitulo)
+    p_se_uniforme = Paragraph("Se uniforme, quantidade e tamanho.", estilo_justificado)
+    p_descricao_kit = Paragraph(f"{descricao_kit_higiene}", estilo_justificado)
+    p_x = Paragraph("X", estilo_centralizado)
+    p_espaco = Paragraph(" ", estilo_centralizado)
+    p_assinatura_servidor = Paragraph("Assinatura do servidor (nome completo)", estilo_justificado)
+    p_linha = Paragraph("_______________________________________", estilo_justificado)
+
+    if checked_data:
+        p_recebido = Paragraph(f"Recebido em {data_atual}", estilo_justificado)
+    else:
+        p_recebido = Paragraph("Recebido em _____/_______/_______", estilo_justificado)
+
+    col_widths = [3 * cm, 7 * cm, 3 * cm, 3 * cm]
+    estilo_tabela = TableStyle([
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 3),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 3),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('SPAN', (1, 0), (3, 0)),
+        ('SPAN', (2, 1), (3, 1)),
+        ('SPAN', (2, 0), (3, 0)),
+        ('SPAN', (1, 2), (3, 2)),
+        ('SPAN', (1, 3), (3, 3)),
+        ('SPAN', (1, 4), (3, 4)),
+        ('SPAN', (1, 5), (3, 5)),
+        ('SPAN', (0, 6), (3, 6)),
+        ('SPAN', (0, 7), (3, 7)),
+    ])
+
+    texto_instrucoes = ' 01) Os internos devem assinar a opção com um X;<br/>02) Na opção \u201cobservação\u201d descrever o que está sendo entregue (tamanho e quantidade de uniforme); <br/> 03) O termo de recebimento, devidamente assinado, deverá ser digitalizado e arquivado no IPEN do interno.'
+
+    spacer_1_5 = Spacer(1, 1.5 * cm)
+    spacer_0_5 = Spacer(1, 0.5 * cm)
+    spacer_1 = Spacer(1, 1 * cm)
+    spacer_0_75 = Spacer(1, 0.75 * cm)
 
     elementos = []
+    total = len(detentos_data)
 
-    for i, detento in enumerate(detentos):
-        # Espaço do cabeçalho
-        elementos.append(Spacer(1, 1.5 * cm))
-        
-        # Título
+    for i, det in enumerate(detentos_data):
+        elementos.append(spacer_1_5)
         elementos.append(Paragraph("<b>TERMO DE RECEBIMENTO</b>", estilo_titulo))
-        elementos.append(Spacer(1, 0.5 * cm))
-        texto = "Instruções:"
-        elementos.append(Paragraph(texto, estilo_subtitulo))
+        elementos.append(spacer_0_5)
+        elementos.append(Paragraph("Instruções:", estilo_subtitulo))
+        elementos.append(Paragraph(texto_instrucoes, estilo_justificado))
 
-        texto = f" 01) Os internos devem assinar a opção com um X;<br/>02) Na opção \u201cobservação\u201d descrever o que está sendo entregue (tamanho e quantidade de uniforme); <br/> 03) O termo de recebimento, devidamente assinado, deverá ser digitalizado e arquivado no IPEN do interno."
-        elementos.append(Paragraph(texto, estilo_justificado))
-        
-        # Tabela 2x8 com estilo_justificado
-        # Tabela com estrutura específica
-        tabela_dados = []
-        data_atual = timezone.now().strftime('%d/%m/%Y')
+        tabela_dados = [
+            [Paragraph("INTERNO:", estilo_justificado), Paragraph(det['nome'], estilo_justificado), "", ""],
+            [Paragraph("IPEN:", estilo_justificado), Paragraph(str(det['IPEN']), estilo_justificado),
+             Paragraph(f"DATA: {data_atual}", estilo_justificado), ""],
+            [p_x if checked_kit else "", p_kit_higiene, "", ""],
+            [p_espaco, p_uniforme, "", ""],
+            ["", p_cobertor, "", ""],
+            [p_observacao, "", "", ""],
+            [p_se_uniforme, "", "", ""],
+            [p_descricao_kit, "", "", ""],
+        ]
 
-        # Linha 1: Duas colunas - INTERNO
-        tabela_dados.append([
-            Paragraph("INTERNO:", estilo_justificado),
-            Paragraph(f"{detento.nome}", estilo_justificado),
-            "",  # Célula vazia
-            ""   # Célula vazia
-        ])
-
-        # Linha 2: Quatro colunas - IPEN e DATA
-        tabela_dados.append([
-            Paragraph("IPEN:", estilo_justificado),
-            Paragraph(f"{detento.IPEN}", estilo_justificado),
-            Paragraph(f"DATA: {data_atual}", estilo_justificado),
-            ""
-        ])
-
-        # Linha 3: Duas colunas - X e Kit higiene
-        if checked_kit:
-            tabela_dados.append([
-                Paragraph("X", estilo_centralizado),
-                Paragraph("Kit higiene", estilo_justificado),
-                "",  # Célula vazia
-                ""   # Célula vazia
-            ])
-        else:
-            tabela_dados.append([
-                "",
-                Paragraph("Kit higiene", estilo_justificado),
-                "",  # Célula vazia
-                ""   # Célula vazia
-            ])
-
-        # Adicione mais linhas conforme necessário (continuando a estrutura anterior)
-        # Linha 4: Uniforme
-        tabela_dados.append([
-            Paragraph(" ", estilo_centralizado),
-            Paragraph("Uniforme", estilo_justificado),
-            "",  # Célula vazia
-            ""   # Célula vazia
-        ])
-
-        # Linha 5: Cobertor
-        tabela_dados.append([
-            "",
-            Paragraph("Cobertor", estilo_justificado),
-            "",  # Célula vazia
-            ""   # Célula vazia
-        ])
-
-        # Linha 6: Observação sobre uniforme
-        tabela_dados.append([
-            Paragraph("Observação:", estilo_subtitulo),
-            "",
-            "",  # Célula vazia
-            ""   # Célula vazia
-        ])
-
-        tabela_dados.append([
-            Paragraph("Se uniforme, quantidade e tamanho.", estilo_justificado),
-            "",
-            "",  # Célula vazia
-            ""   # Célula vazia
-        ])
-
-        # Linha 7: Descrição do kit
-        tabela_dados.append([
-            Paragraph(f"{descricao_kit_higiene}", estilo_justificado),
-            "",
-            "",  # Célula vazia
-            ""   # Célula vazia
-        ])
-
-        col_widths = [3 * cm, 7 * cm, 3 * cm, 3 * cm]
         tabela = Table(tabela_dados, colWidths=col_widths, hAlign='LEFT')
-        tabela.setStyle(TableStyle([
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('LEFTPADDING', (0, 0), (-1, -1), 3),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 3),
-            ('TOPPADDING', (0, 0), (-1, -1), 3),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-            ('SPAN', (1, 0), (3, 0)),  # Mesclar colunas 1-2 na linha 1
-            # Mesclar células vazias para melhor aparência
-            ('SPAN', (2, 1), (3, 1)),
-            ('SPAN', (2, 0), (3, 0)),  # Mesclar colunas 3-4 na linha 1
-            ('SPAN', (1, 2), (3, 2)),  # Mesclar colunas 3-4 na linha 3
-            ('SPAN', (1, 3), (3, 3)),  # Mesclar colunas 3-4 na linha 4
-            ('SPAN', (1, 4), (3, 4)),  # Mesclar colunas 3-4 na linha 5
-            ('SPAN', (1, 5), (3, 5)),  # Mesclar colunas 3-4 na linha 6
-            ('SPAN', (0, 6), (3, 6)),  # Mesclar colunas 3-4 na linha 7
-            ('SPAN', (0, 7), (3, 7)),  # Mesclar colunas 3-4 na linha 7
-        ]))
+        tabela.setStyle(estilo_tabela)
 
         elementos.append(tabela)
-        elementos.append(Spacer(1, 1 * cm))
-        
-        # Data
-        if checked_data:
-            elementos.append(Paragraph(f"Recebido em {data_atual}", estilo_justificado))
-            elementos.append(Spacer(1, 0.75 * cm))
-        else:
-            elementos.append(Paragraph(f"Recebido em _____/_______/_______", estilo_justificado))
-            elementos.append(Spacer(1, 0.75 * cm))
+        elementos.append(spacer_1)
+        elementos.append(p_recebido)
+        elementos.append(spacer_0_75)
+        elementos.append(p_linha)
+        elementos.append(Paragraph(det['nome'], estilo_justificado))
+        elementos.append(spacer_0_75)
+        elementos.append(p_linha)
+        elementos.append(p_assinatura_servidor)
+        elementos.append(spacer_0_75)
 
-        # Assinatura
-        elementos.append(Paragraph("_______________________________________", estilo_justificado))
-        elementos.append(Paragraph(f"{detento.nome}", estilo_justificado))
-        elementos.append(Spacer(1, 0.75 * cm))  
+        if i < total - 1:
+            elementos.append(PageBreak())
 
-        # Assinatura
-        elementos.append(Paragraph("_______________________________________", estilo_justificado))
-        elementos.append(Paragraph(f"Assinatura do servidor (nome completo)", estilo_justificado))
-        elementos.append(Spacer(1, 0.75 * cm))
+    def _cabecalho_rodape_worker(canvas_obj, doc_obj):
+        canvas_obj.saveState()
+        if logo_existe:
+            logo = ImageReader(caminho_logo)
+            canvas_obj.drawImage(logo, x=doc_obj.leftMargin, y=A4[1] - 3.2 * cm,
+                                  width=2 * cm, height=2.5 * cm, mask='auto')
+        canvas_obj.setFont("Helvetica", 9)
+        x_texto = doc_obj.leftMargin + 2.3 * cm
+        y_topo = A4[1] - 1.2 * cm
+        linhas = [
+            "ESTADO DE SANTA CATARINA",
+            "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL",
+            "DEPARTAMENTO DE POLÍCIA PENAL",
+            "PRESÍDIO REGIONAL DE MARAVILHA",
+            ""
+        ]
+        for idx, linha in enumerate(linhas):
+            canvas_obj.drawString(x_texto, y_topo - idx * 0.4 * cm, linha)
+        canvas_obj.setFont("Helvetica-Oblique", 9)
+        canvas_obj.setFillColor(colors.grey)
+        canvas_obj.drawCentredString(doc_obj.pagesize[0] / 2, 2.1 * cm, "POLÍCIA PENAL DE SANTA CATARINA")
+        canvas_obj.drawCentredString(doc_obj.pagesize[0] / 2, 1.7 * cm, "Presídio Regional de Maravilha")
+        canvas_obj.drawCentredString(doc_obj.pagesize[0] / 2, 1.3 * cm,
+                                      "Avenida Sul Brasil, 1607, Novo Bairro, Maravilha/SC - CEP 89874-000")
+        canvas_obj.drawCentredString(doc_obj.pagesize[0] / 2, 0.9 * cm,
+                                      "Telefone: (49) 3664-6672 / pr29@pp.sc.gov.br")
+        canvas_obj.restoreState()
 
-
-        # Adiciona quebra de página se não for o último detento
-        if i < len(detentos) - 1:
-            elementos.append(PageBreak())  # Força nova página
-
-    # Gerar o PDF com cabeçalho e rodapé
-    doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
+    doc.build(elementos, onFirstPage=_cabecalho_rodape_worker, onLaterPages=_cabecalho_rodape_worker)
 
     buffer.seek(0)
-    response = HttpResponse(buffer.read(), content_type='application/pdf')
+    return buffer.read()
+
+
+def _combinar_pdfs(lista_bytes_pdfs):
+    """Combina múltiplos PDFs (em bytes) em um único buffer."""
+    writer = PdfWriter()
+    for pdf_bytes in lista_bytes_pdfs:
+        reader = PdfReader(io.BytesIO(pdf_bytes))
+        for page in reader.pages:
+            writer.add_page(page)
+    buffer_final = io.BytesIO()
+    writer.write(buffer_final)
+    return buffer_final
+
+
+@checked_debug_decorador
+def gerar_termo_kit_higiene(request):
+    detentos = list(
+        Relacao.objects
+        .filter(local_alocacao__in=['F', 'SA'])
+        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia')
+        .annotate(
+            alocacao_order=Case(
+                When(local_alocacao='F', then=Value(1)),
+                When(local_alocacao='SA', then=Value(2)),
+                default=Value(99),
+            )
+        )
+        .order_by('alocacao_order', 'local_residencia', 'nome')
+    )
+
+    # Buscar configurações UMA VEZ
+    config_higiene = DescricaoKitHigiene.objects.first()
+    descricao_kit_higiene = config_higiene.descricao
+    checked_data = config_higiene.checked_data_recebido
+    checked_kit = config_higiene.checked_kit_higiene
+    data_atual = timezone.now().strftime('%d/%m/%Y')
+
+    caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo.png')
+    logo_existe = os.path.exists(caminho_logo)
+
+    # Serializar detentos (objetos Django não podem ir para subprocessos)
+    detentos_serializados = [{'IPEN': d.IPEN, 'nome': d.nome} for d in detentos]
+
+    # Determinar número de workers (núcleos disponíveis)
+    num_cpus = os.cpu_count() or 2
+    num_workers = min(num_cpus, 4)  # Limitar a 4 workers
+
+    total = len(detentos_serializados)
+    tamanho_lote = max(1, math.ceil(total / num_workers))
+
+    # Dividir em lotes
+    lotes = []
+    for inicio in range(0, total, tamanho_lote):
+        lote = detentos_serializados[inicio:inicio + tamanho_lote]
+        lotes.append({
+            'detentos': lote,
+            'descricao_kit_higiene': descricao_kit_higiene,
+            'checked_data': checked_data,
+            'checked_kit': checked_kit,
+            'data_atual': data_atual,
+            'caminho_logo': caminho_logo,
+            'logo_existe': logo_existe,
+            'arial_path': arial_path,
+            'arial_bold_path': arial_bold_path,
+        })
+
+    if len(lotes) <= 1:
+        # Poucos detentos, não vale paralelizar
+        pdf_bytes = _gerar_lote_kit_higiene(lotes[0])
+        buffer_final = io.BytesIO(pdf_bytes)
+    else:
+        # Paralelizar com ProcessPoolExecutor
+        resultados_ordenados = [None] * len(lotes)
+        with ProcessPoolExecutor(max_workers=num_workers) as executor:
+            futuros = {}
+            for idx, lote in enumerate(lotes):
+                futuro = executor.submit(_gerar_lote_kit_higiene, lote)
+                futuros[futuro] = idx
+
+            for futuro in as_completed(futuros):
+                idx = futuros[futuro]
+                resultados_ordenados[idx] = futuro.result()
+
+        # Combinar PDFs na ordem correta
+        buffer_final = _combinar_pdfs(resultados_ordenados)
+
+    buffer_final.seek(0)
+    response = HttpResponse(buffer_final.read(), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="kit_higiene_{datetime.date.today()}.pdf"'
     return response
 
@@ -1356,6 +1405,302 @@ def termo_monitorado(request, detento_ipen):
 
     buffer.seek(0)
     nome_arquivo = f"termo_monitorado_{detento.nome}.pdf"
+    response = HttpResponse(buffer.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{nome_arquivo}"'
+    return response
+
+@checked_debug_decorador
+def gerar_memorandos_todos(request):
+    """
+    Gera memorandos de todos os detentos em um único PDF.
+    - Mês ímpar (jan, mar, mai...): Memorando Penal (modelo Memorando_Penal.py)
+      → Metade superior: memorando genérico (com setores), metade inferior: PENAL
+    - Mês par (fev, abr, jun...): Memorando SPenal (modelo Memorando_SPenal.py)
+      → Dois memorandos genéricos (com setores), um para cada detento (2 por página)
+    
+    Ordem: Fechado primeiro, depois Semiaberto. Dentro de cada, por local_residencia e nome.
+    """
+
+    mes_atual = datetime.datetime.now().month
+    mes_referencia, mes_corrente = _get_mes_referencia()
+    
+    # Buscar detentos ordenados: Fechado (F) primeiro, depois Semiaberto (SA)
+    detentos = list(
+        Relacao.objects
+        .filter(local_alocacao__in=['F', 'SA'])
+        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia')
+        .order_by('local_alocacao', 'local_residencia', 'nome')
+    )
+
+    if not detentos:
+        return HttpResponse("Nenhum detento encontrado.", content_type='text/plain')
+
+    buffer = io.BytesIO()
+    page_size = A4  # 595.28 x 841.89
+    c = canvas.Canvas(buffer, pagesize=page_size)
+    c.setTitle("Memorandos de Apenados")
+
+    caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo3.png')
+    logo_existe = os.path.exists(caminho_logo)
+
+    if mes_atual % 2 == 1:
+        # ==========================================
+        # MÊS ÍMPAR — Modelo Memorando_Penal.py
+        # 1 detento por página
+        # Superior: memorando genérico (com setores)
+        # Inferior: memorando PENAL
+        # ==========================================
+        for i, detento in enumerate(detentos):
+            nome_interno = _encurtar_nome(detento.nome)
+            numero_ipen = str(detento.IPEN)
+
+            c.setStrokeColorRGB(0, 0, 0, 0.7)
+            c.setLineWidth(0.5)
+            c.setFillColor("black")
+
+            # ---- PRIMEIRO MEMORANDO (metade superior) ----
+            # Cabeçalho
+            c.setFont("Helvetica-Oblique", 11, leading=1)
+            c.rotate(90)
+            if logo_existe:
+                c.drawImage(caminho_logo, 15 * cm, -3 * cm, width=2 * cm, height=2 * cm, mask='auto')
+            c.drawString(17.5 * cm, -1.5 * cm, "ESTADO DE SANTA CATARINA")
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.drawString(17.5 * cm, -1.9 * cm, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL")
+            c.drawString(17.5 * cm, -2.3 * cm, "PRESÍDIO REGIONAL DE MARAVILHA")
+            c.rotate(270)
+
+            # Componente ESCRITA (linhas para escrever)
+            for j in range(12):
+                c.rect((7 + j) * cm, 15 * cm, 1 * cm, 14.3 * cm, fill=0)
+
+            # Componente assinatura e data
+            c.rect(19.5 * cm, 15 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.rect(19.5 * cm, 15 * cm, 1 * cm, 3 * cm, fill=0)
+            c.rotate(90)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.drawString(15 * cm, -19.3 * cm, "APENADO")
+            c.drawCentredString(15.5 * cm, -19.8 * cm, "DATA")
+            c.drawCentredString(19 * cm, -19.8 * cm, "ASSINATURA")
+            c.rotate(270)
+
+            # Componente Nome e Matrícula
+            c.rect(4.8 * cm, 15 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.rect(3.5 * cm, 15 * cm, 1 * cm, 11 * cm, fill=0)
+            c.rect(3.5 * cm, 26 * cm, 1 * cm, 3.3 * cm)
+            c.rect(2.5 * cm, 26 * cm, 1 * cm, 3.3 * cm, fill=0)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.rotate(90)
+            c.drawString(15.5 * cm, -3.8 * cm, "NOME")
+            c.drawString(26.2 * cm, -3.8 * cm, "MATRÍCULA")
+            c.setFont("Helvetica-Oblique", 14, leading=1)
+            c.drawCentredString(20 * cm, -4.3 * cm, f"{nome_interno}")
+            c.drawRightString(28.5 * cm, -4.3 * cm, f"{numero_ipen}")
+            c.drawCentredString(27.5 * cm, -3.3 * cm, f"{mes_corrente}")
+            c.setFont("Helvetica-Oblique", 12, leading=1)
+            c.drawRightString(25.8 * cm, -3.3 * cm, "MEMORANDO DE APENADO")
+            c.rotate(270)
+
+            # Componente AO SETOR
+            c.rect(4.8 * cm, 15 * cm, 2 * cm, 14.3 * cm, fill=0)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.rotate(90)
+            c.drawString(15.8 * cm, -5.2 * cm, "AO SETOR")
+            c.setFont("Helvetica-Oblique", 12, leading=1)
+            c.drawString(15.8 * cm, -5.6 * cm, "                 (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+            c.drawString(15.7 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
+            c.rotate(270)
+
+            # ---- SEGUNDO MEMORANDO (metade inferior) — PENAL ----
+            # Cabeçalho
+            c.setFont("Helvetica-Oblique", 11, leading=1)
+            c.rotate(90)
+            if logo_existe:
+                c.drawImage(caminho_logo, 0.2 * cm, -3 * cm, width=2 * cm, height=2 * cm, mask='auto')
+            c.drawString(2.5 * cm, -1.5 * cm, "ESTADO DE SANTA CATARINA")
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.drawString(2.5 * cm, -1.9 * cm, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL")
+            c.drawString(2.5 * cm, -2.3 * cm, "PRESÍDIO REGIONAL DE MARAVILHA")
+            c.rotate(270)
+
+            # Componente Nome e Matrícula
+            c.rect(3.5 * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.rect(3.5 * cm, 0.2 * cm, 1 * cm, 11 * cm, fill=0)
+            c.rect(2.5 * cm, 11.2 * cm, 1 * cm, 3.3 * cm, fill=0)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.rotate(90)
+            c.drawString(0.8 * cm, -3.8 * cm, "NOME")
+            c.drawString(11.5 * cm, -3.8 * cm, "MATRÍCULA")
+            c.setFont("Helvetica-Oblique", 14, leading=1)
+            c.drawCentredString(6 * cm, -4.3 * cm, f"{nome_interno}")
+            c.drawRightString(14.3 * cm, -4.3 * cm, f"{numero_ipen}")
+            c.drawCentredString(12.8 * cm, -3.3 * cm, f"{mes_referencia}")
+            c.setFont("Helvetica-Oblique", 12, leading=1)
+            c.drawRightString(11 * cm, -3.3 * cm, "MEMORANDO DE APENADO")
+            c.rotate(270)
+
+            # Componente AO SETOR — PENAL
+            c.rect(4.8 * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.rotate(90)
+            c.drawString(0.8 * cm, -5.2 * cm, "AO SETOR")
+            c.setFont("Helvetica-Oblique", 14.3, leading=1)
+            c.drawCentredString(7 * cm, -5.5 * cm, "PENAL")
+            c.rotate(270)
+
+            # Componente ESCRITA — PENAL
+            for j in range(13):
+                c.rect((6 + j) * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+
+            # Componente data e assinatura — PENAL
+            c.rect(19.5 * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.rect(19.5 * cm, 0.2 * cm, 1 * cm, 3 * cm, fill=0)
+            c.rotate(90)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.drawString(0.2 * cm, -19.3 * cm, "APENADO")
+            c.drawCentredString(0.8 * cm, -19.8 * cm, "DATA")
+            c.drawCentredString(4.2 * cm, -19.8 * cm, "ASSINATURA")
+            c.rotate(270)
+
+            c.showPage()
+
+    else:
+        # ==========================================
+        # MÊS PAR — Modelo Memorando_SPenal.py
+        # 2 detentos por página (superior e inferior)
+        # Ambos memorandos genéricos (com setores)
+        # ==========================================
+        for i in range(0, len(detentos), 2):
+            detento1 = detentos[i]
+            nome_interno1 = _encurtar_nome(detento1.nome)
+            numero_ipen1 = str(detento1.IPEN)
+
+            # Verificar se existe segundo detento
+            if i + 1 < len(detentos):
+                detento2 = detentos[i + 1]
+                nome_interno2 = _encurtar_nome(detento2.nome)
+                numero_ipen2 = str(detento2.IPEN)
+            else:
+                nome_interno2 = ""
+                numero_ipen2 = ""
+
+            c.setStrokeColorRGB(0, 0, 0, 0.7)
+            c.setLineWidth(0.5)
+            c.setFillColor("black")
+
+            # ---- PRIMEIRO MEMORANDO (metade superior) — Detento 1 ----
+            # Cabeçalho
+            c.setFont("Helvetica-Oblique", 11, leading=1)
+            c.rotate(90)
+            if logo_existe:
+                c.drawImage(caminho_logo, 15 * cm, -3 * cm, width=2 * cm, height=2 * cm, mask='auto')
+            c.drawString(17.5 * cm, -1.5 * cm, "ESTADO DE SANTA CATARINA")
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.drawString(17.5 * cm, -1.9 * cm, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL")
+            c.drawString(17.5 * cm, -2.3 * cm, "PRESÍDIO REGIONAL DE MARAVILHA")
+            c.rotate(270)
+
+            # Componente ESCRITA
+            for j in range(12):
+                c.rect((7 + j) * cm, 15 * cm, 1 * cm, 14.3 * cm, fill=0)
+
+            # Componente assinatura e data
+            c.rect(19.5 * cm, 15 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.rect(19.5 * cm, 15 * cm, 1 * cm, 3 * cm, fill=0)
+            c.rotate(90)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.drawString(15 * cm, -19.3 * cm, "APENADO")
+            c.drawCentredString(15.5 * cm, -19.8 * cm, "DATA")
+            c.drawCentredString(19 * cm, -19.8 * cm, "ASSINATURA")
+            c.rotate(270)
+
+            # Componente Nome e Matrícula — Detento 1
+            c.rect(4.8 * cm, 15 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.rect(3.5 * cm, 15 * cm, 1 * cm, 11 * cm, fill=0)
+            c.rect(3.5 * cm, 26 * cm, 1 * cm, 3.3 * cm)
+            c.rect(2.5 * cm, 26 * cm, 1 * cm, 3.3 * cm, fill=0)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.rotate(90)
+            c.drawString(15.5 * cm, -3.8 * cm, "NOME")
+            c.drawString(26.2 * cm, -3.8 * cm, "MATRÍCULA")
+            c.setFont("Helvetica-Oblique", 14, leading=1)
+            c.drawCentredString(20.3 * cm, -4.3 * cm, f"{nome_interno1}")
+            c.drawRightString(28.5 * cm, -4.3 * cm, f"{numero_ipen1}")
+            c.drawCentredString(27.5 * cm, -3.3 * cm, f"{mes_corrente}")
+            c.setFont("Helvetica-Oblique", 12, leading=1)
+            c.drawRightString(25.8 * cm, -3.3 * cm, "MEMORANDO DE APENADO")
+            c.rotate(270)
+
+            # Componente AO SETOR — Detento 1
+            c.rect(4.8 * cm, 15 * cm, 2 * cm, 14.3 * cm, fill=0)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.rotate(90)
+            c.drawString(15.8 * cm, -5.2 * cm, "AO SETOR")
+            c.setFont("Helvetica-Oblique", 12, leading=1)
+            c.drawString(15.8 * cm, -5.6 * cm, "                 (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+            c.drawString(15.7 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
+            c.rotate(270)
+
+            # ---- SEGUNDO MEMORANDO (metade inferior) — Detento 2 ----
+            # Cabeçalho
+            c.setFont("Helvetica-Oblique", 11, leading=1)
+            c.rotate(90)
+            if logo_existe:
+                c.drawImage(caminho_logo, 0.2 * cm, -3 * cm, width=2 * cm, height=2 * cm, mask='auto')
+            c.drawString(2.5 * cm, -1.5 * cm, "ESTADO DE SANTA CATARINA")
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.drawString(2.5 * cm, -1.9 * cm, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL")
+            c.drawString(2.5 * cm, -2.3 * cm, "PRESÍDIO REGIONAL DE MARAVILHA")
+            c.rotate(270)
+
+            # Componente Nome e Matrícula — Detento 2
+            c.rect(3.5 * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.rect(3.5 * cm, 0.2 * cm, 1 * cm, 11 * cm, fill=0)
+            c.rect(2.5 * cm, 11.2 * cm, 1 * cm, 3.3 * cm, fill=0)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.rotate(90)
+            c.drawString(0.8 * cm, -3.8 * cm, "NOME")
+            c.drawString(11.5 * cm, -3.8 * cm, "MATRÍCULA")
+            c.setFont("Helvetica-Oblique", 14, leading=1)
+            c.drawCentredString(6 * cm, -4.3 * cm, f"{nome_interno2}")
+            c.drawRightString(14.3 * cm, -4.3 * cm, f"{numero_ipen2}")
+            c.drawCentredString(12.8 * cm, -3.3 * cm, f"{mes_corrente}")
+            c.setFont("Helvetica-Oblique", 12, leading=1)
+            c.drawRightString(11 * cm, -3.3 * cm, "MEMORANDO DE APENADO")
+            c.rotate(270)
+
+            # Componente AO SETOR — Detento 2 (com setores)
+            c.rect(4.8 * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.rect(5.8 * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.rotate(90)
+            c.drawString(0.8 * cm, -5.2 * cm, "AO SETOR")
+            c.setFont("Helvetica-Oblique", 12, leading=1)
+            c.drawCentredString(7 * cm, -5.6 * cm, "               (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+            c.drawString(0.3 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
+            c.rotate(270)
+
+            # Componente ESCRITA — Detento 2
+            for j in range(12):
+                c.rect((7 + j) * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+
+            # Componente data e assinatura — Detento 2
+            c.rect(19.5 * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+            c.rect(19.5 * cm, 0.2 * cm, 1 * cm, 3 * cm, fill=0)
+            c.rotate(90)
+            c.setFont("Helvetica-Oblique", 8, leading=1)
+            c.drawString(0.2 * cm, -19.3 * cm, "APENADO")
+            c.drawCentredString(0.8 * cm, -19.8 * cm, "DATA")
+            c.drawCentredString(4.2 * cm, -19.8 * cm, "ASSINATURA")
+            c.rotate(270)
+
+            c.showPage()
+
+    c.save()
+
+    buffer.seek(0)
+    tipo_memo = "penal" if mes_atual % 2 == 1 else "mensal"
+    nome_arquivo = f'memorandos_{tipo_memo}_{mes_corrente}_{datetime.date.today()}.pdf'
     response = HttpResponse(buffer.read(), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{nome_arquivo}"'
     return response
