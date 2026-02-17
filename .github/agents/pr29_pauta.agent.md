@@ -53,3 +53,4 @@ tools: ['vscode', 'execute/testFailure', 'execute/getTerminalOutput', 'execute/r
 - Desejo que as informações a serem exibidas em consultas ou cadastros sejam exibidas em um popup, sempre criando um template especifico para cada popup. (APP/TEMPLATES/PARCIAL/NOME_DO_TEMPLATE.html)
 - Deverá fechar o popup ao clicar fora dele, em um botão de fechar ou com a tecla ESC
 - Inclua no inicio do arquivo o diretorio do documento 
+- Sempre que for criado um documento em .pdf, o mesmo deve ser aberto no navegador, e não baixado.
