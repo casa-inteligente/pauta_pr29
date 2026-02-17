@@ -349,21 +349,17 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
     
     Args:
         Request: ID do detento, numero do kit, regime (fechado ou semiaberto) e se inclui kit higiene    
-    
-    
     '''
     detento = get_object_or_404(Relacao, id=detento_id)
-    #print(f'regime: {regime}')
+    
     # Determinar o tipo de regime baseado no parâmetro
     if regime == 'on' or regime == 'True' or regime == 'fechado':
-        
         try:
             descricao_obj = Descricao_termo_rouparia.objects.first()
             descricao_rouparia = descricao_obj.descricao_fechado if descricao_obj else "Kit de rouparia padrão do regime fechado"
         except:
             descricao_rouparia = "ERRO"
     elif regime == 'off' or regime == 'False' or regime == 'semiaberto':
-        
         try:
             descricao_obj = Descricao_termo_rouparia.objects.first()
             descricao_rouparia = descricao_obj.descricao_semiaberto if descricao_obj else "Kit de rouparia padrão do regime semiaberto"
@@ -411,7 +407,6 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
         spaceAfter=12
     )
 
-    
     estilo_justificado = ParagraphStyle(
         name='Justificado',
         parent=estilos['Normal'],
@@ -433,34 +428,29 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
 
     descricao_kit_higiene = DescricaoKitHigiene.objects.first().descricao
     checked_data = DescricaoKitHigiene.objects.first().checked_data_recebido
-    
 
     elementos = []
     elementos.append(Spacer(1, 1.5 * cm))
         
-        # Título
+    # Título
     elementos.append(Paragraph("<b>TERMO DE RECEBIMENTO</b>", estilo_titulo))
     elementos.append(Spacer(1, 0.5 * cm))
     texto = "Instruções:"
     elementos.append(Paragraph(texto, estilo_subtitulo))
 
-    texto = f" 01) Os internos devem assinar a opção com um X;<br/>02) Na opção “observação” descrever o que está sendo entregue (tamanho e quantidade de uniforme);<br/>03) O termo de recebimento, devidamente assinado, deverá ser digitalizado e arquivado no IPEN do interno."
+    texto = f" 01) Os internos devem assinar a opção com um X;<br/>02) Na opção \u201cobservação\u201d descrever o que está sendo entregue (tamanho e quantidade de uniforme);<br/>03) O termo de recebimento, devidamente assinado, deverá ser digitalizado e arquivado no IPEN do interno."
     elementos.append(Paragraph(texto, estilo_justificado))
         
-    # Tabela 2x8 com estilo_justificado
-    # Tabela com estrutura específica
     tabela_dados = []
     data_atual = timezone.now().strftime('%d/%m/%Y')
 
-    # Linha 1: Duas colunas - INTERNO
     tabela_dados.append([
         Paragraph("INTERNO:", estilo_justificado),
         Paragraph(f"{detento.nome}", estilo_subtitulo),
-        "",  # Célula vazia
-        ""   # Célula vazia
+        "",
+        ""
     ])
 
-    # Linha 2: Quatro colunas - IPEN e DATA
     tabela_dados.append([
         Paragraph("IPEN:", estilo_justificado),
         Paragraph(f"{detento.IPEN}", estilo_subtitulo),
@@ -468,78 +458,70 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
         ""
     ])
 
-    # Linha 3: Duas colunas - X e Kit higiene
     if incluir_higiene:
         tabela_dados.append([
             Paragraph("X", estilo_centralizado),
             Paragraph("Kit higiene", estilo_justificado),
-            "",  # Célula vazia
-            ""   # Célula vazia
+            "",
+            ""
         ])
     else:
         tabela_dados.append([
             "",
             Paragraph("Kit higiene", estilo_justificado),
-            "",  # Célula vazia
-            ""   # Célula vazia
+            "",
+            ""
         ])
 
-    # Adicione mais linhas conforme necessário (continuando a estrutura anterior)
-    # Linha 4: Uniforme
     tabela_dados.append([
         Paragraph("X", estilo_centralizado),
         Paragraph("Uniforme", estilo_justificado),
-        "",  # Célula vazia
-        ""   # Célula vazia
+        "",
+        ""
     ])
 
-    # Linha 5: Cobertor
     tabela_dados.append([
         Paragraph("X", estilo_centralizado),
         Paragraph("Cobertor", estilo_justificado),
-        "",  # Célula vazia
-        ""   # Célula vazia
+        "",
+        ""
     ])
 
-    # Linha 6: Observação sobre uniforme
     tabela_dados.append([
         Paragraph("Observação:", estilo_subtitulo),
         "",
-        "",  # Célula vazia
-        ""   # Célula vazia
+        "",
+        ""
     ])
 
     tabela_dados.append([
         Paragraph("Se uniforme, quantidade e tamanho.", estilo_justificado),
         "",
-        "",  # Célula vazia
-        ""   # Célula vazia
+        "",
+        ""
     ])
 
-    # Linha 7: Descrição do kit
     if incluir_higiene:
         tabela_dados.append([
-        Paragraph(f"{descricao_rouparia}<br/> <br/>{descricao_kit_higiene}", estilo_justificado),
-        "",
-        "",  # Célula vazia
-        ""   # Célula vazia
-    ])
+            Paragraph(f"{descricao_rouparia}<br/> <br/>{descricao_kit_higiene}", estilo_justificado),
+            "",
+            "",
+            ""
+        ])
     else:
         tabela_dados.append([
             Paragraph(f"{descricao_rouparia}", estilo_justificado),
             "",
-            "",  # Célula vazia
-            ""   # Célula vazia
+            "",
+            ""
         ])
 
     tabela_dados.append([
         Paragraph(f"Kit número: {numero_kit}", estilo_justificado),
         "",
-        "",  # Célula vazia
-        ""   # Célula vazia
+        "",
+        ""
     ])
-
-    
 
     col_widths = [3 * cm, 7 * cm, 3 * cm, 3 * cm]
     tabela = Table(tabela_dados, colWidths=col_widths, hAlign='LEFT')
@@ -550,24 +532,21 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
         ('RIGHTPADDING', (0, 0), (-1, -1), 3),
         ('TOPPADDING', (0, 0), (-1, -1), 3),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ('SPAN', (1, 0), (3, 0)),  # Mesclar colunas 1-2 na linha 1
-        # Mesclar células vazias para melhor aparência
+        ('SPAN', (1, 0), (3, 0)),
         ('SPAN', (2, 1), (3, 1)),
-        ('SPAN', (2, 0), (3, 0)),  # Mesclar colunas 3-4 na linha 1
-        ('SPAN', (1, 2), (3, 2)),  # Mesclar colunas 3-4 na linha 3
-        ('SPAN', (1, 3), (3, 3)),  # Mesclar colunas 3-4 na linha 4
-        ('SPAN', (1, 4), (3, 4)),  # Mesclar colunas 3-4 na linha 5
-        ('SPAN', (1, 5), (3, 5)),  # Mesclar colunas 3-4 na linha 6
-        ('SPAN', (0, 6), (3, 6)),  # Mesclar colunas 3-4 na linha 7
-        ('SPAN', (0, 7), (3, 7)),  # Mesclar colunas 3-4 na linha 8
-        ('SPAN', (0, 8), (3, 8)),  # Mesclar colunas 3-4 na linha 9
+        ('SPAN', (2, 0), (3, 0)),
+        ('SPAN', (1, 2), (3, 2)),
+        ('SPAN', (1, 3), (3, 3)),
+        ('SPAN', (1, 4), (3, 4)),
+        ('SPAN', (1, 5), (3, 5)),
+        ('SPAN', (0, 6), (3, 6)),
+        ('SPAN', (0, 7), (3, 7)),
+        ('SPAN', (0, 8), (3, 8)),
     ]))
 
     elementos.append(tabela)
     elementos.append(Spacer(1, 1 * cm))
     
-        
-    # Data
     if checked_data:
         elementos.append(Paragraph(f"Recebido em {data_atual}", estilo_justificado))
         elementos.append(Spacer(1, 0.75 * cm))
@@ -575,22 +554,222 @@ def gerar_termo_rouparia(request, detento_id:int, numero_kit:int, regime:str, co
         elementos.append(Paragraph(f"Recebido em _____/_______/_______", estilo_justificado))
         elementos.append(Spacer(1, 0.75 * cm))
 
-    # Assinatura
     elementos.append(Paragraph("_______________________________________", estilo_justificado))
     elementos.append(Paragraph(f"{detento.nome}", estilo_justificado))
     elementos.append(Spacer(1, 0.75 * cm))  
 
-    # Assinatura
     elementos.append(Paragraph("_______________________________________", estilo_justificado))
     elementos.append(Paragraph(f"Assinatura do servidor (nome completo)", estilo_justificado))
     elementos.append(Spacer(1, 0.75 * cm))
     
-    # Gerar o PDF
+    # Gerar a página 1 (Termo de Rouparia)
     doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
 
-    buffer.seek(0)
+    # Se incluir higiene, adicionar a página 2 com o Memorando Penal
+    if incluir_higiene:
+        buffer.seek(0)
+        buffer_final = _adicionar_memorando_penal(buffer, detento)
+    else:
+        buffer_final = buffer
+
+    buffer_final.seek(0)
     nome_arquivo = f'termo_rouparia_{detento.nome}_{numero_kit}.pdf'
-    return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
+    response = HttpResponse(buffer_final.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{nome_arquivo}"'
+    return response
+
+def _get_mes_referencia():
+    """Retorna o mês de referência bimestral e o mês corrente."""
+    hoje = datetime.datetime.now()
+    mes = hoje.month
+    meses_ref = {
+        1: ("jan./fev.", "janeiro"),
+        2: ("jan./fev.", "fevereiro"),
+        3: ("março/abril", "março"),
+        4: ("março/abril", "abril"),
+        5: ("maio/junho", "maio"),
+        6: ("maio/junho", "junho"),
+        7: ("julho/agosto", "julho"),
+        8: ("julho/agosto", "agosto"),
+        9: ("set./out.", "setembro"),
+        10: ("set./out.", "outubro"),
+        11: ("nov./dez.", "novembro"),
+        12: ("nov./dez.", "dezembro"),
+    }
+    return meses_ref.get(mes, ("", ""))
+
+
+def _encurtar_nome(nome_completo, limite=33):
+    """Encurta o nome mantendo primeiro e último, abreviando os do meio."""
+    if len(nome_completo) <= limite:
+        return nome_completo
+    partes = nome_completo.split()
+    if len(partes) <= 2:
+        return nome_completo
+    primeiro = partes[0]
+    ultimo = partes[-1]
+    meio = [p if len(p) <= 3 else p[0] + "." for p in partes[1:-1]]
+    return " ".join([primeiro] + meio + [ultimo])
+
+
+def _adicionar_memorando_penal(buffer_termo, detento):
+    """
+    Recebe o buffer do PDF do termo de rouparia (página 1) e adiciona
+    a página 2 com o Memorando Penal no estilo do Memorando_Penal.py original.
+    Layout: A4 retrato com conteúdo rotacionado 90° (paisagem visual).
+    Retorna um novo buffer com ambas as páginas.
+    """
+
+    # Ler o PDF do termo (página 1)
+    reader = PdfReader(buffer_termo)
+    writer = PdfWriter()
+    
+    # Adicionar página(s) do termo de rouparia
+    for page in reader.pages:
+        writer.add_page(page)
+
+    # Criar página 2 (memorando penal) — A4 retrato com rotate(90)
+    buffer_memo = io.BytesIO()
+    page_size = A4  # 595.28 x 841.89
+
+    c = canvas.Canvas(buffer_memo, pagesize=page_size)
+    c.setTitle("Memorando de apenado")
+
+    nome_interno = _encurtar_nome(detento.nome)
+    numero_ipen = str(detento.IPEN)
+    mes_referencia, mes_corrente = _get_mes_referencia()
+
+    # Caminho da logo
+    caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo3.png')
+
+    c.setStrokeColorRGB(0, 0, 0, 0.7)
+    c.setLineWidth(0.5)
+    c.setFillColor("black")
+
+    # ==========================================
+    # PRIMEIRO MEMORANDO (metade superior da folha)
+    # ==========================================
+
+    # Cabeçalho
+    c.setFont("Helvetica-Oblique", 11, leading=1)
+    c.rotate(90)
+    if os.path.exists(caminho_logo):
+        c.drawImage(caminho_logo, 15 * cm, -3 * cm, width=2 * cm, height=2 * cm, mask='auto')
+    c.drawString(17.5 * cm, -1.5 * cm, "ESTADO DE SANTA CATARINA")
+    c.setFont("Helvetica-Oblique", 8, leading=1)
+    c.drawString(17.5 * cm, -1.9 * cm, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL")
+    c.drawString(17.5 * cm, -2.3 * cm, "PRESÍDIO REGIONAL DE MARAVILHA")
+    c.rotate(270)
+
+    # Componente ESCRITA (linhas para escrever)
+    for i in range(12):
+        c.rect((7 + i) * cm, 15 * cm, 1 * cm, 14.3 * cm, fill=0)
+
+    # Componente assinatura e data
+    c.rect(19.5 * cm, 15 * cm, 1 * cm, 14.3 * cm, fill=0)
+    c.rect(19.5 * cm, 15 * cm, 1 * cm, 3 * cm, fill=0)
+    c.rotate(90)
+    c.setFont("Helvetica-Oblique", 8, leading=1)
+    c.drawString(15 * cm, -19.3 * cm, "APENADO")
+    c.drawCentredString(15.5 * cm, -19.8 * cm, "DATA")
+    c.drawCentredString(19 * cm, -19.8 * cm, "ASSINATURA")
+    c.rotate(270)
+
+    # Componente Nome e Matrícula
+    c.rect(4.8 * cm, 15 * cm, 1 * cm, 14.3 * cm, fill=0)  # ao setor
+    c.rect(3.5 * cm, 15 * cm, 1 * cm, 11 * cm, fill=0)     # NOME
+    c.rect(3.5 * cm, 26 * cm, 1 * cm, 3.3 * cm)             # Matricula
+    c.rect(2.5 * cm, 26 * cm, 1 * cm, 3.3 * cm, fill=0)     # período
+    c.setFont("Helvetica-Oblique", 8, leading=1)
+    c.rotate(90)
+    c.drawString(15.5 * cm, -3.8 * cm, "NOME")
+    c.drawString(26.2 * cm, -3.8 * cm, "MATRÍCULA")
+    c.setFont("Helvetica-Oblique", 14, leading=1)
+    c.drawCentredString(20 * cm, -4.3 * cm, f"{nome_interno}")
+    c.drawRightString(28.5 * cm, -4.3 * cm, f"{numero_ipen}")
+    c.drawCentredString(27.5 * cm, -3.3 * cm, f"{mes_corrente}")
+    c.setFont("Helvetica-Oblique", 12, leading=1)
+    c.drawRightString(25.8 * cm, -3.3 * cm, "MEMORANDO DE APENADO")
+    c.rotate(270)
+
+    # Componente AO SETOR
+    c.rect(4.8 * cm, 15 * cm, 2 * cm, 14.3 * cm, fill=0)
+    c.setFont("Helvetica-Oblique", 8, leading=1)
+    c.rotate(90)
+    c.drawString(15.8 * cm, -5.2 * cm, "AO SETOR")
+    c.setFont("Helvetica-Oblique", 12, leading=1)
+    c.drawString(15.8 * cm, -5.6 * cm, "                 (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+    c.drawString(15.7 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
+    c.rotate(270)
+
+    # ==========================================
+    # SEGUNDO MEMORANDO (metade inferior) — PENAL
+    # ==========================================
+
+    # Cabeçalho
+    c.setFont("Helvetica-Oblique", 11, leading=1)
+    c.rotate(90)
+    if os.path.exists(caminho_logo):
+        c.drawImage(caminho_logo, 0.2 * cm, -3 * cm, width=2 * cm, height=2 * cm, mask='auto')
+    c.drawString(2.5 * cm, -1.5 * cm, "ESTADO DE SANTA CATARINA")
+    c.setFont("Helvetica-Oblique", 8, leading=1)
+    c.drawString(2.5 * cm, -1.9 * cm, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL")
+    c.drawString(2.5 * cm, -2.3 * cm, "PRESÍDIO REGIONAL DE MARAVILHA")
+    c.rotate(270)
+
+    # Componente Nome e Matrícula
+    c.rect(3.5 * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+    c.rect(3.5 * cm, 0.2 * cm, 1 * cm, 11 * cm, fill=0)
+    c.rect(2.5 * cm, 11.2 * cm, 1 * cm, 3.3 * cm, fill=0)   # período
+    c.setFont("Helvetica-Oblique", 8, leading=1)
+    c.rotate(90)
+    c.drawString(0.8 * cm, -3.8 * cm, "NOME")
+    c.drawString(11.5 * cm, -3.8 * cm, "MATRÍCULA")
+    c.setFont("Helvetica-Oblique", 14, leading=1)
+    c.drawCentredString(6 * cm, -4.3 * cm, f"{nome_interno}")
+    c.drawRightString(14.3 * cm, -4.3 * cm, f"{numero_ipen}")
+    c.drawCentredString(12.8 * cm, -3.3 * cm, f"{mes_referencia}")
+    c.setFont("Helvetica-Oblique", 12, leading=1)
+    c.drawRightString(11 * cm, -3.3 * cm, "MEMORANDO DE APENADO")
+    c.rotate(270)
+
+    # Componente AO SETOR — PENAL
+    c.rect(4.8 * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+    c.setFont("Helvetica-Oblique", 8, leading=1)
+    c.rotate(90)
+    c.drawString(0.8 * cm, -5.2 * cm, "AO SETOR")
+    c.setFont("Helvetica-Oblique", 14.3, leading=1)
+    c.drawCentredString(7 * cm, -5.5 * cm, "PENAL")
+    c.rotate(270)
+
+    # Componente ESCRITA (linhas para escrever) — PENAL
+    for i in range(13):
+        c.rect((6 + i) * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+
+    # Componente data e assinatura — PENAL
+    c.rect(19.5 * cm, 0.2 * cm, 1 * cm, 14.3 * cm, fill=0)
+    c.rect(19.5 * cm, 0.2 * cm, 1 * cm, 3 * cm, fill=0)
+    c.rotate(90)
+    c.setFont("Helvetica-Oblique", 8, leading=1)
+    c.drawString(0.2 * cm, -19.3 * cm, "APENADO")
+    c.drawCentredString(0.8 * cm, -19.8 * cm, "DATA")
+    c.drawCentredString(4.2 * cm, -19.8 * cm, "ASSINATURA")
+    c.rotate(270)
+
+    c.showPage()
+    c.save()
+
+    # Combinar os dois PDFs (termo + memorando)
+    buffer_memo.seek(0)
+    reader_memo = PdfReader(buffer_memo)
+    
+    for page in reader_memo.pages:
+        writer.add_page(page)
+
+    buffer_final = io.BytesIO()
+    writer.write(buffer_final)
+    
+    return buffer_final
 
 @checked_debug_decorador
 def view_termo_autorizacao(request, relacao_id):
@@ -715,7 +894,7 @@ def gerar_termo_kit_higiene(request):
         texto = "Instruções:"
         elementos.append(Paragraph(texto, estilo_subtitulo))
 
-        texto = f" 01) Os internos devem assinar a opção com um X;<br/>02) Na opção “observação” descrever o que está sendo entregue (tamanho e quantidade de uniforme); <br/> 03) O termo de recebimento, devidamente assinado, deverá ser digitalizado e arquivado no IPEN do interno."
+        texto = f" 01) Os internos devem assinar a opção com um X;<br/>02) Na opção \u201cobservação\u201d descrever o que está sendo entregue (tamanho e quantidade de uniforme); <br/> 03) O termo de recebimento, devidamente assinado, deverá ser digitalizado e arquivado no IPEN do interno."
         elementos.append(Paragraph(texto, estilo_justificado))
         
         # Tabela 2x8 com estilo_justificado
@@ -846,11 +1025,8 @@ def gerar_termo_kit_higiene(request):
     doc.build(elementos, onFirstPage=cabecalho_e_rodape, onLaterPages=cabecalho_e_rodape)
 
     buffer.seek(0)
-    response = FileResponse(
-        buffer, 
-        as_attachment=True, 
-        filename=f'kit_higiene_{datetime.date.today()}.pdf'
-    )
+    response = HttpResponse(buffer.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="kit_higiene_{datetime.date.today()}.pdf"'
     return response
 
 @checked_debug_decorador
@@ -976,7 +1152,9 @@ def gerar_termo_autorizacao(request, detento_id, empresa_conveniada):
 
     buffer.seek(0)
     nome_arquivo = f'termo_autorizacao_{detento.nome}.pdf'
-    return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
+    response = HttpResponse(buffer.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{nome_arquivo}"'
+    return response
 
 def cabecalho_e_rodape(canvas, doc):
     
@@ -1178,4 +1356,6 @@ def termo_monitorado(request, detento_ipen):
 
     buffer.seek(0)
     nome_arquivo = f"termo_monitorado_{detento.nome}.pdf"
-    return FileResponse(buffer, as_attachment=True, filename=nome_arquivo)
+    response = HttpResponse(buffer.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{nome_arquivo}"'
+    return response
