@@ -1767,21 +1767,49 @@ def calculo_alimentacao(request):
             + trabalho_externo_rotoplast 
             + outras_subtracoes
         )
-        almoco_internos = total_bruto_internos - total_subtracoes
-        # Para lanche e janta dos internos, mesma lógica (todos comem)
-        lanche_internos = almoco_internos
-        janta_internos = almoco_internos
 
+        # ALMOÇO internos = bruto - TODAS as subtrações
+        almoco_internos = total_bruto_internos - total_subtracoes
+
+        # Almoço separado por regime
+        almoco_fechado = quantidade_internos_fechado + quantidade_internos_custodia
+        almoco_semiaberto = quantidade_internos_semiaberto + quantidade_internos_pensao
+        # Desconto proporcional do almoço (subtrações distribuídas)
+        almoco_fechado_liquido = almoco_fechado 
+        almoco_semiaberto_liquido = almoco_semiaberto - total_subtracoes  # subtrações saem do semiaberto
+        # Se o desconto for maior que o fechado, desconta do semiaberto
+        if almoco_fechado_liquido < 0:
+            almoco_semiaberto_liquido = almoco_semiaberto + almoco_fechado_liquido
+            almoco_fechado_liquido = 0
+
+        # JANTA internos = bruto - SOMENTE saída temporária (sem descontos de trabalho externo)
+        janta_internos = total_bruto_internos - quantidade_internos_saida_temporaria
+
+        # Janta separado por regime
+        janta_fechado = quantidade_internos_fechado + quantidade_internos_custodia
+        janta_semiaberto = quantidade_internos_semiaberto + quantidade_internos_pensao
+        # Desconto da janta: somente saída temporária
+        janta_fechado_liquido = janta_fechado - quantidade_internos_saida_temporaria
+        janta_semiaberto_liquido = janta_semiaberto
+        if janta_fechado_liquido < 0:
+            janta_semiaberto_liquido = janta_semiaberto + janta_fechado_liquido
+            janta_fechado_liquido = 0
+
+        # LANCHE: internos NÃO têm lanche
+        lanche_internos = 0
+
+        # Servidores
         almoco_servidores = almoco_plantao + almoco_administrativo
         lanche_servidores = lanche_plantao + lanche_administrativo
         janta_servidores = janta_plantao
 
+        # Totais
         total_almoco = almoco_servidores + almoco_internos
         total_lanche = lanche_servidores + lanche_internos
         total_janta = janta_servidores + janta_internos
 
         total_servidores = almoco_servidores + lanche_servidores + janta_servidores
-        total_internos_geral = almoco_internos + lanche_internos + janta_internos
+        total_internos_geral = almoco_internos + janta_internos  # sem lanche
         total_geral = total_almoco + total_lanche + total_janta
 
         resultado = {
@@ -1799,6 +1827,17 @@ def calculo_alimentacao(request):
             'total_geral': total_geral,
             'total_bruto_internos': total_bruto_internos,
             'total_subtracoes': total_subtracoes,
+            # Almoço por regime
+            'almoco_fechado': almoco_fechado,
+            'almoco_semiaberto': almoco_semiaberto,
+            'almoco_fechado_liquido': almoco_fechado_liquido,
+            'almoco_semiaberto_liquido': almoco_semiaberto_liquido,
+            # Janta por regime
+            'janta_fechado': janta_fechado,
+            'janta_semiaberto': janta_semiaberto,
+            'janta_fechado_liquido': janta_fechado_liquido,
+            'janta_semiaberto_liquido': janta_semiaberto_liquido,
+            # Detalhamento
             'quantidade_internos_fechado': quantidade_internos_fechado,
             'quantidade_internos_semiaberto': quantidade_internos_semiaberto,
             'quantidade_internos_custodia': quantidade_internos_custodia,

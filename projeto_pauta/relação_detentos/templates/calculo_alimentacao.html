@@ -17,10 +17,10 @@
             class="bg-indigo-500 text-white px-3 py-2 rounded text-sm hover:bg-indigo-900 flex items-center gap-2">
             <img src="{% static 'img/home.png' %}" alt="" class="h-4 inline"> Início
         </a>
-        <a href="{% url 'admin:index' %}"
+        <button onclick="window.print()"
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
-            <img src="{% static 'img/login.png' %}" alt="" class="h-4"> Admin
-        </a>
+            <i class="fas fa-print"></i> Imprimir
+        </button>
     </nav>
 
     <div class="max-w-5xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
@@ -42,7 +42,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="almoco_plantao" class="block text-sm font-medium mb-1 text-blue-700">Almoço Plantão:</label>
-                        <input type="number" name="almoco_plantao" id="almoco_plantao" min="0" 
+                        <input type="number" name="almoco_plantao" id="almoco_plantao" min="0"
                                value="{{ request.GET.almoco_plantao|default:'0' }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
                     </div>
@@ -95,13 +95,13 @@
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
                     </div>
                     <div>
-                        <label for="quantidade_internos_semiaberto" class="block text-sm font-medium mb-1 text-blue-700">Semiaberto:</label>
+                        <label for="quantidade_internos_semiaberto" class="block text-sm font-medium mb-1 text-blue-700">Semiaberto&Regalia Externo:</label>
                         <input type="number" name="quantidade_internos_semiaberto" id="quantidade_internos_semiaberto" min="0"
                                value="{{ request.GET.quantidade_internos_semiaberto|default:'0' }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
                     </div>
                     <div>
-                        <label for="quantidade_internos_custodia" class="block text-sm font-medium mb-1 text-blue-700">Custódia:</label>
+                        <label for="quantidade_internos_custodia" class="block text-sm font-medium mb-1 text-blue-700">Custódia&Feminina:</label>
                         <input type="number" name="quantidade_internos_custodia" id="quantidade_internos_custodia" min="0"
                                value="{{ request.GET.quantidade_internos_custodia|default:'0' }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
@@ -173,11 +173,17 @@
                 </div>
             </fieldset>
 
-            <!-- Botão Calcular -->
-            <div class="text-center">
+            <!-- Botões -->
+            <div class="text-center flex justify-center gap-4">
                 <button type="submit" class="bg-violet-500 text-white px-8 py-3 rounded-xl hover:bg-violet-700 text-lg font-bold shadow-lg">
                     <i class="fas fa-calculator"></i> Calcular e Salvar
                 </button>
+                {% if historico %}
+                <button type="button" onclick="document.getElementById('modalHistorico').classList.remove('hidden')"
+                        class="bg-gray-500 text-white px-6 py-3 rounded-xl hover:bg-gray-700 text-lg font-bold shadow-lg">
+                    <i class="fas fa-history"></i> Histórico
+                </button>
+                {% endif %}
             </div>
         </form>
 
@@ -197,8 +203,10 @@
                         <tr class="bg-gray-700 text-white">
                             <th class="px-4 py-2 text-left rounded-tl-lg">Refeição</th>
                             <th class="px-4 py-2 text-center">Servidores</th>
-                            <th class="px-4 py-2 text-center">Internos</th>
-                            <th class="px-4 py-2 text-center rounded-tr-lg">Total</th>
+                            <th class="px-4 py-2 text-center bg-orange-700">Fechado</th>
+                            <th class="px-4 py-2 text-center bg-emerald-700">Semiaberto</th>
+                            <th class="px-4 py-2 text-center">Total Internos</th>
+                            <th class="px-4 py-2 text-center rounded-tr-lg">Total Geral</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -210,6 +218,14 @@
                             <td class="px-4 py-3 text-center text-blue-700 font-bold">
                                 {{ resultado.almoco_servidores }}
                             </td>
+                            <td class="px-4 py-3 text-center text-orange-700 font-bold">
+                                {{ resultado.almoco_fechado_liquido }}
+                                <span class="text-xs text-gray-400 block">(bruto: {{ resultado.almoco_fechado }})</span>
+                            </td>
+                            <td class="px-4 py-3 text-center text-emerald-700 font-bold">
+                                {{ resultado.almoco_semiaberto_liquido }}
+                                <span class="text-xs text-gray-400 block">(bruto: {{ resultado.almoco_semiaberto }})</span>
+                            </td>
                             <td class="px-4 py-3 text-center text-blue-700 font-bold">
                                 {{ resultado.almoco_internos }}
                             </td>
@@ -217,7 +233,7 @@
                                 {{ resultado.total_almoco }}
                             </td>
                         </tr>
-                        <!-- LANCHE -->
+                        <!-- LANCHE (somente servidores) -->
                         <tr class="border-b hover:bg-blue-50 bg-gray-50">
                             <td class="px-4 py-3 font-semibold">
                                 <i class="fas fa-cookie-bite text-orange-400"></i> Lanche
@@ -225,9 +241,9 @@
                             <td class="px-4 py-3 text-center text-blue-700 font-bold">
                                 {{ resultado.lanche_servidores }}
                             </td>
-                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
-                                {{ resultado.lanche_internos }}
-                            </td>
+                            <td class="px-4 py-3 text-center text-gray-400">—</td>
+                            <td class="px-4 py-3 text-center text-gray-400">—</td>
+                            <td class="px-4 py-3 text-center text-gray-400">0</td>
                             <td class="px-4 py-3 text-center text-green-700 font-extrabold text-lg">
                                 {{ resultado.total_lanche }}
                             </td>
@@ -239,6 +255,14 @@
                             </td>
                             <td class="px-4 py-3 text-center text-blue-700 font-bold">
                                 {{ resultado.janta_servidores }}
+                            </td>
+                            <td class="px-4 py-3 text-center text-orange-700 font-bold">
+                                {{ resultado.janta_fechado_liquido }}
+                                <span class="text-xs text-gray-400 block">(bruto: {{ resultado.janta_fechado }})</span>
+                            </td>
+                            <td class="px-4 py-3 text-center text-emerald-700 font-bold">
+                                {{ resultado.janta_semiaberto_liquido }}
+                                <span class="text-xs text-gray-400 block">(bruto: {{ resultado.janta_semiaberto }})</span>
                             </td>
                             <td class="px-4 py-3 text-center text-blue-700 font-bold">
                                 {{ resultado.janta_internos }}
@@ -252,11 +276,23 @@
                         <tr class="bg-gray-800 text-white">
                             <td class="px-4 py-3 font-bold rounded-bl-lg">TOTAL GERAL</td>
                             <td class="px-4 py-3 text-center font-bold">{{ resultado.total_servidores }}</td>
+                            <td class="px-4 py-3 text-center font-bold" colspan="2">—</td>
                             <td class="px-4 py-3 text-center font-bold">{{ resultado.total_internos_geral }}</td>
                             <td class="px-4 py-3 text-center font-extrabold text-xl text-green-400 rounded-br-lg">{{ resultado.total_geral }}</td>
                         </tr>
                     </tfoot>
                 </table>
+            </div>
+
+            <!-- Legenda das regras -->
+            <div class="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
+                <p><i class="fas fa-info-circle"></i> <b>Regras aplicadas:</b></p>
+                <ul class="list-disc list-inside mt-1 space-y-0.5">
+                    <li><b>Almoço internos:</b> (Fechado + Custódia + Semiaberto + Pensão) − todas as subtrações</li>
+                    <li><b>Janta internos:</b> (Fechado + Custódia + Semiaberto + Pensão) − somente saída temporária</li>
+                    <li><b>Lanche:</b> somente servidores (internos não recebem)</li>
+                    <li><b>Fechado:</b> Fechado + Custódia | <b>Semiaberto:</b> Semiaberto + Pensão</li>
+                </ul>
             </div>
 
             <!-- Detalhamento -->
@@ -282,7 +318,8 @@
                         <li class="flex justify-between"><span>Prefeitura:</span> <span class="font-bold text-red-700">-{{ resultado.trabalho_externo_prefeitura }}</span></li>
                         <li class="flex justify-between"><span>Rotoplast:</span> <span class="font-bold text-red-700">-{{ resultado.trabalho_externo_rotoplast }}</span></li>
                         <li class="flex justify-between"><span>Outras:</span> <span class="font-bold text-red-700">-{{ resultado.outras_subtracoes }}</span></li>
-                        <li class="flex justify-between border-t border-red-300 pt-1 mt-1"><span class="font-bold">Total Subtrações:</span> <span class="font-extrabold text-red-800">-{{ resultado.total_subtracoes }}</span></li>
+                        <li class="flex justify-between border-t border-red-300 pt-1 mt-1"><span class="font-bold">Total Subtrações (almoço):</span> <span class="font-extrabold text-red-800">-{{ resultado.total_subtracoes }}</span></li>
+                        <li class="flex justify-between"><span class="font-bold">Total Subtrações (janta):</span> <span class="font-extrabold text-red-800">-{{ resultado.quantidade_internos_saida_temporaria }}</span></li>
                     </ul>
                 </div>
             </div>
@@ -296,48 +333,143 @@
             {% endif %}
         </div>
         {% endif %}
+    </div>
 
-        <!-- HISTÓRICO -->
-        {% if historico %}
-        <div class="mt-8 bg-white rounded-2xl shadow p-6">
-            <h2 class="text-lg font-bold mb-4 text-center text-gray-600">
-                <i class="fas fa-history"></i> Últimos Registros
-            </h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200 text-gray-700">
-                            <th class="px-2 py-1">Data/Hora</th>
-                            <th class="px-2 py-1">Almoço Serv.</th>
-                            <th class="px-2 py-1">Lanche Serv.</th>
-                            <th class="px-2 py-1">Janta Serv.</th>
-                            <th class="px-2 py-1">Internos (líq.)</th>
-                            <th class="px-2 py-1">Obs.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in historico %}
-                        <tr class="border-b hover:bg-gray-50 {% if forloop.first %}bg-green-50{% endif %}">
-                            <td class="px-2 py-1 text-center text-sky-700">{{ item.atualizado_em|date:'d/m/Y H:i' }}</td>
-                            <td class="px-2 py-1 text-center text-blue-700">{{ item.almoco_plantao|add:item.almoco_administrativo }}</td>
-                            <td class="px-2 py-1 text-center text-blue-700">{{ item.lanche_plantao|add:item.lanche_administrativo }}</td>
-                            <td class="px-2 py-1 text-center text-blue-700">{{ item.janta_plantao }}</td>
-                            <td class="px-2 py-1 text-center text-green-700 font-bold">
-                                {{ item.quantidade_internos_fechado|add:item.quantidade_internos_semiaberto|add:item.quantidade_internos_custodia|add:item.quantidade_internos_pensao }}
-                            </td>
-                            <td class="px-2 py-1 text-center text-gray-500">{{ item.observacoes|truncatechars:30 }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <!-- MODAL / POPUP DE HISTÓRICO -->
+    {% if historico %}
+    <div id="modalHistorico" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 print:hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+            <!-- Header do modal -->
+            <div class="flex justify-between items-center bg-gray-700 text-white px-6 py-4 rounded-t-2xl">
+                <h2 class="text-lg font-bold">
+                    <i class="fas fa-history"></i> Últimos Registros
+                </h2>
+                <button onclick="document.getElementById('modalHistorico').classList.add('hidden')"
+                        class="text-white hover:text-red-300 text-2xl font-bold">&times;</button>
+            </div>
+            <!-- Corpo do modal -->
+            <div class="p-6 overflow-y-auto max-h-[75vh]">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700">
+                                <th class="px-2 py-2">Data/Hora</th>
+                                <th class="px-2 py-2 bg-blue-100">Alm. Plantão</th>
+                                <th class="px-2 py-2 bg-blue-100">Lanch. Plantão</th>
+                                <th class="px-2 py-2 bg-blue-100">Janta Plantão</th>
+                                <th class="px-2 py-2 bg-blue-100">Alm. Adm.</th>
+                                <th class="px-2 py-2 bg-blue-100">Lanch. Adm.</th>
+                                <th class="px-2 py-2 bg-orange-100">Fechado</th>
+                                <th class="px-2 py-2 bg-emerald-100">Semiab.</th>
+                                <th class="px-2 py-2 bg-blue-100">Custódia</th>
+                                <th class="px-2 py-2 bg-blue-100">Pensão</th>
+                                <th class="px-2 py-2 bg-red-100">Saída Temp.</th>
+                                <th class="px-2 py-2 bg-red-100">Subtrações Trab.</th>
+                                <th class="px-2 py-2 bg-sky-100">Obs.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in historico %}
+                            <tr class="border-b hover:bg-gray-50 {% if forloop.first %}bg-green-50{% endif %} cursor-pointer"
+                                onclick="toggleDetalhe({{ forloop.counter }})">
+                                <td class="px-2 py-2 text-center text-sky-700 font-semibold">{{ item.atualizado_em|date:'d/m/Y H:i' }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.almoco_plantao }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.lanche_plantao }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.janta_plantao }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.almoco_administrativo }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.lanche_administrativo }}</td>
+                                <td class="px-2 py-2 text-center text-orange-700 font-bold">{{ item.quantidade_internos_fechado }}</td>
+                                <td class="px-2 py-2 text-center text-emerald-700 font-bold">{{ item.quantidade_internos_semiaberto }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.quantidade_internos_custodia }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.quantidade_internos_pensao }}</td>
+                                <td class="px-2 py-2 text-center text-red-700 font-bold">{{ item.quantidade_internos_saida_temporaria }}</td>
+                                <td class="px-2 py-2 text-center text-red-700">
+                                    {{ item.trabalho_externo_oliveira|add:item.trabalho_externo_realce|add:item.trabalho_externo_prefeitura|add:item.trabalho_externo_rotoplast|add:item.outras_subtracoes }}
+                                </td>
+                                <td class="px-2 py-2 text-center text-gray-500">{{ item.observacoes|truncatechars:20 }}</td>
+                            </tr>
+                            <!-- Detalhe expansível -->
+                            <tr id="detalhe-{{ forloop.counter }}" class="hidden">
+                                <td colspan="13" class="px-4 py-3 bg-gray-50">
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                                        <div class="bg-red-50 rounded p-2">
+                                            <span class="text-red-600 font-bold">Oliveira:</span> {{ item.trabalho_externo_oliveira }}
+                                        </div>
+                                        <div class="bg-red-50 rounded p-2">
+                                            <span class="text-red-600 font-bold">Realce:</span> {{ item.trabalho_externo_realce }}
+                                        </div>
+                                        <div class="bg-red-50 rounded p-2">
+                                            <span class="text-red-600 font-bold">Prefeitura:</span> {{ item.trabalho_externo_prefeitura }}
+                                        </div>
+                                        <div class="bg-red-50 rounded p-2">
+                                            <span class="text-red-600 font-bold">Rotoplast:</span> {{ item.trabalho_externo_rotoplast }}
+                                        </div>
+                                        <div class="bg-red-50 rounded p-2">
+                                            <span class="text-red-600 font-bold">Outras:</span> {{ item.outras_subtracoes }}
+                                        </div>
+                                        <div class="bg-sky-50 rounded p-2 col-span-2 md:col-span-3">
+                                            <span class="text-sky-600 font-bold">Obs.:</span> {{ item.observacoes }}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Footer do modal -->
+            <div class="bg-gray-100 px-6 py-3 text-right rounded-b-2xl">
+                <button onclick="document.getElementById('modalHistorico').classList.add('hidden')"
+                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm">
+                    <i class="fas fa-times"></i> Fechar
+                </button>
             </div>
         </div>
-        {% endif %}
     </div>
+    {% endif %}
 
     <!-- Rodapé -->
     <footer class="max-w-5xl mx-auto mt-12 mb-6 text-center text-sm text-gray-600 print:hidden">
         &copy; {{ ano_corrente }} Presídio Regional de Maravilha. Todos os direitos reservados.
     </footer>
+
+    <script>
+        // Replicar Almoço Plantão para Lanche e Janta Plantão
+        const almocoPlantao = document.getElementById('almoco_plantao');
+        const lanchePlantao = document.getElementById('lanche_plantao');
+        const jantaPlantao = document.getElementById('janta_plantao');
+
+        almocoPlantao.addEventListener('input', function() {
+            // Só replica se os outros campos ainda estiverem em 0 ou vazios
+            if (lanchePlantao.value === '0' || lanchePlantao.value === '') {
+                lanchePlantao.value = this.value;
+            }
+            if (jantaPlantao.value === '0' || jantaPlantao.value === '') {
+                jantaPlantao.value = this.value;
+            }
+        });
+        // Toggle detalhe do histórico
+        function toggleDetalhe(id) {
+            const el = document.getElementById('detalhe-' + id);
+            if (el) {
+                el.classList.toggle('hidden');
+            }
+        }
+
+        // Fechar modal ao clicar fora dele
+        document.getElementById('modalHistorico')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('modalHistorico')?.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
