@@ -1,0 +1,343 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cálculo de Alimentação</title>
+    <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-200 text-gray-800 font-sans min-h-screen p-8">
+    <!-- Menu de navegação -->
+    <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
+        <a href="{% url 'pauta:pauta_all' %}"
+            class="bg-indigo-500 text-white px-3 py-2 rounded text-sm hover:bg-indigo-900 flex items-center gap-2">
+            <img src="{% static 'img/home.png' %}" alt="" class="h-4 inline"> Início
+        </a>
+        <a href="{% url 'admin:index' %}"
+            class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
+            <img src="{% static 'img/login.png' %}" alt="" class="h-4"> Admin
+        </a>
+    </nav>
+
+    <div class="max-w-5xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
+
+        <h1 class="text-2xl font-bold mb-4 text-center">
+            <i class="fas fa-utensils"></i>
+            Cálculo de Alimentação
+        </h1>
+        <p class="text-center text-sm text-gray-500 mb-6">
+            Ferramenta para calcular a quantidade de refeições necessárias para a unidade prisional.
+        </p>
+
+        <form method="get" class="mb-8">
+            <!-- PLANTÃO (AZUL) -->
+            <fieldset class="border-2 border-blue-400 rounded-xl p-4 mb-4">
+                <legend class="text-blue-700 font-bold text-sm px-2">
+                    <i class="fas fa-shield-alt"></i> Plantão
+                </legend>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="almoco_plantao" class="block text-sm font-medium mb-1 text-blue-700">Almoço Plantão:</label>
+                        <input type="number" name="almoco_plantao" id="almoco_plantao" min="0" 
+                               value="{{ request.GET.almoco_plantao|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                    <div>
+                        <label for="lanche_plantao" class="block text-sm font-medium mb-1 text-blue-700">Lanche Plantão:</label>
+                        <input type="number" name="lanche_plantao" id="lanche_plantao" min="0"
+                               value="{{ request.GET.lanche_plantao|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                    <div>
+                        <label for="janta_plantao" class="block text-sm font-medium mb-1 text-blue-700">Janta Plantão:</label>
+                        <input type="number" name="janta_plantao" id="janta_plantao" min="0"
+                               value="{{ request.GET.janta_plantao|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- ADMINISTRATIVO (AZUL) -->
+            <fieldset class="border-2 border-blue-400 rounded-xl p-4 mb-4">
+                <legend class="text-blue-700 font-bold text-sm px-2">
+                    <i class="fas fa-briefcase"></i> Administrativo
+                </legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="almoco_administrativo" class="block text-sm font-medium mb-1 text-blue-700">Almoço Administrativo:</label>
+                        <input type="number" name="almoco_administrativo" id="almoco_administrativo" min="0"
+                               value="{{ request.GET.almoco_administrativo|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                    <div>
+                        <label for="lanche_administrativo" class="block text-sm font-medium mb-1 text-blue-700">Lanche Administrativo:</label>
+                        <input type="number" name="lanche_administrativo" id="lanche_administrativo" min="0"
+                               value="{{ request.GET.lanche_administrativo|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- INTERNOS (AZUL) -->
+            <fieldset class="border-2 border-blue-400 rounded-xl p-4 mb-4">
+                <legend class="text-blue-700 font-bold text-sm px-2">
+                    <i class="fas fa-users"></i> Internos (Adição)
+                </legend>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label for="quantidade_internos_fechado" class="block text-sm font-medium mb-1 text-blue-700">Fechado:</label>
+                        <input type="number" name="quantidade_internos_fechado" id="quantidade_internos_fechado" min="0"
+                               value="{{ request.GET.quantidade_internos_fechado|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                    <div>
+                        <label for="quantidade_internos_semiaberto" class="block text-sm font-medium mb-1 text-blue-700">Semiaberto:</label>
+                        <input type="number" name="quantidade_internos_semiaberto" id="quantidade_internos_semiaberto" min="0"
+                               value="{{ request.GET.quantidade_internos_semiaberto|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                    <div>
+                        <label for="quantidade_internos_custodia" class="block text-sm font-medium mb-1 text-blue-700">Custódia:</label>
+                        <input type="number" name="quantidade_internos_custodia" id="quantidade_internos_custodia" min="0"
+                               value="{{ request.GET.quantidade_internos_custodia|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                    <div>
+                        <label for="quantidade_internos_pensao" class="block text-sm font-medium mb-1 text-blue-700">Pensão Alimentícia:</label>
+                        <input type="number" name="quantidade_internos_pensao" id="quantidade_internos_pensao" min="0"
+                               value="{{ request.GET.quantidade_internos_pensao|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SUBTRAÇÕES (VERMELHO) -->
+            <fieldset class="border-2 border-red-400 rounded-xl p-4 mb-4">
+                <legend class="text-red-700 font-bold text-sm px-2">
+                    <i class="fas fa-minus-circle"></i> Subtrações
+                </legend>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="quantidade_internos_saida_temporaria" class="block text-sm font-medium mb-1 text-red-700">Saída Temporária:</label>
+                        <input type="number" name="quantidade_internos_saida_temporaria" id="quantidade_internos_saida_temporaria" min="0"
+                               value="{{ request.GET.quantidade_internos_saida_temporaria|default:'0' }}"
+                               class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                    </div>
+                    <div>
+                        <label for="trabalho_externo_oliveira" class="block text-sm font-medium mb-1 text-red-700">Const. Oliveira:</label>
+                        <input type="number" name="trabalho_externo_oliveira" id="trabalho_externo_oliveira" min="0"
+                               value="{{ request.GET.trabalho_externo_oliveira|default:'0' }}"
+                               class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                    </div>
+                    <div>
+                        <label for="trabalho_externo_realce" class="block text-sm font-medium mb-1 text-red-700">Fogões Realce:</label>
+                        <input type="number" name="trabalho_externo_realce" id="trabalho_externo_realce" min="0"
+                               value="{{ request.GET.trabalho_externo_realce|default:'0' }}"
+                               class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                    </div>
+                    <div>
+                        <label for="trabalho_externo_prefeitura" class="block text-sm font-medium mb-1 text-red-700">Prefeitura:</label>
+                        <input type="number" name="trabalho_externo_prefeitura" id="trabalho_externo_prefeitura" min="0"
+                               value="{{ request.GET.trabalho_externo_prefeitura|default:'0' }}"
+                               class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                    </div>
+                    <div>
+                        <label for="trabalho_externo_rotoplast" class="block text-sm font-medium mb-1 text-red-700">Rotoplast:</label>
+                        <input type="number" name="trabalho_externo_rotoplast" id="trabalho_externo_rotoplast" min="0"
+                               value="{{ request.GET.trabalho_externo_rotoplast|default:'0' }}"
+                               class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                    </div>
+                    <div>
+                        <label for="outras_subtracoes" class="block text-sm font-medium mb-1 text-red-700">Outras Subtrações:</label>
+                        <input type="number" name="outras_subtracoes" id="outras_subtracoes" min="0"
+                               value="{{ request.GET.outras_subtracoes|default:'0' }}"
+                               class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- OBSERVAÇÕES (SKY) -->
+            <fieldset class="border-2 border-sky-400 rounded-xl p-4 mb-4">
+                <legend class="text-sky-700 font-bold text-sm px-2">
+                    <i class="fas fa-comment-dots"></i> Observações
+                </legend>
+                <div>
+                    <label for="observacoes" class="block text-sm font-medium mb-1 text-sky-700">Observações:</label>
+                    <input type="text" name="observacoes" id="observacoes" maxlength="200"
+                           value="{{ request.GET.observacoes|default:'-' }}"
+                           class="border-2 border-sky-300 rounded px-3 py-2 w-full focus:border-sky-500 focus:outline-none bg-sky-50">
+                </div>
+            </fieldset>
+
+            <!-- Botão Calcular -->
+            <div class="text-center">
+                <button type="submit" class="bg-violet-500 text-white px-8 py-3 rounded-xl hover:bg-violet-700 text-lg font-bold shadow-lg">
+                    <i class="fas fa-calculator"></i> Calcular e Salvar
+                </button>
+            </div>
+        </form>
+
+        <!-- TABELA DE RESULTADOS -->
+        {% if resultado %}
+        <div class="mt-8 bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-xl font-bold mb-4 text-center text-green-700">
+                <i class="fas fa-clipboard-check"></i> Resultado do Cálculo
+            </h2>
+            <p class="text-center text-xs text-sky-600 mb-4">
+                <i class="fas fa-clock"></i> Registrado em: {{ resultado.atualizado_em }}
+            </p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-gray-700 text-white">
+                            <th class="px-4 py-2 text-left rounded-tl-lg">Refeição</th>
+                            <th class="px-4 py-2 text-center">Servidores</th>
+                            <th class="px-4 py-2 text-center">Internos</th>
+                            <th class="px-4 py-2 text-center rounded-tr-lg">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- ALMOÇO -->
+                        <tr class="border-b hover:bg-blue-50">
+                            <td class="px-4 py-3 font-semibold">
+                                <i class="fas fa-sun text-yellow-500"></i> Almoço
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.almoco_servidores }}
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.almoco_internos }}
+                            </td>
+                            <td class="px-4 py-3 text-center text-green-700 font-extrabold text-lg">
+                                {{ resultado.total_almoco }}
+                            </td>
+                        </tr>
+                        <!-- LANCHE -->
+                        <tr class="border-b hover:bg-blue-50 bg-gray-50">
+                            <td class="px-4 py-3 font-semibold">
+                                <i class="fas fa-cookie-bite text-orange-400"></i> Lanche
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.lanche_servidores }}
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.lanche_internos }}
+                            </td>
+                            <td class="px-4 py-3 text-center text-green-700 font-extrabold text-lg">
+                                {{ resultado.total_lanche }}
+                            </td>
+                        </tr>
+                        <!-- JANTA -->
+                        <tr class="border-b hover:bg-blue-50">
+                            <td class="px-4 py-3 font-semibold">
+                                <i class="fas fa-moon text-indigo-400"></i> Janta
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.janta_servidores }}
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.janta_internos }}
+                            </td>
+                            <td class="px-4 py-3 text-center text-green-700 font-extrabold text-lg">
+                                {{ resultado.total_janta }}
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-gray-800 text-white">
+                            <td class="px-4 py-3 font-bold rounded-bl-lg">TOTAL GERAL</td>
+                            <td class="px-4 py-3 text-center font-bold">{{ resultado.total_servidores }}</td>
+                            <td class="px-4 py-3 text-center font-bold">{{ resultado.total_internos_geral }}</td>
+                            <td class="px-4 py-3 text-center font-extrabold text-xl text-green-400 rounded-br-lg">{{ resultado.total_geral }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Detalhamento -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Adições -->
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <h3 class="text-blue-700 font-bold mb-2"><i class="fas fa-plus-circle"></i> Detalhamento - Adições</h3>
+                    <ul class="text-sm space-y-1">
+                        <li class="flex justify-between"><span>Fechado:</span> <span class="font-bold text-blue-700">{{ resultado.quantidade_internos_fechado }}</span></li>
+                        <li class="flex justify-between"><span>Semiaberto:</span> <span class="font-bold text-blue-700">{{ resultado.quantidade_internos_semiaberto }}</span></li>
+                        <li class="flex justify-between"><span>Custódia:</span> <span class="font-bold text-blue-700">{{ resultado.quantidade_internos_custodia }}</span></li>
+                        <li class="flex justify-between"><span>Pensão Alimentícia:</span> <span class="font-bold text-blue-700">{{ resultado.quantidade_internos_pensao }}</span></li>
+                        <li class="flex justify-between border-t border-blue-300 pt-1 mt-1"><span class="font-bold">Total Bruto Internos:</span> <span class="font-extrabold text-blue-800">{{ resultado.total_bruto_internos }}</span></li>
+                    </ul>
+                </div>
+                <!-- Subtrações -->
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <h3 class="text-red-700 font-bold mb-2"><i class="fas fa-minus-circle"></i> Detalhamento - Subtrações</h3>
+                    <ul class="text-sm space-y-1">
+                        <li class="flex justify-between"><span>Saída Temporária:</span> <span class="font-bold text-red-700">-{{ resultado.quantidade_internos_saida_temporaria }}</span></li>
+                        <li class="flex justify-between"><span>Const. Oliveira:</span> <span class="font-bold text-red-700">-{{ resultado.trabalho_externo_oliveira }}</span></li>
+                        <li class="flex justify-between"><span>Fogões Realce:</span> <span class="font-bold text-red-700">-{{ resultado.trabalho_externo_realce }}</span></li>
+                        <li class="flex justify-between"><span>Prefeitura:</span> <span class="font-bold text-red-700">-{{ resultado.trabalho_externo_prefeitura }}</span></li>
+                        <li class="flex justify-between"><span>Rotoplast:</span> <span class="font-bold text-red-700">-{{ resultado.trabalho_externo_rotoplast }}</span></li>
+                        <li class="flex justify-between"><span>Outras:</span> <span class="font-bold text-red-700">-{{ resultado.outras_subtracoes }}</span></li>
+                        <li class="flex justify-between border-t border-red-300 pt-1 mt-1"><span class="font-bold">Total Subtrações:</span> <span class="font-extrabold text-red-800">-{{ resultado.total_subtracoes }}</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            {% if resultado.observacoes and resultado.observacoes != '-' %}
+            <div class="mt-4 bg-sky-50 border border-sky-200 rounded-xl p-4">
+                <h3 class="text-sky-700 font-bold mb-1"><i class="fas fa-comment-dots"></i> Observações</h3>
+                <p class="text-sm text-sky-800">{{ resultado.observacoes }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- HISTÓRICO -->
+        {% if historico %}
+        <div class="mt-8 bg-white rounded-2xl shadow p-6">
+            <h2 class="text-lg font-bold mb-4 text-center text-gray-600">
+                <i class="fas fa-history"></i> Últimos Registros
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-700">
+                            <th class="px-2 py-1">Data/Hora</th>
+                            <th class="px-2 py-1">Almoço Serv.</th>
+                            <th class="px-2 py-1">Lanche Serv.</th>
+                            <th class="px-2 py-1">Janta Serv.</th>
+                            <th class="px-2 py-1">Internos (líq.)</th>
+                            <th class="px-2 py-1">Obs.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in historico %}
+                        <tr class="border-b hover:bg-gray-50 {% if forloop.first %}bg-green-50{% endif %}">
+                            <td class="px-2 py-1 text-center text-sky-700">{{ item.atualizado_em|date:'d/m/Y H:i' }}</td>
+                            <td class="px-2 py-1 text-center text-blue-700">{{ item.almoco_plantao|add:item.almoco_administrativo }}</td>
+                            <td class="px-2 py-1 text-center text-blue-700">{{ item.lanche_plantao|add:item.lanche_administrativo }}</td>
+                            <td class="px-2 py-1 text-center text-blue-700">{{ item.janta_plantao }}</td>
+                            <td class="px-2 py-1 text-center text-green-700 font-bold">
+                                {{ item.quantidade_internos_fechado|add:item.quantidade_internos_semiaberto|add:item.quantidade_internos_custodia|add:item.quantidade_internos_pensao }}
+                            </td>
+                            <td class="px-2 py-1 text-center text-gray-500">{{ item.observacoes|truncatechars:30 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="max-w-5xl mx-auto mt-12 mb-6 text-center text-sm text-gray-600 print:hidden">
+        &copy; {{ ano_corrente }} Presídio Regional de Maravilha. Todos os direitos reservados.
+    </footer>
+</body>
+</html>

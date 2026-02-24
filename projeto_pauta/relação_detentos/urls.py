@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     relacao_list, salvar_alteracoes, upload_pdf, upload_regime_pdf, exctrai_date_exit_view, cadastro_trampo_view, 
     gerar_termo_autorizacao, termo_monitorado, gerar_termo_kit_higiene, view_termo_rouparia, gerar_termo_rouparia,
-    gerar_memorandos_todos
+    gerar_memorandos_todos, calculo_alimentacao
 )
 
 app_name = 'relação_detentos'
@@ -21,4 +21,5 @@ urlpatterns = [
     path('termo-rouparia/', view_termo_rouparia, name='view_termo_rouparia'),
     path('gerar-termo-rouparia/<int:detento_id>/<int:numero_kit>/<str:regime>/<str:com_higiene>/', gerar_termo_rouparia, name='gerar_termo_rouparia'),
     path('gerar_memorandos_todos/', gerar_memorandos_todos, name='gerar_memorandos_todos'),
+    path('calculo-alimentacao/', calculo_alimentacao, name='calculo_alimentacao'),
 ]

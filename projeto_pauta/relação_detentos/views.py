@@ -37,7 +37,7 @@ from django.db.models.functions import Concat
 from django.utils import timezone
 
 from .process_table import process_pdf, process_regime_pdf, exctrai_date_exit
-from .models import Relacao, DescricaoKitHigiene, Descricao_termo_rouparia
+from .models import Relacao, DescricaoKitHigiene, Descricao_termo_rouparia, CalculoAlimentacao
 
 
 from PyPDF2 import PdfReader, PdfWriter
@@ -297,7 +297,7 @@ def view_termo_rouparia(request):
         .aggregate(Max('atualizado')).get('atualizado__max')
     )
 
-    print(f'Ultima data atualizado: {ultima_data_atualizado}')
+    #print(f'Ultima data atualizado: {ultima_data_atualizado}')
     
     ipen = request.GET.get('ipen')
     numero_rouparia = request.GET.get('numero_rouparia')
@@ -1704,3 +1704,124 @@ def gerar_memorandos_todos(request):
     response = HttpResponse(buffer.read(), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{nome_arquivo}"'
     return response
+
+
+@checked_debug_decorador
+@csrf_exempt
+def calculo_alimentacao(request):
+    resultado = None
+    historico = CalculoAlimentacao.objects.all()[:10]
+
+    # Verifica se há parâmetros de cálculo na URL
+    if request.GET.get('almoco_plantao') is not None and request.GET.get('almoco_plantao') != '':
+        # Converter todos os valores para int (GET retorna strings)
+        almoco_plantao = int(request.GET.get('almoco_plantao', 0) or 0)
+        lanche_plantao = int(request.GET.get('lanche_plantao', 0) or 0)
+        janta_plantao = int(request.GET.get('janta_plantao', 0) or 0)
+        almoco_administrativo = int(request.GET.get('almoco_administrativo', 0) or 0)
+        lanche_administrativo = int(request.GET.get('lanche_administrativo', 0) or 0)
+        quantidade_internos_fechado = int(request.GET.get('quantidade_internos_fechado', 0) or 0)
+        quantidade_internos_semiaberto = int(request.GET.get('quantidade_internos_semiaberto', 0) or 0)
+        quantidade_internos_custodia = int(request.GET.get('quantidade_internos_custodia', 0) or 0)
+        quantidade_internos_pensao = int(request.GET.get('quantidade_internos_pensao', 0) or 0)
+        quantidade_internos_saida_temporaria = int(request.GET.get('quantidade_internos_saida_temporaria', 0) or 0)
+        trabalho_externo_oliveira = int(request.GET.get('trabalho_externo_oliveira', 0) or 0)
+        trabalho_externo_realce = int(request.GET.get('trabalho_externo_realce', 0) or 0)
+        trabalho_externo_prefeitura = int(request.GET.get('trabalho_externo_prefeitura', 0) or 0)
+        trabalho_externo_rotoplast = int(request.GET.get('trabalho_externo_rotoplast', 0) or 0)
+        outras_subtracoes = int(request.GET.get('outras_subtracoes', 0) or 0)
+        observacoes = request.GET.get('observacoes', '-') or '-'
+
+        # Salvar no banco de dados
+        registro = CalculoAlimentacao.objects.create(
+            almoco_plantao=almoco_plantao,
+            janta_plantao=janta_plantao,
+            lanche_plantao=lanche_plantao,
+            almoco_administrativo=almoco_administrativo,
+            lanche_administrativo=lanche_administrativo,
+            quantidade_internos_fechado=quantidade_internos_fechado,
+            quantidade_internos_semiaberto=quantidade_internos_semiaberto,
+            quantidade_internos_custodia=quantidade_internos_custodia,
+            quantidade_internos_pensao=quantidade_internos_pensao,
+            quantidade_internos_saida_temporaria=quantidade_internos_saida_temporaria,
+            trabalho_externo_oliveira=trabalho_externo_oliveira,
+            trabalho_externo_realce=trabalho_externo_realce,
+            trabalho_externo_prefeitura=trabalho_externo_prefeitura,
+            trabalho_externo_rotoplast=trabalho_externo_rotoplast,
+            outras_subtracoes=outras_subtracoes,
+            observacoes=observacoes,
+        )
+
+        # Cálculos
+        total_bruto_internos = (
+            quantidade_internos_fechado 
+            + quantidade_internos_semiaberto 
+            + quantidade_internos_custodia 
+            + quantidade_internos_pensao
+        )
+        total_subtracoes = (
+            quantidade_internos_saida_temporaria 
+            + trabalho_externo_oliveira 
+            + trabalho_externo_realce 
+            + trabalho_externo_prefeitura 
+            + trabalho_externo_rotoplast 
+            + outras_subtracoes
+        )
+        almoco_internos = total_bruto_internos - total_subtracoes
+        # Para lanche e janta dos internos, mesma lógica (todos comem)
+        lanche_internos = almoco_internos
+        janta_internos = almoco_internos
+
+        almoco_servidores = almoco_plantao + almoco_administrativo
+        lanche_servidores = lanche_plantao + lanche_administrativo
+        janta_servidores = janta_plantao
+
+        total_almoco = almoco_servidores + almoco_internos
+        total_lanche = lanche_servidores + lanche_internos
+        total_janta = janta_servidores + janta_internos
+
+        total_servidores = almoco_servidores + lanche_servidores + janta_servidores
+        total_internos_geral = almoco_internos + lanche_internos + janta_internos
+        total_geral = total_almoco + total_lanche + total_janta
+
+        resultado = {
+            'almoco_servidores': almoco_servidores,
+            'lanche_servidores': lanche_servidores,
+            'janta_servidores': janta_servidores,
+            'almoco_internos': almoco_internos,
+            'lanche_internos': lanche_internos,
+            'janta_internos': janta_internos,
+            'total_almoco': total_almoco,
+            'total_lanche': total_lanche,
+            'total_janta': total_janta,
+            'total_servidores': total_servidores,
+            'total_internos_geral': total_internos_geral,
+            'total_geral': total_geral,
+            'total_bruto_internos': total_bruto_internos,
+            'total_subtracoes': total_subtracoes,
+            'quantidade_internos_fechado': quantidade_internos_fechado,
+            'quantidade_internos_semiaberto': quantidade_internos_semiaberto,
+            'quantidade_internos_custodia': quantidade_internos_custodia,
+            'quantidade_internos_pensao': quantidade_internos_pensao,
+            'quantidade_internos_saida_temporaria': quantidade_internos_saida_temporaria,
+            'trabalho_externo_oliveira': trabalho_externo_oliveira,
+            'trabalho_externo_realce': trabalho_externo_realce,
+            'trabalho_externo_prefeitura': trabalho_externo_prefeitura,
+            'trabalho_externo_rotoplast': trabalho_externo_rotoplast,
+            'outras_subtracoes': outras_subtracoes,
+            'observacoes': observacoes,
+            'atualizado_em': registro.atualizado_em.strftime('%d/%m/%Y %H:%M'),
+        }
+
+        # Atualizar histórico após salvar
+        historico = CalculoAlimentacao.objects.all()[:10]
+
+    context = {
+        'titulo': 'Cálculo de Alimentação',
+        'descricao': 'Ferramenta para calcular a quantidade de refeições necessárias para a unidade prisional.',
+        'resultado': resultado,
+        'historico': historico,
+        'ano_corrente': ANO_CORRENTE,
+    }
+
+    return render(request, 'calculo_alimentacao.html', context)
