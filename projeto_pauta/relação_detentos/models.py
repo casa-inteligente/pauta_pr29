@@ -174,7 +174,6 @@ class CalculoAlimentacao(models.Model):
         ordering = ('-atualizado_em',)
         get_latest_by = 'atualizado_em'
 
-
 class Relacao(models.Model):
    
     empresas_conveniadas = (
@@ -251,11 +250,23 @@ class Relacao(models.Model):
         default='F',
         max_length=3
     )
+    local_galeria = models.CharField(
+        verbose_name='Local da Galeria',
+        null=True, blank=True,
+        #default='A',
+        max_length=1
+    )
     local_residencia = models.IntegerField(
         verbose_name='Local de Residência',
         null=True, blank=True        
     )
-
+    situacao_penal = models.CharField(
+        verbose_name='Situação penal',
+        max_length=20,
+        blank=True,
+        null=True,
+        default='RECOLHIDO(A)'
+    )
     observacoes = models.CharField(
         verbose_name='Observações',
         max_length=150,
@@ -293,7 +304,7 @@ class Relacao(models.Model):
     class Meta:
         ordering = ('regime', 'nome', 'IPEN')
         #db_table = 'relacao_detentos'
-        verbose_name = 'a relação de detentos'
+        verbose_name = 'Relação de detentos'
         verbose_name_plural = 'Relações de Detentos'
     
     def formatted_ingresso(self):

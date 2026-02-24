@@ -21,13 +21,34 @@
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
             <i class="fas fa-print"></i> Imprimir
         </button>
+        {% comment %} Atualiza detentos {% endcomment %}
+        <h6 class="text-sm text-gray-600 text-center italic">
+                <details class="border border-transparent rounded-2xl open:border-black/10 open:bg-green-100">
+                    <summary class="">
+                        Atualização de Detentos
+                    </summary>
+                    {% comment %} <span>Relatório 1.9 do IPEN</span> {% endcomment %}
+                    <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
+                        action="{% url 'relação_detentos:upload_pdf' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="pdfFile">Relatório 1.9 do IPEN</label> <br>
+                            <input type="file" class="form-control-file" id="pdfFile" name="pdfFile" accept="application/pdf"
+                            required>
+                        </div>
+                        <button type="submit" class="bg-fuchsia-500 text-white px-3 py-2 rounded text-sm hover:bg-slate-700">
+                            Enviar
+                        </button>
+                    </form>
+                </details>
+            </h6>
     </nav>
 
     <div class="max-w-5xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
 
         <h1 class="text-2xl font-bold mb-4 text-center">
             <i class="fas fa-utensils"></i>
-            Cálculo de Alimentação
+            Cálculo de Alimentação 
         </h1>
         <p class="text-center text-sm text-gray-500 mb-6">
             Ferramenta para calcular a quantidade de refeições diárias necessárias para a unidade prisional.

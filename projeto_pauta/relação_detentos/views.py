@@ -201,15 +201,6 @@ def salvar_alteracoes(request):
     return JsonResponse({'success': False, 'error': 'Método não permitido'})
 
 
-    #visualização para o chefe de segurança dos internos trabalhandos
-
-
-
-# '''
-#     Processa o relatorio 1.9 e atualiza o banco de dados
-# '''
-
-
 def upload_pdf(request):
     '''
     Recebe o arquivo PDF enviado pelo usuário, processa o conteúdo para extrair informações relevantes e atualiza o banco de dados com esses dados.
@@ -1711,6 +1702,8 @@ def gerar_memorandos_todos(request):
 def calculo_alimentacao(request):
     resultado = None
     historico = CalculoAlimentacao.objects.all()[:10]
+
+    trabalho_externo = CalculoAlimentacao.objects.aggregate(Sum('TRABALHOEXTERNO'))['TRABALHOEXTERNO'] or 0
 
     if request.GET.get('almoco_plantao') is not None and request.GET.get('almoco_plantao') != '':
         almoco_plantao = int(request.GET.get('almoco_plantao', 0) or 0)
