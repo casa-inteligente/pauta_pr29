@@ -32,7 +32,7 @@ from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from .forms.geradores import DescricaoKitHigieneForm, TermoRoupariaForm 
 
-from django.db.models import Case, When, Value, Max
+from django.db.models import Case, When, Value, Max, Count, Q
 from django.db.models.functions import Concat
 from django.utils import timezone
 
@@ -1705,13 +1705,20 @@ def calculo_alimentacao(request):
     historico = CalculoAlimentacao.objects.all()[:10]
 
     # Contagens automáticas do banco (para pré-preencher o formulário)
-    trabalho_externo_auto = Relacao.objects.filter(situacao_penal='TRABALHO EXTERNO').count()
-    saida_temporaria_auto = Relacao.objects.filter(situacao_penal='SAÍDA TEMPORÁRIA').count()
+    contagens = Relacao.objects.aggregate(
+        trabalho_externo_auto=Count('id', filter=Q(situacao_penal='TRABALHO EXTERNO')),
+        saida_temporaria_auto=Count('id', filter=Q(situacao_penal='SAÍDA TEMPORÁRIA')),
+        internos_fechado_auto=Count('id', filter=Q(local_galeria__in=['A', 'C'])),
+        internos_semiaberto_auto=Count('id', filter=Q(local_galeria__in=['B', 'D'])),
+        internos_pensao_auto=Count('id', filter=Q(local_galeria='E')),
+    )
 
-    internos_fechado_auto = Relacao.objects.filter(local_galeria__in=['A', 'C']).count()
-    internos_semiaberto_auto = Relacao.objects.filter(local_galeria__in=['B', 'D']).count()
-    internos_pensao_auto = Relacao.objects.filter(local_galeria='E').count()
-    print("Contagens automáticas - Fechado:", internos_fechado_auto, "Semiaberto:", internos_semiaberto_auto, "Pensão:", internos_pensao_auto)
+    trabalho_externo_auto = contagens['trabalho_externo_auto']
+    saida_temporaria_auto = contagens['saida_temporaria_auto']
+    internos_fechado_auto = contagens['internos_fechado_auto']
+    internos_semiaberto_auto = contagens['internos_semiaberto_auto']
+    internos_pensao_auto = contagens['internos_pensao_auto']
+    #print("Contagens automáticas - Fechado:", internos_fechado_auto, "Semiaberto:", internos_semiaberto_auto, "Pensão:", internos_pensao_auto)
 
     if request.GET.get('almoco_plantao') is not None and request.GET.get('almoco_plantao') != '':
         almoco_plantao = int(request.GET.get('almoco_plantao', 0) or 0)
