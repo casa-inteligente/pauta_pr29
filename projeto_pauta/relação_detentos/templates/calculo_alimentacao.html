@@ -205,8 +205,7 @@
                             <th class="px-4 py-2 text-center">Servidores</th>
                             <th class="px-4 py-2 text-center bg-orange-700">Fechado</th>
                             <th class="px-4 py-2 text-center bg-emerald-700">Semiaberto</th>
-                            <th class="px-4 py-2 text-center">Total Internos</th>
-                            <th class="px-4 py-2 text-center rounded-tr-lg">Total Geral</th>
+                            <th class="px-4 py-2 text-center rounded-tr-lg">Total Internos</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -229,9 +228,6 @@
                             <td class="px-4 py-3 text-center text-blue-700 font-bold">
                                 {{ resultado.almoco_internos }}
                             </td>
-                            <td class="px-4 py-3 text-center text-green-700 font-extrabold text-lg">
-                                {{ resultado.total_almoco }}
-                            </td>
                         </tr>
                         <!-- LANCHE (somente servidores) -->
                         <tr class="border-b hover:bg-blue-50 bg-gray-50">
@@ -244,9 +240,6 @@
                             <td class="px-4 py-3 text-center text-gray-400">—</td>
                             <td class="px-4 py-3 text-center text-gray-400">—</td>
                             <td class="px-4 py-3 text-center text-gray-400">0</td>
-                            <td class="px-4 py-3 text-center text-green-700 font-extrabold text-lg">
-                                {{ resultado.total_lanche }}
-                            </td>
                         </tr>
                         <!-- JANTA -->
                         <tr class="border-b hover:bg-blue-50">
@@ -267,20 +260,8 @@
                             <td class="px-4 py-3 text-center text-blue-700 font-bold">
                                 {{ resultado.janta_internos }}
                             </td>
-                            <td class="px-4 py-3 text-center text-green-700 font-extrabold text-lg">
-                                {{ resultado.total_janta }}
-                            </td>
                         </tr>
                     </tbody>
-                    <tfoot>
-                        <tr class="bg-gray-800 text-white">
-                            <td class="px-4 py-3 font-bold rounded-bl-lg">TOTAL GERAL</td>
-                            <td class="px-4 py-3 text-center font-bold">{{ resultado.total_servidores }}</td>
-                            <td class="px-4 py-3 text-center font-bold" colspan="2">—</td>
-                            <td class="px-4 py-3 text-center font-bold">{{ resultado.total_internos_geral }}</td>
-                            <td class="px-4 py-3 text-center font-extrabold text-xl text-green-400 rounded-br-lg">{{ resultado.total_geral }}</td>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
 
@@ -290,7 +271,6 @@
                 <ul class="list-disc list-inside mt-1 space-y-0.5">
                     <li><b>Almoço internos:</b> (Fechado + Custódia + Semiaberto + Pensão) − todas as subtrações</li>
                     <li><b>Janta internos:</b> (Fechado + Custódia + Semiaberto + Pensão) − somente saída temporária</li>
-                    <li><b>Lanche:</b> somente servidores (internos não recebem)</li>
                     <li><b>Fechado:</b> Fechado + Custódia | <b>Semiaberto:</b> Semiaberto + Pensão</li>
                 </ul>
             </div>
