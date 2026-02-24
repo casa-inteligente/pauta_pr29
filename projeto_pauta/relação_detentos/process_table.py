@@ -110,7 +110,7 @@ def process_pdf(file_path):
                 ingresso = pd.to_datetime(third_col[i], format='%d/%m/%Y').date()
                 local_alocacao = fifth_col[i]
                 local_residencia = col_residencia[i]#Apenas numero
-                situacao_penal = second_col[i]
+                situacao_penal = second_col[i].replace('\n', ' ')
 
                 # Verificar se o IPEN já está cadastrado
                 relacao, created = Relacao.objects.get_or_create(IPEN=ipen, defaults={

@@ -1701,9 +1701,17 @@ def gerar_memorandos_todos(request):
 @csrf_exempt
 def calculo_alimentacao(request):
     resultado = None
+    registro = None
     historico = CalculoAlimentacao.objects.all()[:10]
 
-    trabalho_externo = CalculoAlimentacao.objects.aggregate(Sum('TRABALHOEXTERNO'))['TRABALHOEXTERNO'] or 0
+    # Contagens automáticas do banco (para pré-preencher o formulário)
+    trabalho_externo_auto = Relacao.objects.filter(situacao_penal='TRABALHO EXTERNO').count()
+    saida_temporaria_auto = Relacao.objects.filter(situacao_penal='SAÍDA TEMPORÁRIA').count()
+
+    internos_fechado_auto = Relacao.objects.filter(local_galeria__in=['A', 'C']).count()
+    internos_semiaberto_auto = Relacao.objects.filter(local_galeria__in=['B', 'D']).count()
+    internos_pensao_auto = Relacao.objects.filter(local_galeria='E').count()
+    print("Contagens automáticas - Fechado:", internos_fechado_auto, "Semiaberto:", internos_semiaberto_auto, "Pensão:", internos_pensao_auto)
 
     if request.GET.get('almoco_plantao') is not None and request.GET.get('almoco_plantao') != '':
         almoco_plantao = int(request.GET.get('almoco_plantao', 0) or 0)
@@ -1759,6 +1767,7 @@ def calculo_alimentacao(request):
             registro = None
 
     if registro is not None:
+        # ...existing code... (cálculos)
         total_bruto_internos = (
             quantidade_internos_fechado 
             + quantidade_internos_semiaberto 
@@ -1828,6 +1837,11 @@ def calculo_alimentacao(request):
         'resultado': resultado,
         'historico': historico,
         'ano_corrente': ANO_CORRENTE,
+        'trabalho_externo_auto': trabalho_externo_auto,
+        'saida_temporaria_auto': saida_temporaria_auto,
+        'internos_fechado_auto':internos_fechado_auto,
+        'internos_semiaberto_auto':internos_semiaberto_auto,
+        'internos_pensao_auto':internos_pensao_auto,
     }
 
     return render(request, 'calculo_alimentacao.html', context)

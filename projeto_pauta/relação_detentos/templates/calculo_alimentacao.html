@@ -110,16 +110,18 @@
                 </legend>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label for="quantidade_internos_fechado" class="block text-sm font-medium mb-1 text-blue-700">Fechado:</label>
+                        <label for="quantidade_internos_fechado" class="block text-sm font-medium mb-1 text-orange-700">Fechado (Galerias A+C):</label>
                         <input type="number" name="quantidade_internos_fechado" id="quantidade_internos_fechado" min="0"
-                               value="{{ request.GET.quantidade_internos_fechado|default:'0' }}"
-                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                               value="{{ request.GET.quantidade_internos_fechado|default:internos_fechado_auto }}"
+                               class="border-2 border-orange-300 rounded px-3 py-2 w-full focus:border-orange-500 focus:outline-none bg-orange-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ internos_fechado_auto }} (do banco)</span>
                     </div>
                     <div>
-                        <label for="quantidade_internos_semiaberto" class="block text-sm font-medium mb-1 text-blue-700">Semiaberto&Regalia Externo:</label>
+                        <label for="quantidade_internos_semiaberto" class="block text-sm font-medium mb-1 text-emerald-700">Semiaberto (Galerias B+D):</label>
                         <input type="number" name="quantidade_internos_semiaberto" id="quantidade_internos_semiaberto" min="0"
-                               value="{{ request.GET.quantidade_internos_semiaberto|default:'0' }}"
-                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                               value="{{ request.GET.quantidade_internos_semiaberto|default:internos_semiaberto_auto }}"
+                               class="border-2 border-emerald-300 rounded px-3 py-2 w-full focus:border-emerald-500 focus:outline-none bg-emerald-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ internos_semiaberto_auto }} (do banco)</span>
                     </div>
                     <div>
                         <label for="quantidade_internos_custodia" class="block text-sm font-medium mb-1 text-blue-700">Custódia&Feminina:</label>
@@ -128,10 +130,11 @@
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
                     </div>
                     <div>
-                        <label for="quantidade_internos_pensao" class="block text-sm font-medium mb-1 text-blue-700">Pensão Alimentícia:</label>
+                        <label for="quantidade_internos_pensao" class="block text-sm font-medium mb-1 text-blue-700">Pensão Alimentícia (Galeria E):</label>
                         <input type="number" name="quantidade_internos_pensao" id="quantidade_internos_pensao" min="0"
-                               value="{{ request.GET.quantidade_internos_pensao|default:'0' }}"
+                               value="{{ request.GET.quantidade_internos_pensao|default:internos_pensao_auto }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ internos_pensao_auto }} (do banco)</span>
                     </div>
                 </div>
             </fieldset>
@@ -146,14 +149,16 @@
                     <div>
                         <label for="quantidade_internos_saida_temporaria" class="block text-sm font-medium mb-1 text-red-700">Saída Temporária:</label>
                         <input type="number" name="quantidade_internos_saida_temporaria" id="quantidade_internos_saida_temporaria" min="0"
-                               value="{{ request.GET.quantidade_internos_saida_temporaria|default:'0' }}"
+                               value="{{ request.GET.quantidade_internos_saida_temporaria|default:saida_temporaria_auto }}"
                                class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ saida_temporaria_auto }} (do banco)</span>
                     </div>
                     <div>
                         <label for="trabalho_externo" class="block text-sm font-medium mb-1 text-red-700">Trabalho Externo:</label>
                         <input type="number" name="trabalho_externo" id="trabalho_externo" min="0"
-                               value="{{ request.GET.trabalho_externo|default:'0' }}"
+                               value="{{ request.GET.trabalho_externo|default:trabalho_externo_auto }}"
                                class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ trabalho_externo_auto }} (do banco)</span>
                     </div>
                     <div>
                         <label for="outras_subtracoes" class="block text-sm font-medium mb-1 text-red-700">Outras Subtrações:</label>
