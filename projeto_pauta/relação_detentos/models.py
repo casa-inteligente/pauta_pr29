@@ -136,26 +136,8 @@ class CalculoAlimentacao(models.Model):
         default=0,
     )
     # Trabalho externo
-    trabalho_externo_oliveira = models.PositiveIntegerField(
-        verbose_name='Quantidade de internos trabalhando na Construtora Oliveira',
-        blank=False,
-        null=False,        
-        default=0,
-    )
-    trabalho_externo_realce = models.PositiveIntegerField(
-        verbose_name='Quantidade de internos trabalhando na Realce',
-        blank=False,
-        null=False,        
-        default=0,
-    )
-    trabalho_externo_prefeitura = models.PositiveIntegerField(
-        verbose_name='Quantidade de internos trabalhando na Prefeitura',
-        blank=False,
-        null=False,        
-        default=0,
-    )
-    trabalho_externo_rotoplast = models.PositiveIntegerField(
-        verbose_name='Quantidade de internos trabalhando na Rotoplast',
+    trabalho_externo = models.PositiveIntegerField(
+        verbose_name='Quantidade de internos em trabalho externo',
         blank=False,
         null=False,        
         default=0,

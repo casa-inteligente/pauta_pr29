@@ -1712,9 +1712,7 @@ def calculo_alimentacao(request):
     resultado = None
     historico = CalculoAlimentacao.objects.all()[:10]
 
-    # Verifica se há parâmetros de cálculo na URL
     if request.GET.get('almoco_plantao') is not None and request.GET.get('almoco_plantao') != '':
-        # Converter todos os valores para int (GET retorna strings)
         almoco_plantao = int(request.GET.get('almoco_plantao', 0) or 0)
         lanche_plantao = int(request.GET.get('lanche_plantao', 0) or 0)
         janta_plantao = int(request.GET.get('janta_plantao', 0) or 0)
@@ -1725,14 +1723,10 @@ def calculo_alimentacao(request):
         quantidade_internos_custodia = int(request.GET.get('quantidade_internos_custodia', 0) or 0)
         quantidade_internos_pensao = int(request.GET.get('quantidade_internos_pensao', 0) or 0)
         quantidade_internos_saida_temporaria = int(request.GET.get('quantidade_internos_saida_temporaria', 0) or 0)
-        trabalho_externo_oliveira = int(request.GET.get('trabalho_externo_oliveira', 0) or 0)
-        trabalho_externo_realce = int(request.GET.get('trabalho_externo_realce', 0) or 0)
-        trabalho_externo_prefeitura = int(request.GET.get('trabalho_externo_prefeitura', 0) or 0)
-        trabalho_externo_rotoplast = int(request.GET.get('trabalho_externo_rotoplast', 0) or 0)
+        trabalho_externo = int(request.GET.get('trabalho_externo', 0) or 0)
         outras_subtracoes = int(request.GET.get('outras_subtracoes', 0) or 0)
         observacoes = request.GET.get('observacoes', '-') or '-'
 
-        # Salvar no banco de dados
         registro = CalculoAlimentacao.objects.create(
             almoco_plantao=almoco_plantao,
             janta_plantao=janta_plantao,
@@ -1744,15 +1738,34 @@ def calculo_alimentacao(request):
             quantidade_internos_custodia=quantidade_internos_custodia,
             quantidade_internos_pensao=quantidade_internos_pensao,
             quantidade_internos_saida_temporaria=quantidade_internos_saida_temporaria,
-            trabalho_externo_oliveira=trabalho_externo_oliveira,
-            trabalho_externo_realce=trabalho_externo_realce,
-            trabalho_externo_prefeitura=trabalho_externo_prefeitura,
-            trabalho_externo_rotoplast=trabalho_externo_rotoplast,
+            trabalho_externo=trabalho_externo,
             outras_subtracoes=outras_subtracoes,
             observacoes=observacoes,
         )
 
-        # Cálculos
+        historico = CalculoAlimentacao.objects.all()[:10]
+
+    else:
+        try:
+            registro_ultimo = CalculoAlimentacao.objects.latest()
+            almoco_plantao = registro_ultimo.almoco_plantao
+            lanche_plantao = registro_ultimo.lanche_plantao
+            janta_plantao = registro_ultimo.janta_plantao
+            almoco_administrativo = registro_ultimo.almoco_administrativo
+            lanche_administrativo = registro_ultimo.lanche_administrativo
+            quantidade_internos_fechado = registro_ultimo.quantidade_internos_fechado
+            quantidade_internos_semiaberto = registro_ultimo.quantidade_internos_semiaberto
+            quantidade_internos_custodia = registro_ultimo.quantidade_internos_custodia
+            quantidade_internos_pensao = registro_ultimo.quantidade_internos_pensao
+            quantidade_internos_saida_temporaria = registro_ultimo.quantidade_internos_saida_temporaria
+            trabalho_externo = registro_ultimo.trabalho_externo
+            outras_subtracoes = registro_ultimo.outras_subtracoes
+            observacoes = registro_ultimo.observacoes
+            registro = registro_ultimo
+        except CalculoAlimentacao.DoesNotExist:
+            registro = None
+
+    if registro is not None:
         total_bruto_internos = (
             quantidade_internos_fechado 
             + quantidade_internos_semiaberto 
@@ -1761,99 +1774,60 @@ def calculo_alimentacao(request):
         )
         total_subtracoes = (
             quantidade_internos_saida_temporaria 
-            + trabalho_externo_oliveira 
-            + trabalho_externo_realce 
-            + trabalho_externo_prefeitura 
-            + trabalho_externo_rotoplast 
+            + trabalho_externo 
             + outras_subtracoes
         )
 
-        # ALMOÇO internos = bruto - TODAS as subtrações
         almoco_internos = total_bruto_internos - total_subtracoes
 
-        # Almoço separado por regime
         almoco_fechado = quantidade_internos_fechado + quantidade_internos_custodia
         almoco_semiaberto = quantidade_internos_semiaberto + quantidade_internos_pensao
-        # Desconto proporcional do almoço (subtrações distribuídas)
-        almoco_fechado_liquido = almoco_fechado 
-        almoco_semiaberto_liquido = almoco_semiaberto - total_subtracoes  # subtrações saem do semiaberto
-        # Se o desconto for maior que o fechado, desconta do semiaberto
-        if almoco_fechado_liquido < 0:
-            almoco_semiaberto_liquido = almoco_semiaberto + almoco_fechado_liquido
-            almoco_fechado_liquido = 0
+        almoco_fechado_liquido = almoco_fechado
+        almoco_semiaberto_liquido = almoco_semiaberto - total_subtracoes
+        if almoco_semiaberto_liquido < 0:
+            almoco_fechado_liquido = almoco_fechado + almoco_semiaberto_liquido
+            almoco_semiaberto_liquido = 0
 
-        # JANTA internos = bruto - SOMENTE saída temporária (sem descontos de trabalho externo)
         janta_internos = total_bruto_internos - quantidade_internos_saida_temporaria
 
-        # Janta separado por regime
         janta_fechado = quantidade_internos_fechado + quantidade_internos_custodia
         janta_semiaberto = quantidade_internos_semiaberto + quantidade_internos_pensao
-        # Desconto da janta: somente saída temporária
-        janta_fechado_liquido = janta_fechado - quantidade_internos_saida_temporaria
-        janta_semiaberto_liquido = janta_semiaberto
+        janta_fechado_liquido = janta_fechado 
+        janta_semiaberto_liquido = janta_semiaberto - quantidade_internos_saida_temporaria
         if janta_fechado_liquido < 0:
             janta_semiaberto_liquido = janta_semiaberto + janta_fechado_liquido
             janta_fechado_liquido = 0
 
-        # LANCHE: internos NÃO têm lanche
-        lanche_internos = 0
-
-        # Servidores
         almoco_servidores = almoco_plantao + almoco_administrativo
         lanche_servidores = lanche_plantao + lanche_administrativo
         janta_servidores = janta_plantao
-
-        # Totais
-        total_almoco = almoco_servidores + almoco_internos
-        total_lanche = lanche_servidores + lanche_internos
-        total_janta = janta_servidores + janta_internos
-
-        total_servidores = almoco_servidores + lanche_servidores + janta_servidores
-        total_internos_geral = almoco_internos + janta_internos  # sem lanche
-        total_geral = total_almoco + total_lanche + total_janta
 
         resultado = {
             'almoco_servidores': almoco_servidores,
             'lanche_servidores': lanche_servidores,
             'janta_servidores': janta_servidores,
             'almoco_internos': almoco_internos,
-            'lanche_internos': lanche_internos,
             'janta_internos': janta_internos,
-            'total_almoco': total_almoco,
-            'total_lanche': total_lanche,
-            'total_janta': total_janta,
-            'total_servidores': total_servidores,
-            'total_internos_geral': total_internos_geral,
-            'total_geral': total_geral,
             'total_bruto_internos': total_bruto_internos,
             'total_subtracoes': total_subtracoes,
-            # Almoço por regime
             'almoco_fechado': almoco_fechado,
             'almoco_semiaberto': almoco_semiaberto,
             'almoco_fechado_liquido': almoco_fechado_liquido,
             'almoco_semiaberto_liquido': almoco_semiaberto_liquido,
-            # Janta por regime
             'janta_fechado': janta_fechado,
             'janta_semiaberto': janta_semiaberto,
             'janta_fechado_liquido': janta_fechado_liquido,
             'janta_semiaberto_liquido': janta_semiaberto_liquido,
-            # Detalhamento
             'quantidade_internos_fechado': quantidade_internos_fechado,
             'quantidade_internos_semiaberto': quantidade_internos_semiaberto,
             'quantidade_internos_custodia': quantidade_internos_custodia,
             'quantidade_internos_pensao': quantidade_internos_pensao,
             'quantidade_internos_saida_temporaria': quantidade_internos_saida_temporaria,
-            'trabalho_externo_oliveira': trabalho_externo_oliveira,
-            'trabalho_externo_realce': trabalho_externo_realce,
-            'trabalho_externo_prefeitura': trabalho_externo_prefeitura,
-            'trabalho_externo_rotoplast': trabalho_externo_rotoplast,
+            'trabalho_externo': trabalho_externo,
             'outras_subtracoes': outras_subtracoes,
             'observacoes': observacoes,
-            'atualizado_em': registro.atualizado_em.strftime('%d/%m/%Y %H:%M'),
+            'atualizado_em': timezone.localtime(registro.atualizado_em).strftime('%d/%m/%Y %H:%M'),
         }
-
-        # Atualizar histórico após salvar
-        historico = CalculoAlimentacao.objects.all()[:10]
 
     context = {
         'titulo': 'Cálculo de Alimentação',
