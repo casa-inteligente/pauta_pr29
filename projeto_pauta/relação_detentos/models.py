@@ -65,7 +65,115 @@ class DescricaoKitHigiene(models.Model):
         verbose_name = 'descrição do kit de higiene'
         verbose_name_plural = 'Descrições do kit de higiene'
 
-# Create your models here.
+
+class CalculoAlimentacao(models.Model):
+    """
+    Modelo para calcular a quantidade de refeições necessárias para a unidade prisional, com base no número de detentos e no almoço do plantão. 
+    """
+
+    # Plantão
+    almoco_plantao = models.PositiveBigIntegerField(
+        verbose_name='Almoço do plantão',
+        blank=False,
+        null=False,
+        default=0,
+    )
+    lanche_plantao = models.PositiveBigIntegerField(
+        verbose_name='Lanche do plantão',
+        blank=False,
+        null=False,
+        default=0,
+    )
+    janta_plantao = models.PositiveBigIntegerField(
+        verbose_name='Janta do plantão',
+        blank=False,
+        null=False,
+        default=0,
+    )
+    # Administrativo
+    almoco_administrativo = models.PositiveBigIntegerField(
+        verbose_name='Almoço do administrativo',
+        blank=False,
+        null=False,
+        default=0,
+    )
+    lanche_administrativo = models.PositiveBigIntegerField(
+        verbose_name='Lanche do administrativo',
+        blank=False,
+        null=False,
+        default=0,
+    )
+
+    # Internos
+    quantidade_internos_fechado = models.PositiveIntegerField(
+        verbose_name='Quantidade de internos no regime fechado',
+        blank=False,
+        null=False,
+        default=0,
+    )
+    quantidade_internos_semiaberto = models.PositiveIntegerField(
+        verbose_name='Quantidade de internos no regime semiaberto',
+        blank=False,
+        null=False,
+        default=0,
+    )
+    quantidade_internos_custodia = models.PositiveIntegerField(
+        verbose_name='Quantidade de internos em custódia',
+        blank=False,
+        null=False,
+        default=0,
+    )
+    quantidade_internos_pensao = models.PositiveIntegerField(
+        verbose_name='Quantidade de internos em pensão alimentícia',
+        blank=False,
+        null=False,
+        default=0,
+    )
+    quantidade_internos_saida_temporaria = models.PositiveIntegerField(
+        verbose_name='Quantidade de internos em saída temporária',
+        blank=False,
+        null=False,
+        default=0,
+    )
+    # Trabalho externo
+    trabalho_externo = models.PositiveIntegerField(
+        verbose_name='Quantidade de internos em trabalho externo',
+        blank=False,
+        null=False,        
+        default=0,
+    )
+    outras_subtracoes = models.PositiveIntegerField(
+        verbose_name='Outras subtrações (ex: internos em júri popular, em exames externos, etc.)',
+        blank=False,
+        null=False,
+        default=0,
+    )
+    observacoes = models.CharField(
+        verbose_name='Observações',
+        max_length=200,
+        blank=True,
+        null=True,
+        default='-'
+    )
+
+
+    atualizado_em = models.DateTimeField(
+        verbose_name='Atualizado em',
+        default=timezone.now
+    )
+
+
+
+    def __str__(self):
+        return f"{self.atualizado_em} atualizado"
+
+
+    class Meta:
+        verbose_name = 'cálculo de alimentação'
+        verbose_name_plural = 'Cálculos de alimentação'
+        ordering = ('-atualizado_em',)
+        get_latest_by = 'atualizado_em'
+
 class Relacao(models.Model):
    
     empresas_conveniadas = (
@@ -142,11 +250,23 @@ class Relacao(models.Model):
         default='F',
         max_length=3
     )
+    local_galeria = models.CharField(
+        verbose_name='Local da Galeria',
+        null=True, blank=True,
+        #default='A',
+        max_length=1
+    )
     local_residencia = models.IntegerField(
         verbose_name='Local de Residência',
         null=True, blank=True        
     )
-
+    situacao_penal = models.CharField(
+        verbose_name='Situação penal',
+        max_length=20,
+        blank=True,
+        null=True,
+        default='RECOLHIDO(A)'
+    )
     observacoes = models.CharField(
         verbose_name='Observações',
         max_length=150,
@@ -184,7 +304,7 @@ class Relacao(models.Model):
     class Meta:
         ordering = ('regime', 'nome', 'IPEN')
         #db_table = 'relacao_detentos'
-        verbose_name = 'a relação de detentos'
+        verbose_name = 'Relação de detentos'
         verbose_name_plural = 'Relações de Detentos'
     
     def formatted_ingresso(self):

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Relacao, DescricaoKitHigiene, Descricao_termo_rouparia
+from .models import Relacao, DescricaoKitHigiene, Descricao_termo_rouparia, CalculoAlimentacao
 # Remover o import problemático ou criar o form se necessário
 # from .forms import RelacaoDetentosForm
 
@@ -18,3 +18,7 @@ class DescricaoKitHigieneAdmin(admin.ModelAdmin):
 @admin.register(Descricao_termo_rouparia)
 class DescricaoTermoRoupariaAdmin(admin.ModelAdmin):
     list_display = ['id']
+
+@admin.register(CalculoAlimentacao)
+class CalculoAlimentacaoAdmin(admin.ModelAdmin):
+    list_display = ['id', 'atualizado_em']

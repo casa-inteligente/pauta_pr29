@@ -41,7 +41,7 @@ def format_pena(pena):
     
     return f'{anos}A, {meses}M, {dias}D'
 
-# Função para processar o PDF e inserir os dados no banco de dados
+# Função para processar o PDF 1.9 e inserir os dados no banco de dados
 def process_pdf(file_path):
     #print('Chamou a extração de dados')
     with pdfplumber.open(file_path) as pdf:
@@ -90,10 +90,13 @@ def process_pdf(file_path):
 
         # Pegar as colunas necessáriasz
         first_col = df.iloc[:, 0].astype(str).reset_index(drop=True) # Coluna que contém IPEN e NOME
+        second_col = df.iloc[:, 1].reset_index(drop=True) # Coluna que contém a a situacao penal
         third_col = df.iloc[:, 2].reset_index(drop=True) # Coluna que contém data de ingresso
         fifth_col = df.iloc[:, 4].reset_index(drop=True) # Coluna que contém a alocação
         col_residencia = df.iloc[:, 8].reset_index(drop=True) # Coluna que contém a residencia
+        
         #print(f'Residência extraída:\t {col_residencia}')
+        #print(f'Local de alocação extraído:\t {fifth_col}')
 
         added_records = []
         ipens_no_pdf = set()
@@ -105,24 +108,33 @@ def process_pdf(file_path):
                 ipens_no_pdf.add(ipen)
                 nome = ipen_nome[1].replace('\n', ' ')
                 ingresso = pd.to_datetime(third_col[i], format='%d/%m/%Y').date()
-                local_alocacao = map_local_alocacao(fifth_col[i])
+                local_alocacao = fifth_col[i]
                 local_residencia = col_residencia[i]#Apenas numero
+                situacao_penal = second_col[i].replace('\n', ' ')
 
                 # Verificar se o IPEN já está cadastrado
                 relacao, created = Relacao.objects.get_or_create(IPEN=ipen, defaults={
                     'nome': nome,
                     'ingresso': ingresso,
+                    'local_galeria': local_alocacao, 
                     'local_alocacao': local_alocacao,
                     'local_residencia': local_residencia,
-                    'atualizado': timezone.now()
+                    'situacao_penal': situacao_penal,
                 })
 
                 if created:
                     added_records.append(f'{nome} ({ipen})')
                     #print(f'Registro adicionado: {nome} ({ipen})')
                 else:
-                    pass
                     #print(f'Registro já existente: {nome} ({ipen})')
+                    #relacao.nome = nome
+                    #relacao.ingresso = ingresso
+                    relacao.local_galeria = local_alocacao
+                    relacao.local_alocacao = local_alocacao
+                    relacao.local_residencia = local_residencia
+                    relacao.situacao_penal = situacao_penal
+                    relacao.atualizado = timezone.now()
+                    relacao.save()
 
         # Remover IPENs que estão no banco de dados, mas não estão no PDF
         ipens_no_banco = set(Relacao.objects.values_list('IPEN', flat=True))

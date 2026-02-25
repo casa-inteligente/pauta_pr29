@@ -1,0 +1,436 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cálculo de Alimentação</title>
+    <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-200 text-gray-800 font-sans min-h-screen p-8">
+    <!-- Menu de navegação -->
+    <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
+        <a href="{% url 'pauta:pauta_all' %}"
+            class="bg-indigo-500 text-white px-3 py-2 rounded text-sm hover:bg-indigo-900 flex items-center gap-2">
+            <img src="{% static 'img/home.png' %}" alt="" class="h-4 inline"> Início
+        </a>
+        <button onclick="window.print()"
+            class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+        {% comment %} Atualiza detentos {% endcomment %}
+        <h6 class="text-sm text-gray-600 text-center italic">
+                <details class="border border-transparent rounded-2xl open:border-black/10 open:bg-green-100">
+                    <summary class="">
+                        Atualização de Detentos
+                    </summary>
+                    {% comment %} <span>Relatório 1.9 do IPEN</span> {% endcomment %}
+                    <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
+                        action="{% url 'relação_detentos:upload_pdf' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="pdfFile">Relatório 1.9 do IPEN</label> <br>
+                            <input type="file" class="form-control-file" id="pdfFile" name="pdfFile" accept="application/pdf"
+                            required>
+                        </div>
+                        <button type="submit" class="bg-fuchsia-500 text-white px-3 py-2 rounded text-sm hover:bg-slate-700">
+                            Enviar
+                        </button>
+                    </form>
+                </details>
+            </h6>
+    </nav>
+
+    <div class="max-w-5xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
+
+        <h1 class="text-2xl font-bold mb-4 text-center">
+            <i class="fas fa-utensils"></i>
+            Cálculo de Alimentação 
+        </h1>
+        <p class="text-center text-sm text-gray-500 mb-6">
+            Ferramenta para calcular a quantidade de refeições diárias necessárias para a unidade prisional.
+        </p>
+
+        <form method="get" class="mb-8 print:hidden">
+            <!-- PLANTÃO (AZUL) -->
+            <fieldset class="border-2 border-blue-400 rounded-xl p-4 mb-4">
+                <legend class="text-blue-700 font-bold text-sm px-2">
+                    <i class="fas fa-shield-alt"></i> Plantão
+                </legend>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="almoco_plantao" class="block text-sm font-medium mb-1 text-blue-700">Almoço Plantão:</label>
+                        <input type="number" name="almoco_plantao" id="almoco_plantao" min="0"
+                               value="{{ request.GET.almoco_plantao|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                    <div>
+                        <label for="lanche_plantao" class="block text-sm font-medium mb-1 text-blue-700">Lanche Plantão:</label>
+                        <input type="number" name="lanche_plantao" id="lanche_plantao" min="0"
+                               value="{{ request.GET.lanche_plantao|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                    <div>
+                        <label for="janta_plantao" class="block text-sm font-medium mb-1 text-blue-700">Janta Plantão:</label>
+                        <input type="number" name="janta_plantao" id="janta_plantao" min="0"
+                               value="{{ request.GET.janta_plantao|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- ADMINISTRATIVO (AZUL) -->
+            <fieldset class="border-2 border-blue-400 rounded-xl p-4 mb-4">
+                <legend class="text-blue-700 font-bold text-sm px-2">
+                    <i class="fas fa-briefcase"></i> Administrativo
+                </legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="almoco_administrativo" class="block text-sm font-medium mb-1 text-blue-700">Almoço Administrativo:</label>
+                        <input type="number" name="almoco_administrativo" id="almoco_administrativo" min="0"
+                               value="{{ request.GET.almoco_administrativo|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                    <div>
+                        <label for="lanche_administrativo" class="block text-sm font-medium mb-1 text-blue-700">Lanche Administrativo:</label>
+                        <input type="number" name="lanche_administrativo" id="lanche_administrativo" min="0"
+                               value="{{ request.GET.lanche_administrativo|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- INTERNOS (AZUL) -->
+            <fieldset class="border-2 border-blue-400 rounded-xl p-4 mb-4">
+                <legend class="text-blue-700 font-bold text-sm px-2">
+                    <i class="fas fa-users"></i> Internos (Adição)
+                </legend>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label for="quantidade_internos_fechado" class="block text-sm font-medium mb-1 text-orange-700">Fechado (Galerias A+C):</label>
+                        <input type="number" name="quantidade_internos_fechado" id="quantidade_internos_fechado" min="0"
+                               value="{{ request.GET.quantidade_internos_fechado|default:internos_fechado_auto }}"
+                               class="border-2 border-orange-300 rounded px-3 py-2 w-full focus:border-orange-500 focus:outline-none bg-orange-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ internos_fechado_auto }} (do banco)</span>
+                    </div>
+                    <div>
+                        <label for="quantidade_internos_semiaberto" class="block text-sm font-medium mb-1 text-emerald-700">Semiaberto (Galerias B+D):</label>
+                        <input type="number" name="quantidade_internos_semiaberto" id="quantidade_internos_semiaberto" min="0"
+                               value="{{ request.GET.quantidade_internos_semiaberto|default:internos_semiaberto_auto }}"
+                               class="border-2 border-emerald-300 rounded px-3 py-2 w-full focus:border-emerald-500 focus:outline-none bg-emerald-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ internos_semiaberto_auto }} (do banco)</span>
+                    </div>
+                    <div>
+                        <label for="quantidade_internos_custodia" class="block text-sm font-medium mb-1 text-blue-700">Custódia&Feminina:</label>
+                        <input type="number" name="quantidade_internos_custodia" id="quantidade_internos_custodia" min="0"
+                               value="{{ request.GET.quantidade_internos_custodia|default:'0' }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                    </div>
+                    <div>
+                        <label for="quantidade_internos_pensao" class="block text-sm font-medium mb-1 text-blue-700">Pensão Alimentícia (Galeria E):</label>
+                        <input type="number" name="quantidade_internos_pensao" id="quantidade_internos_pensao" min="0"
+                               value="{{ request.GET.quantidade_internos_pensao|default:internos_pensao_auto }}"
+                               class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ internos_pensao_auto }} (do banco)</span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SUBTRAÇÕES (VERMELHO) -->
+            <!-- SUBTRAÇÕES (VERMELHO) -->
+            <fieldset class="border-2 border-red-400 rounded-xl p-4 mb-4">
+                <legend class="text-red-700 font-bold text-sm px-2">
+                    <i class="fas fa-minus-circle"></i> Subtrações
+                </legend>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="quantidade_internos_saida_temporaria" class="block text-sm font-medium mb-1 text-red-700">Saída Temporária:</label>
+                        <input type="number" name="quantidade_internos_saida_temporaria" id="quantidade_internos_saida_temporaria" min="0"
+                               value="{{ request.GET.quantidade_internos_saida_temporaria|default:saida_temporaria_auto }}"
+                               class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ saida_temporaria_auto }} (do banco)</span>
+                    </div>
+                    <div>
+                        <label for="trabalho_externo" class="block text-sm font-medium mb-1 text-red-700">Trabalho Externo:</label>
+                        <input type="number" name="trabalho_externo" id="trabalho_externo" min="0"
+                               value="{{ request.GET.trabalho_externo|default:trabalho_externo_auto }}"
+                               class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ trabalho_externo_auto }} (do banco)</span>
+                    </div>
+                    <div>
+                        <label for="outras_subtracoes" class="block text-sm font-medium mb-1 text-red-700">Outras Subtrações:</label>
+                        <input type="number" name="outras_subtracoes" id="outras_subtracoes" min="0"
+                               value="{{ request.GET.outras_subtracoes|default:'0' }}"
+                               class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- OBSERVAÇÕES (SKY) -->
+            <fieldset class="border-2 border-sky-400 rounded-xl p-4 mb-4">
+                <legend class="text-sky-700 font-bold text-sm px-2">
+                    <i class="fas fa-comment-dots"></i> Observações
+                </legend>
+                <div>
+                    <label for="observacoes" class="block text-sm font-medium mb-1 text-sky-700">Observações:</label>
+                    <input type="text" name="observacoes" id="observacoes" maxlength="200"
+                           value="{{ request.GET.observacoes|default:'-' }}"
+                           class="border-2 border-sky-300 rounded px-3 py-2 w-full focus:border-sky-500 focus:outline-none bg-sky-50">
+                </div>
+            </fieldset>
+
+            <!-- Botões -->
+            <div class="text-center flex justify-center gap-4">
+                <button type="submit" class="bg-violet-500 text-white px-8 py-3 rounded-xl hover:bg-violet-700 text-lg font-bold shadow-lg">
+                    <i class="fas fa-calculator"></i> Calcular e Salvar
+                </button>
+                {% if historico %}
+                <button type="button" onclick="document.getElementById('modalHistorico').classList.remove('hidden')"
+                        class="bg-gray-500 text-white px-6 py-3 rounded-xl hover:bg-gray-700 text-lg font-bold shadow-lg">
+                    <i class="fas fa-history"></i> Histórico
+                </button>
+                {% endif %}
+            </div>
+        </form>
+
+        <!-- TABELA DE RESULTADOS -->
+        {% if resultado %}
+        <div class="mt-8 bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-xl font-bold mb-4 text-center text-green-700">
+                <i class="fas fa-clipboard-check"></i> Resultado do Cálculo
+            </h2>
+            <p class="text-center text-xs text-sky-600 mb-4">
+                <i class="fas fa-clock"></i> Registrado em: {{ resultado.atualizado_em }}
+            </p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-gray-700 text-white">
+                            <th class="px-4 py-2 text-left rounded-tl-lg">Refeição</th>
+                            <th class="px-4 py-2 text-center">Servidores</th>
+                            <th class="px-4 py-2 text-center bg-orange-700 print:hidden">Fechado</th>
+                            <th class="px-4 py-2 text-center bg-emerald-700 print:hidden">Semiaberto</th>
+                            <th class="px-4 py-2 text-center rounded-tr-lg">Total Internos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- ALMOÇO -->
+                        <tr class="border-b hover:bg-blue-50">
+                            <td class="px-4 py-3 font-semibold">
+                                <i class="fas fa-sun text-yellow-500"></i> Almoço
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.almoco_servidores }}
+                            </td>
+                            <td class="px-4 py-3 text-center text-orange-700 font-bold print:hidden">
+                                {{ resultado.almoco_fechado_liquido }}
+                                <span class="text-xs text-gray-400 block">(bruto: {{ resultado.almoco_fechado }})</span>
+                            </td>
+                            <td class="px-4 py-3 text-center text-emerald-700 font-bold print:hidden">
+                                {{ resultado.almoco_semiaberto_liquido }}
+                                <span class="text-xs text-gray-400 block">(bruto: {{ resultado.almoco_semiaberto }})</span>
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.almoco_internos }}
+                            </td>
+                        </tr>
+                        <!-- LANCHE (somente servidores) -->
+                        <tr class="border-b hover:bg-blue-50 bg-gray-50">
+                            <td class="px-4 py-3 font-semibold">
+                                <i class="fas fa-cookie-bite text-orange-400"></i> Lanche
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.lanche_servidores }}
+                            </td>
+                            <td class="px-4 py-3 text-center text-gray-400 print:hidden">—</td>
+                            <td class="px-4 py-3 text-center text-gray-400 print:hidden">—</td>
+                            <td class="px-4 py-3 text-center text-gray-400">0</td>
+                        </tr>
+                        <!-- JANTA -->
+                        <tr class="border-b hover:bg-blue-50">
+                            <td class="px-4 py-3 font-semibold">
+                                <i class="fas fa-moon text-indigo-400"></i> Janta
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.janta_servidores }}
+                            </td>
+                            <td class="px-4 py-3 text-center text-orange-700 font-bold print:hidden">
+                                {{ resultado.janta_fechado_liquido }}
+                                <span class="text-xs text-gray-400 block print:hidden">(bruto: {{ resultado.janta_fechado }})</span>
+                            </td>
+                            <td class="px-4 py-3 text-center text-emerald-700 font-bold print:hidden">
+                                {{ resultado.janta_semiaberto_liquido }}
+                                <span class="text-xs text-gray-400 block print:hidden">(bruto: {{ resultado.janta_semiaberto }})</span>
+                            </td>
+                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
+                                {{ resultado.janta_internos }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Observações -->
+            {% if resultado.observacoes and resultado.observacoes != '-' %}
+            <div class="mt-4 bg-sky-50 border border-sky-200 rounded-xl p-4">
+                <h3 class="text-sky-700 font-bold mb-1"><i class="fas fa-comment-dots"></i> Observações</h3>
+                <p class="text-sm text-sky-800">{{ resultado.observacoes }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Legenda das regras -->
+            <div class="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 print:hidden">
+                <p><i class="fas fa-info-circle"></i> <b>Regras aplicadas:</b></p>
+                <ul class="list-disc list-inside mt-1 space-y-0.5">
+                    <li><b>Almoço internos:</b> (Fechado + Custódia + Semiaberto + Pensão) − todas as subtrações</li>
+                    <li><b>Janta internos:</b> (Fechado + Custódia + Semiaberto + Pensão) − somente saída temporária</li>
+                    <li><b>Fechado:</b> Fechado + Custódia | <b>Semiaberto:</b> Semiaberto + Pensão</li>
+                </ul>
+            </div>
+
+            <!-- Detalhamento -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 print:hidden">
+                <!-- Adições -->
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <h3 class="text-blue-700 font-bold mb-2"><i class="fas fa-plus-circle"></i> Detalhamento - Adições</h3>
+                    <ul class="text-sm space-y-1">
+                        <li class="flex justify-between"><span>Fechado:</span> <span class="font-bold text-blue-700">{{ resultado.quantidade_internos_fechado }}</span></li>
+                        <li class="flex justify-between"><span>Semiaberto:</span> <span class="font-bold text-blue-700">{{ resultado.quantidade_internos_semiaberto }}</span></li>
+                        <li class="flex justify-between"><span>Custódia:</span> <span class="font-bold text-blue-700">{{ resultado.quantidade_internos_custodia }}</span></li>
+                        <li class="flex justify-between"><span>Pensão Alimentícia:</span> <span class="font-bold text-blue-700">{{ resultado.quantidade_internos_pensao }}</span></li>
+                        <li class="flex justify-between border-t border-blue-300 pt-1 mt-1"><span class="font-bold">Total Bruto Internos:</span> <span class="font-extrabold text-blue-800">{{ resultado.total_bruto_internos }}</span></li>
+                    </ul>
+                </div>
+                <!-- Subtrações -->
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4 print:hidden">
+                    <h3 class="text-red-700 font-bold mb-2"><i class="fas fa-minus-circle"></i> Detalhamento - Subtrações</h3>
+                    <ul class="text-sm space-y-1">
+                        <li class="flex justify-between"><span>Saída Temporária:</span> <span class="font-bold text-red-700">-{{ resultado.quantidade_internos_saida_temporaria }}</span></li>
+                        <li class="flex justify-between"><span>Trabalho Externo:</span> <span class="font-bold text-red-700">-{{ resultado.trabalho_externo }}</span></li>
+                        <li class="flex justify-between"><span>Outras:</span> <span class="font-bold text-red-700">-{{ resultado.outras_subtracoes }}</span></li>
+                        <li class="flex justify-between border-t border-red-300 pt-1 mt-1"><span class="font-bold">Total Subtrações (almoço):</span> <span class="font-extrabold text-red-800">-{{ resultado.total_subtracoes }}</span></li>
+                        <li class="flex justify-between"><span class="font-bold">Total Subtrações (janta):</span> <span class="font-extrabold text-red-800">-{{ resultado.quantidade_internos_saida_temporaria }}</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- MODAL / POPUP DE HISTÓRICO -->
+    {% if historico %}
+    <div id="modalHistorico" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 print:hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+            <!-- Header do modal -->
+            <div class="flex justify-between items-center bg-gray-700 text-white px-6 py-4 rounded-t-2xl">
+                <h2 class="text-lg font-bold">
+                    <i class="fas fa-history"></i> Últimos Registros
+                </h2>
+                <button onclick="document.getElementById('modalHistorico').classList.add('hidden')"
+                        class="text-white hover:text-red-300 text-2xl font-bold">&times;</button>
+            </div>
+            <!-- Corpo do modal -->
+            <div class="p-6 overflow-y-auto max-h-[75vh]">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700">
+                                <th class="px-2 py-2">Data/Hora</th>
+                                <th class="px-2 py-2 bg-blue-100">Alm. Plantão</th>
+                                <th class="px-2 py-2 bg-blue-100">Lanch. Plantão</th>
+                                <th class="px-2 py-2 bg-blue-100">Janta Plantão</th>
+                                <th class="px-2 py-2 bg-blue-100">Alm. Adm.</th>
+                                <th class="px-2 py-2 bg-blue-100">Lanch. Adm.</th>
+                                <th class="px-2 py-2 bg-orange-100">Fechado</th>
+                                <th class="px-2 py-2 bg-emerald-100">Semiab.</th>
+                                <th class="px-2 py-2 bg-blue-100">Custódia</th>
+                                <th class="px-2 py-2 bg-blue-100">Pensão</th>
+                                <th class="px-2 py-2 bg-red-100">Saída Temp.</th>
+                                <th class="px-2 py-2 bg-red-100">Trab. Ext.</th>
+                                <th class="px-2 py-2 bg-red-100">Outras Sub.</th>
+                                <th class="px-2 py-2 bg-sky-100">Obs.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in historico %}
+                            <tr class="border-b hover:bg-gray-50 {% if forloop.first %}bg-green-50{% endif %}">
+                                <td class="px-2 py-2 text-center text-sky-700 font-semibold">{{ item.atualizado_em|date:'d/m/Y H:i' }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.almoco_plantao }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.lanche_plantao }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.janta_plantao }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.almoco_administrativo }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.lanche_administrativo }}</td>
+                                <td class="px-2 py-2 text-center text-orange-700 font-bold">{{ item.quantidade_internos_fechado }}</td>
+                                <td class="px-2 py-2 text-center text-emerald-700 font-bold">{{ item.quantidade_internos_semiaberto }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.quantidade_internos_custodia }}</td>
+                                <td class="px-2 py-2 text-center text-blue-700">{{ item.quantidade_internos_pensao }}</td>
+                                <td class="px-2 py-2 text-center text-red-700 font-bold">{{ item.quantidade_internos_saida_temporaria }}</td>
+                                <td class="px-2 py-2 text-center text-red-700">{{ item.trabalho_externo }}</td>
+                                <td class="px-2 py-2 text-center text-red-700">{{ item.outras_subtracoes }}</td>
+                                <td class="px-2 py-2 text-center text-gray-500">{{ item.observacoes|truncatechars:20 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Footer do modal -->
+            <div class="bg-gray-100 px-6 py-3 text-right rounded-b-2xl">
+                <button onclick="document.getElementById('modalHistorico').classList.add('hidden')"
+                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-700 text-sm">
+                    <i class="fas fa-times"></i> Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Rodapé -->
+    <footer class="max-w-5xl mx-auto mt-12 mb-6 text-center text-sm text-gray-600">
+        &copy; {{ ano_corrente }} Presídio Regional de Maravilha. Todos os direitos reservados.
+    </footer>
+
+    <script>
+        // Replicar Almoço Plantão para Lanche e Janta Plantão
+        const almocoPlantao = document.getElementById('almoco_plantao');
+        const lanchePlantao = document.getElementById('lanche_plantao');
+        const jantaPlantao = document.getElementById('janta_plantao');
+
+        almocoPlantao.addEventListener('input', function() {
+            // Só replica se os outros campos ainda estiverem em 0 ou vazios
+            if (lanchePlantao.value === '0' || lanchePlantao.value === '') {
+                lanchePlantao.value = this.value;
+            }
+            if (jantaPlantao.value === '0' || jantaPlantao.value === '') {
+                jantaPlantao.value = this.value;
+            }
+        });
+        // Toggle detalhe do histórico
+        function toggleDetalhe(id) {
+            const el = document.getElementById('detalhe-' + id);
+            if (el) {
+                el.classList.toggle('hidden');
+            }
+        }
+
+        // Fechar modal ao clicar fora dele
+        document.getElementById('modalHistorico')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('modalHistorico')?.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

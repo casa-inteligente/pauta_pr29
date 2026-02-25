@@ -4,70 +4,290 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ titulo }}</title>
-    <link rel="stylesheet" href="{% static 'resenha_livro/css/style.css' %}">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background-color: rgb(241, 238, 232);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
 
-<body>
-    <div class="container">
-        <h1>{{ titulo }}</h1>
-        <form method="post" id="alunoForm">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Salvar</button>
-            <button onclick="window.close()" class="btn btn-voltar">Voltar</button>
-        </form>
+<body class="antialiased">
+    <div class="w-full max-w-2xl mx-auto p-6">
+        <!-- Card Container -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-[#32A041] to-green-600 px-8 py-6">
+                <h1 class="text-2xl font-bold text-white flex items-center gap-3">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                    {{ titulo }}
+                </h1>
+                <p class="text-green-100 mt-2 text-sm">Preencha os dados abaixo para cadastrar um novo aluno</p>
+            </div>
+
+            <!-- Form Content -->
+            <div class="px-8 py-6">
+                <form method="post" id="alunoForm" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Form Fields -->
+                    <div class="space-y-4">
+                        {% for field in form %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}" 
+                                   class="block text-sm font-semibold text-gray-700 mb-2">
+                                {{ field.label }}
+                                {% if field.field.required %}
+                                    <span class="text-red-500">*</span>
+                                {% endif %}
+                            </label>
+                            
+                            {% if field.field.widget.input_type == 'textarea' %}
+                                <textarea name="{{ field.name }}" 
+                                          id="{{ field.id_for_label }}"
+                                          rows="4"
+                                          class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32A041] focus:border-transparent transition duration-200 ease-in-out resize-none"
+                                          placeholder="{{ field.help_text }}">{{ field.value|default:'' }}</textarea>
+                            {% elif field.field.widget.input_type == 'select' %}
+                                <select name="{{ field.name }}" 
+                                        id="{{ field.id_for_label }}"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32A041] focus:border-transparent transition duration-200 ease-in-out bg-white cursor-pointer"
+                                        {% if field.field.required %}required{% endif %}>
+                                    <option value="">Selecione uma opção</option>
+                                    {% for choice in field.field.choices %}
+                                        <option value="{{ choice.0 }}" {% if field.value == choice.0 %}selected{% endif %}>
+                                            {{ choice.1 }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <input type="{{ field.field.widget.input_type }}" 
+                                       name="{{ field.name }}" 
+                                       id="{{ field.id_for_label }}"
+                                       value="{{ field.value|default:'' }}"
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#32A041] focus:border-transparent transition duration-200 ease-in-out"
+                                       placeholder="{{ field.help_text }}"
+                                       {% if field.name == 'matricula' %}
+                                       pattern="[0-9]+"
+                                       inputmode="numeric"
+                                       title="A matrícula deve conter apenas números"
+                                       {% endif %}
+                                       {% if field.field.required %}required{% endif %}>
+                            {% endif %}
+                            
+                            {% if field.errors %}
+                                <div class="mt-2 text-sm text-red-600 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    {{ field.errors.0 }}
+                                </div>
+                            {% endif %}
+                            
+                            {% if field.help_text %}
+                                <p class="mt-2 text-xs text-gray-500">{{ field.help_text }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+                        <button type="submit" 
+                                class="flex-1 bg-[#32A041] hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 shadow-lg flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Salvar Aluno
+                        </button>
+                        
+                        <button type="button" 
+                                onclick="window.close()" 
+                                class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 shadow-lg flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Cancelar
+                        </button>
+                    </div>
+
+                    <!-- Helper Text -->
+                    <div class="text-center text-xs text-gray-500 pt-2">
+                        <p class="flex items-center justify-center gap-1">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                            Pressione <kbd class="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-gray-700 font-mono">ESC</kbd> para fechar
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 flex flex-col items-center gap-4">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-[#32A041]"></div>
+            <p class="text-gray-700 font-semibold">Salvando dados...</p>
+        </div>
     </div>
 
     <script>
+        // Validação da matrícula em tempo real
+        const matriculaInput = document.querySelector('input[name="matricula"]');
+        if (matriculaInput) {
+            matriculaInput.addEventListener('input', function(e) {
+                // Remove caracteres não numéricos
+                this.value = this.value.replace(/[^0-9]/g, '');
+                
+                // Feedback visual
+                if (this.value && !/^\d+$/.test(this.value)) {
+                    this.classList.add('border-red-500', 'ring-red-500');
+                    this.classList.remove('border-gray-300');
+                } else {
+                    this.classList.remove('border-red-500', 'ring-red-500');
+                    this.classList.add('border-gray-300');
+                }
+            });
+
+            // Validação no blur (quando sair do campo)
+            matriculaInput.addEventListener('blur', function(e) {
+                if (this.value && !/^\d+$/.test(this.value)) {
+                    // Criar mensagem de erro se não existir
+                    let errorMsg = this.parentElement.querySelector('.matricula-error');
+                    if (!errorMsg) {
+                        errorMsg = document.createElement('div');
+                        errorMsg.className = 'matricula-error mt-2 text-sm text-red-600 flex items-center gap-2';
+                        errorMsg.innerHTML = `
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            A matrícula deve conter apenas números
+                        `;
+                        this.parentElement.appendChild(errorMsg);
+                    }
+                } else {
+                    // Remover mensagem de erro se existir
+                    const errorMsg = this.parentElement.querySelector('.matricula-error');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                }
+            });
+        }
+
+        // Fechar com ESC
         document.addEventListener("keydown", function (event) {
             if (event.key === "Escape") {
-                window.close();//Fecha o popup
+                window.close();
             }
         });
 
         // Enviar o formulário via AJAX
         document.getElementById('alunoForm').onsubmit = function (event) {
             event.preventDefault();
+            
+            // Validar matrícula antes de enviar
+            const matriculaInput = document.querySelector('input[name="matricula"]');
+            if (matriculaInput && matriculaInput.value && !/^\d+$/.test(matriculaInput.value)) {
+                // Mostrar erro
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 z-50';
+                errorDiv.innerHTML = `
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>A matrícula deve conter apenas números!</span>
+                `;
+                document.body.appendChild(errorDiv);
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 3000);
+                
+                matriculaInput.focus();
+                return false;
+            }
+            
             const form = event.target;
             const formData = new FormData(form);
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
+            // Mostrar loading
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.remove('hidden');
 
-            // Selecionar o botão de envio
+            // Desabilitar botão de envio
             const submitButton = form.querySelector('button[type="submit"]');
-            submitButton.disabled = true; // Desabilitar o botão
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Salvando...
+            `;
 
             fetch(form.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': csrfToken // Updated to use the variable
+                    'X-CSRFToken': csrfToken
                 }
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erro na requisição');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.id) {
-                        window.opener.postMessage(data, '*');
-                        window.close();
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    alert('Ocorreu um erro ao enviar o formulário.');
-                });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro na requisição');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.id) {
+                    window.opener.postMessage(data, '*');
+                    window.close();
+                } else {
+                    throw new Error('Resposta inválida do servidor');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                loadingOverlay.classList.add('hidden');
+                submitButton.disabled = false;
+                submitButton.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Salvar Aluno
+                `;
+                
+                // Mostrar mensagem de erro
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 z-50';
+                errorDiv.innerHTML = `
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Ocorreu um erro ao enviar o formulário. Tente novamente.</span>
+                `;
+                document.body.appendChild(errorDiv);
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            });
         };
     </script>
 </body>

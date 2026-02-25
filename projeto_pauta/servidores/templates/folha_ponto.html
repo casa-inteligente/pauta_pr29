@@ -219,21 +219,21 @@
                 </div>
             </div>
 
-            <div class="welcome-message">
-                🎉 Bem-vinda! <br>
-                "Seu cuidado hoje, será a segurança de alguém amanhã"
-            </div>
-            
-            <div class="motivational-text">
-                "Seu cuidado hoje, será a segurança de alguém amanhã"
+            <div class="welcome-message text-center mb-4 gap-2 flex justify-center items-center">
+                🐕 Bem-vinda! 🐎<br>
+                "Você faz parte do processo — e seu cuidado faz toda a diferença."
             </div>
         </div>
     </div>
 
     <!-- Cabeçalho com seletor de mês/ano -->
     <div class="max-w-7xl mx-auto p-4">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-between items-center mb-6 grid grid-cols-1 col-span-2 ">
             <h1 class="text-xl font-bold text-center w-full">Folha de Ponto dos Servidores</h1>
+            <h2 class="text-center w-full gap-4 flex justify-center items-center"> 
+                <a href="{% url 'pauta:pauta_all' %}" class="bg-[#32A041] gap-2 px-3 py-2 rounded text-white hover:bg-green-700"> Início </a>
+
+            </h2>
         </div>
 
         <!-- Formulário para selecionar mês e ano -->
@@ -265,16 +265,11 @@
                            class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 
-                <button type="submit"
-                        class="bg-blue-500 text-white px-4 py-2 rounded hover: bg-blue-700">
-                    <i class="fa fa-cogs" aria-hidden="true"></i>
-                    Aplicar
-                </button>
-                
-                <a href="{% url 'servidores:folha_ponto_pdf' ano=ano_corrente mes=mes_corrente %}"
-                   class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                <button type="button"
+                        onclick="gerarPDF()"
+                        class="bg-[#32A041] text-white px-4 py-2 rounded hover:bg-green-700">
                     📄 Gerar Folhas Ponto
-                </a>
+                </button>
             </form>
         </section>
 
@@ -317,10 +312,11 @@
                                 <td class="p-2 border">{{ servidor.matricula }}</td>
                                 <td class="p-2 border">{{ servidor.nome_exibir }}</td>
                                 <td class="p-2 border whitespace-nowrap flex gap-1">
-                                    <a href="{% url 'servidores:folha_ponto_servidor' servidor_id=servidor.id mes=mes_corrente ano=ano_corrente %}"
-                                       class="bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600 text-xs">
+                                    <button type="button"
+                                            onclick="gerarPDFServidor({{ servidor.id }})"
+                                            class="bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600 text-xs">
                                         🖨️ Folha Ponto
-                                    </a>
+                                    </button>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -339,6 +335,18 @@
 
 
     <script>
+
+        function gerarPDF() {
+            const mes = document.getElementById('mes').value;
+            const ano = document.getElementById('ano').value;
+            window.location.href = `/servidores/folha-ponto/pdf/${mes}/${ano}/`;
+        }
+        function gerarPDFServidor(servidorId) {
+            const mes = document.getElementById('mes').value;
+            const ano = document.getElementById('ano').value;
+            window.location.href = `/servidores/folha-ponto/servidor/${servidorId}/${mes}/${ano}/`;
+        }
+
         // Verificação de usuário e exibição do modal
         // SUBSTITUA 'usuario_desejado' pelo username real que você quer verificar
         const usuarioAtual = '{{ request.user.username }}';

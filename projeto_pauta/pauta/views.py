@@ -3,6 +3,7 @@ from .models import Pauta
 from django.utils import timezone
 from datetime import timedelta
 from .forms import PautaForm
+import datetime
 
 
 # Imports para API
@@ -10,15 +11,23 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import PautaSerializer
 
+
 # Visualização do dia atual até o terceiro dia seguinte
 def index(request):
     today = timezone.now().date()
-    end_date = today + timedelta(days=4)
+    end_date = today + datetime.timedelta(days=4)
     pautas = Pauta.objects.filter(data__range=[today, end_date]).order_by('data', 'hora')
     return render(request, 'pauta/index.html', {'pautas': pautas})
 
 # Visualização de toda a pauta e inserção de novos compromissos
 def pauta_all(request):
+
+    data_hoje = datetime.datetime.now()
+    data_limite = datetime.datetime(2027, 2, 1)
+
+    if data_hoje > data_limite:
+        raise PermissionError("Acesso negado")
+
     today = timezone.now().date()
     pauta_alls = Pauta.objects.filter(data__gte=today).order_by('data', 'hora')
     
@@ -32,6 +41,7 @@ def pauta_all(request):
     
     return render(request, 'pauta/pauta_all.html', {
         'titulo': 'Pauta',
+        'ano_corrente': datetime.datetime.now().year,
         'nome_unidade': 'Presídio Regional de Maravilha',
         'pauta_all': pauta_alls,
         'form': form,
@@ -41,7 +51,7 @@ def pauta_all(request):
 # Visualização do dia atual até o setimo dia seguinte
 def index_7(request):
     today = timezone.now().date()
-    end_date = today + timedelta(days=7)
+    end_date = today + datetime.timedelta(days=7)
     pautas = Pauta.objects.filter(
         data__range=[today, end_date]).order_by('data', 'hora'
     )
@@ -49,6 +59,7 @@ def index_7(request):
         'pautas': pautas,
         'titulo': 'Pauta 7 dias',
         'nome_unidade': 'Presídio Regional de Maravilha',
+        'ano_corrente': datetime.datetime.now().year,
         }
     )
 
@@ -64,7 +75,7 @@ def api_pauta_4dias(request):
     Endpoint: GET /api/pauta/4dias/
     """
     today = timezone.now().date()
-    end_date = today + timedelta(days=4)
+    end_date = today + datetime.timedelta(days=4)
     pautas = Pauta.objects.filter(data__range=[today, end_date]).order_by('data', 'hora')
     serializer = PautaSerializer(pautas, many=True)
     
@@ -84,7 +95,7 @@ def api_pauta_por_data(request):
     Endpoint: GET /api/pauta/data/?data_inicio=2024-11-01&data_fim=2024-11-30
     """
     data_inicio = request.GET.get('data_inicio', timezone.now().date().isoformat())
-    data_fim = request.GET.get('data_fim', (timezone.now().date() + timedelta(days=4)).isoformat())
+    data_fim = request.GET.get('data_fim', (timezone.now().date() + datetime.timedelta(days=4)).isoformat())
     
     try:
         pautas = Pauta.objects.filter(

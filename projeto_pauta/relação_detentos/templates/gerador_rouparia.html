@@ -65,7 +65,7 @@
                 <!-- Número Rouparia Input -->
                 <div>
                     <label for="numero_rouparia" class="block text-sm font-medium mb-1">Número do Kit:</label>
-                    <input type="number" name="numero_rouparia" placeholder="Número do Kit" min="1" max="200" 
+                    <input type="number" name="numero_rouparia" placeholder="Número do Kit" min="0" max="200" 
                            id="numero_rouparia" value="{{ request.GET.numero_rouparia }}"
                            class="border-2 border-gray-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none">
                 </div>
@@ -119,13 +119,22 @@
         </div>
         
         {% if numero_rouparia %}
-            <form method="post" action="{% url 'relação_detentos:gerar_termo_rouparia' detento.id numero_rouparia request.GET.escolha_tipo_regime|default:'semiaberto' request.GET.com_higiene|default:'0' %}">
+            <form method="post" target="_blank" action="{% url 'relação_detentos:gerar_termo_rouparia' detento.id numero_rouparia request.GET.escolha_tipo_regime|default:'semiaberto' request.GET.com_higiene|default:'0' %}">
                 {% csrf_token %}
                 <button type="submit" class="bg-teal-500 text-white px-4 py-2 rounded hover:bg-green-400 w-full">
                     <i class="fas fa-file-pdf"></i>
                     Gerar Termo da Rouparia (PDF)
                 </button>
             </form>
+
+            {% if com_kit_higiene %}
+            <div class="mt-3 text-green-700 text-center bg-green-50 border border-green-300 rounded-lg p-3 flex items-center justify-center gap-2">
+                <i class="fas fa-check-circle"></i>
+                <span class="text-sm font-medium">O <strong>Memorando Penal</strong> será gerado na página 2 do PDF (Kit Higiene selecionado - <span class="text-red-500"> Entregue ao Interno </span> ).</span>
+            </div>
+                        
+            {% endif %}
+            
         {% else %}
             <div class="text-yellow-600 text-center bg-yellow-100 rounded p-4">
                 <i class="fas fa-exclamation-triangle"></i>

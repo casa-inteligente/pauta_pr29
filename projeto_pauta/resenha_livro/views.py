@@ -10,16 +10,31 @@ from .forms import ResenhaLivroForm, AlunoForm
 from django.conf import settings
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+import datetime
+
+ano_corrente = datetime.datetime.now().year
+
 
 def listar_alunos(request):
     """Listar todos os alunos e suas resenhas por período de leitura."""
-    periodos = PeriodoLeitura.objects.all()
-    resenhas_por_periodo = {
-        periodo: ResenhaLivro.objects.filter(periodoLeitura=periodo).select_related('aluno', 'periodoLeitura')
-        for periodo in periodos
-    }
+    try:
+        periodos = PeriodoLeitura.objects.all().order_by('-data_resenha')
+        #print(periodos)
+        if not periodos.exists():
+            resenhas_por_periodo = {}
+        else:
+            resenhas_por_periodo = {
+                periodo: ResenhaLivro.objects.filter(periodoLeitura=periodo).select_related('aluno', 'periodoLeitura')
+                for periodo in periodos
+            }
+    except Exception as e:
+        resenhas_por_periodo = {}
+
+    #print(resenhas_por_periodo)
+
     return render(request, 'listar_alunos.html', {'resenhas_por_periodo': resenhas_por_periodo,
                                                   'titulo': 'Listar Alunos',
+                                                  'ano_corrente': ano_corrente,
                                                   })
 
 def imprimir_resenha(request, aluno_id, periodo_id):
@@ -79,7 +94,7 @@ def gerar_todas_resenhas(request, periodo_id):
 
     # Criar o PDF
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="resenhas_periodo_{periodo.id}.pdf"'
+    response['Content-Disposition'] = f'inline; filename="resenhas_periodo_{periodo.id}.pdf"'
 
     # Configurar o canvas do PDF
     pdf = canvas.Canvas(response, pagesize=A4)
