@@ -691,7 +691,7 @@ def _adicionar_memorando_penal(buffer_termo, detento):
     c.rotate(90)
     c.drawString(15.8 * cm, -5.2 * cm, "AO SETOR")
     c.setFont("Helvetica-Oblique", 12, leading=1)
-    c.drawString(15.8 * cm, -5.6 * cm, "                 (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+    c.drawString(15.8 * cm, -5.6 * cm, "(  )PSICÓLOGA; (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
     c.drawString(15.7 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
     c.rotate(270)
 
@@ -996,20 +996,26 @@ def _combinar_pdfs(lista_bytes_pdfs):
 def gerar_termo_kit_higiene(request):
     detentos = list(
         Relacao.objects
-        .filter(local_alocacao__in=['F', 'SA'])
-        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia')
-        .annotate(
-            alocacao_order=Case(
-                When(local_alocacao='F', then=Value(1)),
-                When(local_alocacao='SA', then=Value(2)),
-                default=Value(99),
-            )
-        )
-        .order_by('alocacao_order', 'local_residencia', 'nome')
+        .filter(local_galeria__in=['A', 'B', 'C', 'D', 'E'])
+        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia', 'local_galeria')
+        .order_by('local_galeria', 'local_residencia', 'nome')
     )
+    if not detentos:
+        return HttpResponse(
+            "Erro: Nenhum detento encontrado nas galerias A, B, C, D ou E.",
+            content_type='text/plain',
+            status=400
+        )
 
     # Buscar configurações UMA VEZ
     config_higiene = DescricaoKitHigiene.objects.first()
+    if config_higiene is None:
+        return HttpResponse(
+            "Erro: Nenhuma descrição de kit de higiene cadastrada. "
+            "Cadastre pelo menos um registro em 'Descrições do kit de higiene' no admin.",
+            content_type='text/plain',
+            status=400
+        )
     descricao_kit_higiene = config_higiene.descricao
     checked_data = config_higiene.checked_data_recebido
     checked_kit = config_higiene.checked_kit_higiene
@@ -1418,13 +1424,17 @@ def gerar_memorandos_todos(request):
     # Buscar detentos ordenados: Fechado (F) primeiro, depois Semiaberto (SA)
     detentos = list(
         Relacao.objects
-        .filter(local_alocacao__in=['F', 'SA'])
-        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia')
-        .order_by('local_alocacao', 'local_residencia', 'nome')
+        .filter(local_galeria__in=['A', 'B', 'C', 'D', 'E'])
+        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia', 'local_galeria')
+        .order_by('local_galeria', 'local_residencia', 'nome')
+    )
+    if not detentos:
+        return HttpResponse(
+            "Erro: Nenhum detento encontrado nas galerias A, B, C, D ou E.",
+            content_type='text/plain',
+            status=400
     )
 
-    if not detentos:
-        return HttpResponse("Nenhum detento encontrado.", content_type='text/plain')
 
     buffer = io.BytesIO()
     page_size = A4  # 595.28 x 841.89
@@ -1498,7 +1508,7 @@ def gerar_memorandos_todos(request):
             c.rotate(90)
             c.drawString(15.8 * cm, -5.2 * cm, "AO SETOR")
             c.setFont("Helvetica-Oblique", 12, leading=1)
-            c.drawString(15.8 * cm, -5.6 * cm, "                 (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+            c.drawString(15.8 * cm, -5.6 * cm, "(  )PSICÓLOGA; (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
             c.drawString(15.7 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
             c.rotate(270)
 
@@ -1628,7 +1638,7 @@ def gerar_memorandos_todos(request):
             c.rotate(90)
             c.drawString(15.8 * cm, -5.2 * cm, "AO SETOR")
             c.setFont("Helvetica-Oblique", 12, leading=1)
-            c.drawString(15.8 * cm, -5.6 * cm, "                 (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+            c.drawString(15.8 * cm, -5.6 * cm, "(  )PSICÓLOGA; (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
             c.drawString(15.7 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
             c.rotate(270)
 
@@ -1667,7 +1677,7 @@ def gerar_memorandos_todos(request):
             c.rotate(90)
             c.drawString(0.8 * cm, -5.2 * cm, "AO SETOR")
             c.setFont("Helvetica-Oblique", 12, leading=1)
-            c.drawCentredString(7 * cm, -5.6 * cm, "               (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+            c.drawCentredString(7 * cm, -5.6 * cm, "(  )PSICÓLOGA; (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
             c.drawString(0.3 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
             c.rotate(270)
 
@@ -1690,7 +1700,7 @@ def gerar_memorandos_todos(request):
     c.save()
 
     buffer.seek(0)
-    tipo_memo = "penal" if mes_atual % 2 == 1 else "mensal"
+    tipo_memo = "com_penal" if mes_atual % 2 == 1 else "sem_penal"
     nome_arquivo = f'memorandos_{tipo_memo}_{mes_corrente}_{datetime.date.today()}.pdf'
     response = HttpResponse(buffer.read(), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{nome_arquivo}"'
