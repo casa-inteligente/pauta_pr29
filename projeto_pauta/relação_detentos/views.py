@@ -27,7 +27,7 @@ from django.templatetags.static import static
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from .forms.geradores import DescricaoKitHigieneForm, TermoRoupariaForm 
@@ -1807,14 +1807,17 @@ def calculo_alimentacao(request):
             janta_semiaberto_liquido = janta_semiaberto + janta_fechado_liquido
             janta_fechado_liquido = 0
 
-        almoco_servidores = almoco_plantao + almoco_administrativo
+        
         lanche_servidores = lanche_plantao + lanche_administrativo
-        janta_servidores = janta_plantao
+    
+        
 
         resultado = {
-            'almoco_servidores': almoco_servidores,
-            'lanche_servidores': lanche_servidores,
-            'janta_servidores': janta_servidores,
+            'almoco_plantao': almoco_plantao,
+            'lanche_plantao': lanche_plantao,
+            'janta_plantao': janta_plantao,
+            'almoco_administrativo': almoco_administrativo,
+            'lanche_administrativo': lanche_administrativo ,
             'almoco_internos': almoco_internos,
             'janta_internos': janta_internos,
             'total_bruto_internos': total_bruto_internos,
