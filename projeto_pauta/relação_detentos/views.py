@@ -27,7 +27,7 @@ from django.templatetags.static import static
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from .forms.geradores import DescricaoKitHigieneForm, TermoRoupariaForm 
@@ -691,7 +691,7 @@ def _adicionar_memorando_penal(buffer_termo, detento):
     c.rotate(90)
     c.drawString(15.8 * cm, -5.2 * cm, "AO SETOR")
     c.setFont("Helvetica-Oblique", 12, leading=1)
-    c.drawString(15.8 * cm, -5.6 * cm, "                 (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+    c.drawString(15.8 * cm, -5.6 * cm, "(  )PSICÓLOGA; (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
     c.drawString(15.7 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
     c.rotate(270)
 
@@ -996,20 +996,26 @@ def _combinar_pdfs(lista_bytes_pdfs):
 def gerar_termo_kit_higiene(request):
     detentos = list(
         Relacao.objects
-        .filter(local_alocacao__in=['F', 'SA'])
-        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia')
-        .annotate(
-            alocacao_order=Case(
-                When(local_alocacao='F', then=Value(1)),
-                When(local_alocacao='SA', then=Value(2)),
-                default=Value(99),
-            )
-        )
-        .order_by('alocacao_order', 'local_residencia', 'nome')
+        .filter(local_galeria__in=['A', 'B', 'C', 'D', 'E'])
+        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia', 'local_galeria')
+        .order_by('local_galeria', 'local_residencia', 'nome')
     )
+    if not detentos:
+        return HttpResponse(
+            "Erro: Nenhum detento encontrado nas galerias A, B, C, D ou E.",
+            content_type='text/plain',
+            status=400
+        )
 
     # Buscar configurações UMA VEZ
     config_higiene = DescricaoKitHigiene.objects.first()
+    if config_higiene is None:
+        return HttpResponse(
+            "Erro: Nenhuma descrição de kit de higiene cadastrada. "
+            "Cadastre pelo menos um registro em 'Descrições do kit de higiene' no admin.",
+            content_type='text/plain',
+            status=400
+        )
     descricao_kit_higiene = config_higiene.descricao
     checked_data = config_higiene.checked_data_recebido
     checked_kit = config_higiene.checked_kit_higiene
@@ -1418,13 +1424,17 @@ def gerar_memorandos_todos(request):
     # Buscar detentos ordenados: Fechado (F) primeiro, depois Semiaberto (SA)
     detentos = list(
         Relacao.objects
-        .filter(local_alocacao__in=['F', 'SA'])
-        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia')
-        .order_by('local_alocacao', 'local_residencia', 'nome')
+        .filter(local_galeria__in=['A', 'B', 'C', 'D', 'E'])
+        .only('IPEN', 'nome', 'local_alocacao', 'local_residencia', 'local_galeria')
+        .order_by('local_galeria', 'local_residencia', 'nome')
+    )
+    if not detentos:
+        return HttpResponse(
+            "Erro: Nenhum detento encontrado nas galerias A, B, C, D ou E.",
+            content_type='text/plain',
+            status=400
     )
 
-    if not detentos:
-        return HttpResponse("Nenhum detento encontrado.", content_type='text/plain')
 
     buffer = io.BytesIO()
     page_size = A4  # 595.28 x 841.89
@@ -1498,7 +1508,7 @@ def gerar_memorandos_todos(request):
             c.rotate(90)
             c.drawString(15.8 * cm, -5.2 * cm, "AO SETOR")
             c.setFont("Helvetica-Oblique", 12, leading=1)
-            c.drawString(15.8 * cm, -5.6 * cm, "                 (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+            c.drawString(15.8 * cm, -5.6 * cm, "(  )PSICÓLOGA; (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
             c.drawString(15.7 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
             c.rotate(270)
 
@@ -1628,7 +1638,7 @@ def gerar_memorandos_todos(request):
             c.rotate(90)
             c.drawString(15.8 * cm, -5.2 * cm, "AO SETOR")
             c.setFont("Helvetica-Oblique", 12, leading=1)
-            c.drawString(15.8 * cm, -5.6 * cm, "                 (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+            c.drawString(15.8 * cm, -5.6 * cm, "(  )PSICÓLOGA; (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
             c.drawString(15.7 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
             c.rotate(270)
 
@@ -1667,7 +1677,7 @@ def gerar_memorandos_todos(request):
             c.rotate(90)
             c.drawString(0.8 * cm, -5.2 * cm, "AO SETOR")
             c.setFont("Helvetica-Oblique", 12, leading=1)
-            c.drawCentredString(7 * cm, -5.6 * cm, "               (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
+            c.drawCentredString(7 * cm, -5.6 * cm, "(  )PSICÓLOGA; (  )DIRETOR; (  )PECÚLIO; (  )EDUCAÇÃO;")
             c.drawString(0.3 * cm, -6.6 * cm, "(  )SOCIAL; (  )CHEFE DE SEGURANÇA e (  )OUTROS:__________")
             c.rotate(270)
 
@@ -1690,7 +1700,7 @@ def gerar_memorandos_todos(request):
     c.save()
 
     buffer.seek(0)
-    tipo_memo = "penal" if mes_atual % 2 == 1 else "mensal"
+    tipo_memo = "com_penal" if mes_atual % 2 == 1 else "sem_penal"
     nome_arquivo = f'memorandos_{tipo_memo}_{mes_corrente}_{datetime.date.today()}.pdf'
     response = HttpResponse(buffer.read(), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{nome_arquivo}"'
@@ -1807,14 +1817,17 @@ def calculo_alimentacao(request):
             janta_semiaberto_liquido = janta_semiaberto + janta_fechado_liquido
             janta_fechado_liquido = 0
 
-        almoco_servidores = almoco_plantao + almoco_administrativo
+        
         lanche_servidores = lanche_plantao + lanche_administrativo
-        janta_servidores = janta_plantao
+    
+        
 
         resultado = {
-            'almoco_servidores': almoco_servidores,
-            'lanche_servidores': lanche_servidores,
-            'janta_servidores': janta_servidores,
+            'almoco_plantao': almoco_plantao,
+            'lanche_plantao': lanche_plantao,
+            'janta_plantao': janta_plantao,
+            'almoco_administrativo': almoco_administrativo,
+            'lanche_administrativo': lanche_administrativo ,
             'almoco_internos': almoco_internos,
             'janta_internos': janta_internos,
             'total_bruto_internos': total_bruto_internos,

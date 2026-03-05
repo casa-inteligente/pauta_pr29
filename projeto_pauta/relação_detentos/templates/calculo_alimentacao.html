@@ -21,13 +21,16 @@
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
             <i class="fas fa-print"></i> Imprimir
         </button>
-        {% comment %} Atualiza detentos {% endcomment %}
+        
         <h6 class="text-sm text-gray-600 text-center italic">
                 <details class="border border-transparent rounded-2xl open:border-black/10 open:bg-green-100">
-                    <summary class="">
+                    <summary class="bg-yellow-500 hover:bg-green-700 hover:text-white rounded px-3 py-2 cursor-pointer flex items-center gap-2">
+                       
+                        <i class="fas fa-file-upload"></i>
                         Atualização de Detentos
+                        
                     </summary>
-                    {% comment %} <span>Relatório 1.9 do IPEN</span> {% endcomment %}
+                    
                     <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
                         action="{% url 'relação_detentos:upload_pdf' %}">
                         {% csrf_token %}
@@ -41,7 +44,7 @@
                         </button>
                     </form>
                 </details>
-            </h6>
+        </h6>
     </nav>
 
     <div class="max-w-5xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
@@ -140,7 +143,6 @@
             </fieldset>
 
             <!-- SUBTRAÇÕES (VERMELHO) -->
-            <!-- SUBTRAÇÕES (VERMELHO) -->
             <fieldset class="border-2 border-red-400 rounded-xl p-4 mb-4">
                 <legend class="text-red-700 font-bold text-sm px-2">
                     <i class="fas fa-minus-circle"></i> Subtrações
@@ -161,7 +163,7 @@
                         <span class="text-xs text-gray-500 italic">Auto: {{ trabalho_externo_auto }} (do banco)</span>
                     </div>
                     <div>
-                        <label for="outras_subtracoes" class="block text-sm font-medium mb-1 text-red-700">Outras Subtrações:</label>
+                        <label for="outras_subtracoes" class="block text-sm font-medium mb-1 text-red-700">Outras Subtrações(Júri, etc):</label>
                         <input type="number" name="outras_subtracoes" id="outras_subtracoes" min="0"
                                value="{{ request.GET.outras_subtracoes|default:'0' }}"
                                class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
@@ -186,6 +188,10 @@
             <div class="text-center flex justify-center gap-4">
                 <button type="submit" class="bg-violet-500 text-white px-8 py-3 rounded-xl hover:bg-violet-700 text-lg font-bold shadow-lg">
                     <i class="fas fa-calculator"></i> Calcular e Salvar
+                </button>
+                <button onclick="alert('Confira os resultados antes de enviar para a SEPAT!'); window.print()"
+                    class="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 flex items-center gap-2 font-bold shadow-lg">
+                    <i class="fas fa-print"></i> Gerar SEPAT
                 </button>
                 {% if historico %}
                 <button type="button" onclick="document.getElementById('modalHistorico').classList.remove('hidden')"
@@ -223,8 +229,10 @@
                             <td class="px-4 py-3 font-semibold">
                                 <i class="fas fa-sun text-yellow-500"></i> Almoço
                             </td>
-                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
-                                {{ resultado.almoco_servidores }}
+                            <td class="px-4 py-3 text-center text-blue-500 font-bold">
+                                Plantonistas: {{ resultado.almoco_plantao }}
+                                <p class="border border-top border-gray-300 my-1"></p>
+                                Administrativos: {{ resultado.almoco_administrativo }}
                             </td>
                             <td class="px-4 py-3 text-center text-orange-700 font-bold print:hidden">
                                 {{ resultado.almoco_fechado_liquido }}
@@ -243,8 +251,10 @@
                             <td class="px-4 py-3 font-semibold">
                                 <i class="fas fa-cookie-bite text-orange-400"></i> Lanche
                             </td>
-                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
-                                {{ resultado.lanche_servidores }}
+                            <td class="px-4 py-3 text-center text-blue-500 font-bold">
+                                Plantonistas: {{ resultado.lanche_plantao }}
+                                <p class="border border-top border-gray-300 my-1"></p>
+                                Administrativos: {{ resultado.lanche_administrativo }}  
                             </td>
                             <td class="px-4 py-3 text-center text-gray-400 print:hidden">—</td>
                             <td class="px-4 py-3 text-center text-gray-400 print:hidden">—</td>
@@ -255,8 +265,8 @@
                             <td class="px-4 py-3 font-semibold">
                                 <i class="fas fa-moon text-indigo-400"></i> Janta
                             </td>
-                            <td class="px-4 py-3 text-center text-blue-700 font-bold">
-                                {{ resultado.janta_servidores }}
+                            <td class="px-4 py-3 text-center text-blue-500 font-bold">
+                                Plantonistas: {{ resultado.janta_plantao }}
                             </td>
                             <td class="px-4 py-3 text-center text-orange-700 font-bold print:hidden">
                                 {{ resultado.janta_fechado_liquido }}
