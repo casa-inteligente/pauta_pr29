@@ -804,7 +804,8 @@ def cadastro_trampo_view(request):
         'detento': detento, 
         'empresa_conveniada': empresa_conveniada,
         'empresa_conveniada_nome': empresa_conveniada_nome,
-        'empresas_conveniadas': Relacao.empresas_conveniadas
+        'empresas_conveniadas': Relacao.empresas_conveniadas, 
+        'ano_corrente': ANO_CORRENTE,
     })
 
 
