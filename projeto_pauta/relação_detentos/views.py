@@ -1723,12 +1723,22 @@ def calculo_alimentacao(request):
         internos_semiaberto_auto=Count('id', filter=Q(local_galeria__in=['B', 'D'])),
         internos_pensao_auto=Count('id', filter=Q(local_galeria='E')),
     )
+    # Busca caso tenha internacao hospitalar 
+    galeria_internacao_hospitalar = list(Relacao.objects.filter(
+        situacao_penal='INTERNAÇÃO HOSPITALAR')
+        .values_list('local_galeria', flat=True)
+    )
+    print(f"Galerias dos internos em internação hospitalar: {galeria_internacao_hospitalar}")
+    print(f"Quantos estao em internacao hospitalar: {len(galeria_internacao_hospitalar)}")
+
+
 
     trabalho_externo_auto = contagens['trabalho_externo_auto']
     saida_temporaria_auto = contagens['saida_temporaria_auto']
     internos_fechado_auto = contagens['internos_fechado_auto']
     internos_semiaberto_auto = contagens['internos_semiaberto_auto']
     internos_pensao_auto = contagens['internos_pensao_auto']
+    internacao_hospitalar_auto = len(galeria_internacao_hospitalar)
     #print("Contagens automáticas - Fechado:", internos_fechado_auto, "Semiaberto:", internos_semiaberto_auto, "Pensão:", internos_pensao_auto)
 
     if request.GET.get('almoco_plantao') is not None and request.GET.get('almoco_plantao') != '':
@@ -1743,7 +1753,9 @@ def calculo_alimentacao(request):
         quantidade_internos_pensao = int(request.GET.get('quantidade_internos_pensao', 0) or 0)
         quantidade_internos_saida_temporaria = int(request.GET.get('quantidade_internos_saida_temporaria', 0) or 0)
         trabalho_externo = int(request.GET.get('trabalho_externo', 0) or 0)
+        internacao_hospitalar = int(request.GET.get('internacao_hospitalar', 0) or 0)
         outras_subtracoes = int(request.GET.get('outras_subtracoes', 0) or 0)
+
         observacoes = request.GET.get('observacoes', '-') or '-'
 
         registro = CalculoAlimentacao.objects.create(
@@ -1759,6 +1771,7 @@ def calculo_alimentacao(request):
             quantidade_internos_saida_temporaria=quantidade_internos_saida_temporaria,
             trabalho_externo=trabalho_externo,
             outras_subtracoes=outras_subtracoes,
+            internacao_hospitalar=internacao_hospitalar,
             observacoes=observacoes,
         )
 
@@ -1780,12 +1793,13 @@ def calculo_alimentacao(request):
             trabalho_externo = registro_ultimo.trabalho_externo
             outras_subtracoes = registro_ultimo.outras_subtracoes
             observacoes = registro_ultimo.observacoes
+            #internacao_hospitalar = registro_ultimo.internacao_hospitalar
             registro = registro_ultimo
         except CalculoAlimentacao.DoesNotExist:
             registro = None
 
     if registro is not None:
-        # ...existing code... (cálculos)
+        
         total_bruto_internos = (
             quantidade_internos_fechado 
             + quantidade_internos_semiaberto 
@@ -1813,7 +1827,7 @@ def calculo_alimentacao(request):
         janta_fechado = quantidade_internos_fechado + quantidade_internos_custodia
         janta_semiaberto = quantidade_internos_semiaberto + quantidade_internos_pensao
         janta_fechado_liquido = janta_fechado 
-        janta_semiaberto_liquido = janta_semiaberto - quantidade_internos_saida_temporaria
+        janta_semiaberto_liquido = janta_semiaberto - quantidade_internos_saida_temporaria - outras_subtracoes
         if janta_fechado_liquido < 0:
             janta_semiaberto_liquido = janta_semiaberto + janta_fechado_liquido
             janta_fechado_liquido = 0
@@ -1847,6 +1861,7 @@ def calculo_alimentacao(request):
             'quantidade_internos_pensao': quantidade_internos_pensao,
             'quantidade_internos_saida_temporaria': quantidade_internos_saida_temporaria,
             'trabalho_externo': trabalho_externo,
+            'internacao_hospitalar': len(galeria_internacao_hospitalar),
             'outras_subtracoes': outras_subtracoes,
             'observacoes': observacoes,
             'atualizado_em': timezone.localtime(registro.atualizado_em).strftime('%d/%m/%Y %H:%M'),
