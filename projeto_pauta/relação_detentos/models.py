@@ -148,6 +148,8 @@ class CalculoAlimentacao(models.Model):
         null=False,
         default=0,
     )
+    internacao_hospitalar = models.PositiveIntegerField(default=0)
+
     observacoes = models.CharField(
         verbose_name='Observações',
         max_length=200,

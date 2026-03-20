@@ -147,7 +147,7 @@
                 <legend class="text-red-700 font-bold text-sm px-2">
                     <i class="fas fa-minus-circle"></i> Subtrações
                 </legend>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 {% if internacao_hospitalar_auto > 0 %}md:grid-cols-4{% else %}md:grid-cols-3{% endif %} gap-4">
                     <div>
                         <label for="quantidade_internos_saida_temporaria" class="block text-sm font-medium mb-1 text-red-700">Saída Temporária:</label>
                         <input type="number" name="quantidade_internos_saida_temporaria" id="quantidade_internos_saida_temporaria" min="0"
@@ -168,6 +168,15 @@
                                value="{{ request.GET.outras_subtracoes|default:'0' }}"
                                class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
                     </div>
+                    {% if internacao_hospitalar_auto > 0 %}
+                    <div>
+                        <label for="internacao_hospitalar" class="block text-sm font-medium mb-1 text-red-700">Internação Hospitalar:</label>
+                        <input type="number" name="internacao_hospitalar" id="internacao_hospitalar" min="0"
+                            value="{{ request.GET.internacao_hospitalar|default:internacao_hospitalar_auto }}"
+                            class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
+                        <span class="text-xs text-gray-500 italic">Auto: {{ internacao_hospitalar_auto }} (do banco)</span>
+                    </div>
+                    {% endif %}
                 </div>
             </fieldset>
 
@@ -296,7 +305,7 @@
                 <p><i class="fas fa-info-circle"></i> <b>Regras aplicadas:</b></p>
                 <ul class="list-disc list-inside mt-1 space-y-0.5">
                     <li><b>Almoço internos:</b> (Fechado + Custódia + Semiaberto + Pensão) − todas as subtrações</li>
-                    <li><b>Janta internos:</b> (Fechado + Custódia + Semiaberto + Pensão) − somente saída temporária</li>
+                    <li><b>Janta internos:</b> (Fechado + Custódia + Semiaberto + Pensão) − saída temporária - internação hospitalar </li>
                     <li><b>Fechado:</b> Fechado + Custódia | <b>Semiaberto:</b> Semiaberto + Pensão</li>
                 </ul>
             </div>
@@ -320,6 +329,7 @@
                     <ul class="text-sm space-y-1">
                         <li class="flex justify-between"><span>Saída Temporária:</span> <span class="font-bold text-red-700">-{{ resultado.quantidade_internos_saida_temporaria }}</span></li>
                         <li class="flex justify-between"><span>Trabalho Externo:</span> <span class="font-bold text-red-700">-{{ resultado.trabalho_externo }}</span></li>
+                        <li class="flex justify-between"><span>Internação Hospitalar:</span> <span class="font-bold text-red-700">-{{ resultado.internacao_hospitalar }}</span></li>
                         <li class="flex justify-between"><span>Outras:</span> <span class="font-bold text-red-700">-{{ resultado.outras_subtracoes }}</span></li>
                         <li class="flex justify-between border-t border-red-300 pt-1 mt-1"><span class="font-bold">Total Subtrações (almoço):</span> <span class="font-extrabold text-red-800">-{{ resultado.total_subtracoes }}</span></li>
                         <li class="flex justify-between"><span class="font-bold">Total Subtrações (janta):</span> <span class="font-extrabold text-red-800">-{{ resultado.quantidade_internos_saida_temporaria }}</span></li>

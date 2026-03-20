@@ -12,19 +12,17 @@
 <body class="bg-slate-300 text-gray-800 font-sans min-h-screen p-8">
     <!-- Menu de navegação -->
     <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
+
+        <a href="{% url 'pauta:pauta_all' %}"
+            class="bg-sky-600 text-white px-3 py-2 rounded text-sm hover:bg-sky-700">
+            <img src="{% static 'img/home.png' %}" alt="inicio" class="h-4 inline"> Início
+        </a>
+
         <a href="{% url 'admin:index' %}"
             class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
             <img src="{% static 'img/login.png' %}" alt="Login" class="h-4"> Admin
         </a>
 
-        <a href="{% url 'pauta:pauta_all' %}"
-            class="bg-indigo-600 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700">
-            <img src="{% static 'img/home.png' %}" alt="inicio" class="h-4 inline"> Início
-        </a>
-
-        <button onclick="window.print()" class="bg-0 text-white px-3 py-2 rounded text-sm hover:bg-black">
-            <img src="{% static 'img/printer.png' %}" alt="Imprimir" class="h-4 inline">
-        </button>
     </nav>
 
 

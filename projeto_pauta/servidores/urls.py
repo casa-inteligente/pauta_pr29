@@ -5,7 +5,8 @@ from .views import (
     escala_historico, 
     folha_ponto,
     todas_folhas_ponto,
-    folha_ponto_servidor,
+    folha_ponto_servidor, 
+    frase_motivacional,
 )
 
 app_name = 'servidores'
@@ -29,4 +30,5 @@ urlpatterns = [
     path('folha-ponto/', folha_ponto, name='folha_ponto'),
     path('folha-ponto/pdf/<int:mes>/<int:ano>/', todas_folhas_ponto, name='folha_ponto_pdf'),
     path('folha-ponto/servidor/<int:servidor_id>/<int:mes>/<int:ano>/', folha_ponto_servidor, name='folha_ponto_servidor'),
+    path('frase-motivacional/', frase_motivacional, name='frase_motivacional'),
 ]

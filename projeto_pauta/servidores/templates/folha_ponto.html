@@ -2,229 +2,16 @@
 {% load static %}
 
 {% block main_content %}
-    <style>
-        /* Estilos para o popup */
-        #welcomeModal {
-            display:  none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: 9999;
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        . modal-content {
-            position: relative;
-            background:  linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 10% auto;
-            padding: 30px;
-            border-radius:  20px;
-            width:  90%;
-            max-width: 500px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            animation: slideDown 0.5s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                transform: translateY(-100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        /* Animação do cachorro */
-        .dog-container {
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 20px;
-            position: relative;
-        }
-
-        .dog {
-            width: 100px;
-            height: 100px;
-            background:  #8B4513;
-            border-radius: 50%;
-            position: relative;
-            margin: 0 auto;
-            animation: dogBounce 1s ease-in-out infinite;
-        }
-
-        @keyframes dogBounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform:  translateY(-5px); }
-        }
-
-        /* Orelhas */
-        .dog:: before,
-        .dog::after {
-            content: '';
-            position: absolute;
-            width:  40px;
-            height: 60px;
-            background: #654321;
-            border-radius:  50%;
-            top: -10px;
-        }
-
-        .dog::before {
-            left: -20px;
-            transform: rotate(-20deg);
-        }
-
-        . dog::after {
-            right:  -20px;
-            transform:  rotate(20deg);
-        }
-
-        /* Olhos */
-        .dog-eyes {
-            position: absolute;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .eye {
-            width: 15px;
-            height: 15px;
-            background: #000;
-            border-radius: 50%;
-            animation: blink 3s infinite;
-        }
-
-        @keyframes blink {
-            0%, 96%, 100% { transform: scaleY(1); }
-            98% { transform: scaleY(0.1); }
-        }
-
-        /* Focinho */
-        .dog-snout {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 30px;
-            background: #D2691E;
-            border-radius: 50%;
-        }
-
-        . dog-nose {
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 15px;
-            height: 12px;
-            background: #000;
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-        }
-
-        /* Língua ofegante */
-        .dog-tongue {
-            position: absolute;
-            bottom: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 30px;
-            background: #FF69B4;
-            border-radius: 0 0 50% 50%;
-            animation: pant 0.5s ease-in-out infinite;
-        }
-
-        @keyframes pant {
-            0%, 100% { 
-                height: 30px;
-                bottom: -25px;
-            }
-            50% { 
-                height: 35px;
-                bottom: -30px;
-            }
-        }
-
-        /* Botão de fechar */
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .close-btn:hover {
-            transform: rotate(90deg);
-            color: #ff6b6b;
-        }
-
-        /* Mensagem */
-        .welcome-message {
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        . motivational-text {
-            color: #f0f0f0;
-            font-size: 18px;
-            font-style: italic;
-            line-height: 1.6;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-        }
-    </style>
+    
 
     <meta charset="UTF-8">
     <title>{{ titulo_pagina }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
 
 <body class="bg-gray-50 text-gray-800 font-sans">
-    <!-- Modal de Boas-vindas -->
-    <div id="welcomeModal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            
-            <div class="dog-container">
-                <div class="dog">
-                    <div class="dog-eyes">
-                        <div class="eye"></div>
-                        <div class="eye"></div>
-                    </div>
-                    <div class="dog-snout">
-                        <div class="dog-nose"></div>
-                        <div class="dog-tongue"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="welcome-message text-center mb-4 gap-2 flex justify-center items-center">
-                🐕 Bem-vinda! 🐎<br>
-                "Você faz parte do processo — e seu cuidado faz toda a diferença."
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Cabeçalho com seletor de mês/ano -->
     <div class="max-w-7xl mx-auto p-4">
@@ -235,6 +22,61 @@
 
             </h2>
         </div>
+
+        <!-- Mensagem Motivacional -->
+        <section class="my-12">
+            <div id="card-motivacional"
+                class="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-8 overflow-hidden">
+
+                <!-- Faixa decorativa superior -->
+                <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 rounded-t-2xl"></div>
+
+                <div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                    <!-- Ícone -->
+                    <div class="flex-shrink-0">
+                        <div class="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center shadow-sm border border-purple-200">
+                            <i class="fas fa-quote-left text-purple-500 text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- Conteúdo da frase -->
+                    <div class="flex-1 text-center md:text-left">
+                        <!-- Badge do tema -->
+                        <span id="mot-keyword"
+                            class="inline-block bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1 rounded-full mb-4 tracking-widest uppercase border border-purple-200">
+                            Carregando...
+                        </span>
+
+                        <!-- Frase -->
+                        <blockquote id="mot-quote"
+                            class="text-gray-800 text-xl md:text-2xl font-light italic leading-relaxed mb-3 transition-opacity duration-300">
+                            <span class="text-gray-400">Carregando frase inspiracional...</span>
+                        </blockquote>
+
+                        <!-- Autor -->
+                        <p id="mot-author" class="text-purple-600 text-sm font-semibold">
+                            — ...
+                        </p>
+
+                        <!-- Atribuição ZenQuotes -->
+                        <p class="text-gray-400 text-xs mt-2 flex items-center gap-1 justify-center md:justify-start">
+                            <i class="fas fa-globe"></i>
+                            via <a href="https://zenquotes.io/" target="_blank"
+                                class="underline hover:text-purple-500 transition-colors ml-1">ZenQuotes API</a>
+                        </p>
+                    </div>
+
+                    <!-- Botão -->
+                    <div class="flex-shrink-0">
+                        <button onclick="carregarFrase()"
+                            class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg">
+                            <i class="fas fa-sync-alt" id="mot-spinner"></i>
+                            Nova frase
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- Formulário para selecionar mês e ano -->
         <section class="mb-6 bg-white p-4 rounded shadow">
@@ -347,50 +189,41 @@
             window.location.href = `/servidores/folha-ponto/servidor/${servidorId}/${mes}/${ano}/`;
         }
 
-        // Verificação de usuário e exibição do modal
-        // SUBSTITUA 'usuario_desejado' pelo username real que você quer verificar
-        const usuarioAtual = '{{ request.user.username }}';
-        const usuariosAutorizados = [
-            'aula-1',
-            'indiara',
-            'lucelia',
-            'Daia',
-            // Adicione mais usuários aqui...
-        ];
-        
-        function showModal() {
-            const modal = document.getElementById('welcomeModal');
-            modal.style.display = 'block';
-            
-            // Fecha automaticamente após 5 segundos
-            setTimeout(() => {
-                closeModal();
-            }, 5000);
-        }
-        
-        function closeModal() {
-            const modal = document.getElementById('welcomeModal');
-            modal.style.display = 'none';
-        }
+        //Frase Motivacional - ZenQuotes API
+        async function carregarFrase() {
+            const spinner = document.getElementById('mot-spinner');
+            const quoteEl = document.getElementById('mot-quote');
+            const authorEl = document.getElementById('mot-author');
+            const keywordEl = document.getElementById('mot-keyword');
 
-        // Fecha o modal ao clicar fora dele
-        window.onclick = function(event) {
-            const modal = document.getElementById('welcomeModal');
-            if (event. target === modal) {
-                closeModal();
+            // Animação de carregamento
+            spinner.classList.add('fa-spin');
+            quoteEl.style.opacity = '0.4';
+
+            try {
+                const resp = await fetch("{% url 'servidores:frase_motivacional' %}");
+                const data = await resp.json();
+
+                quoteEl.innerHTML = `"${data.q}"`;
+                authorEl.textContent = `— ${data.a}`;
+                keywordEl.textContent = data.keyword_pt;
+                quoteEl.style.opacity = '1';
+            } catch (e) {
+                quoteEl.innerHTML = '"A coragem é a primeira das virtudes humanas."';
+                authorEl.textContent = '— Aristóteles';
+                keywordEl.textContent = 'Coragem';
+                quoteEl.style.opacity = '1';
+            } finally {
+                spinner.classList.remove('fa-spin');
             }
         }
 
-        // Verifica o usuário e exibe o modal
-        window.onload = function() {
-            if (usuariosAutorizados.includes(usuarioAtual)) {
-                // Pequeno delay para garantir que a página carregou
-                setTimeout(showModal, 500);
-            }
-        };
+        // Carregar automaticamente ao abrir a página
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarFrase();
+            setInterval(carregarFrase, 60000); // ← muda a cada 60 segundos
+        });
     </script>
 </body>
-
-
 
  {% endblock %}
