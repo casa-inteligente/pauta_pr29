@@ -1728,8 +1728,14 @@ def calculo_alimentacao(request):
         situacao_penal='INTERNAÇÃO HOSPITALAR')
         .values_list('local_galeria', flat=True)
     )
-    print(f"Galerias dos internos em internação hospitalar: {galeria_internacao_hospitalar}")
-    print(f"Quantos estao em internacao hospitalar: {len(galeria_internacao_hospitalar)}")
+    #print(f"Galerias dos internos em internação hospitalar: {galeria_internacao_hospitalar}")
+    #print(f"Quantos estao em internacao hospitalar: {len(galeria_internacao_hospitalar)}")
+
+    #  Classifica os internos em internação hospitalar entre fechado (A e C) e semiaberto (B, D e E)
+    internacao_hospitalar_galeria_fechado = galeria_internacao_hospitalar.count('A') + galeria_internacao_hospitalar.count('C')
+    internacao_hospitalar_galeria_semiaberto = galeria_internacao_hospitalar.count('B') + galeria_internacao_hospitalar.count('D') + galeria_internacao_hospitalar.count('E')
+    #print(f"Internação hospitalar - Galeria Fechado (A e C): {internacao_hospitalar_galeria_fechado}")
+    #print(f"Internação hospitalar - Galeria Semiaberto (B, D e E): {internacao_hospitalar_galeria_semiaberto}")
 
 
 
@@ -1739,7 +1745,7 @@ def calculo_alimentacao(request):
     internos_semiaberto_auto = contagens['internos_semiaberto_auto']
     internos_pensao_auto = contagens['internos_pensao_auto']
     internacao_hospitalar_auto = len(galeria_internacao_hospitalar)
-    #print("Contagens automáticas - Fechado:", internos_fechado_auto, "Semiaberto:", internos_semiaberto_auto, "Pensão:", internos_pensao_auto)
+    
 
     if request.GET.get('almoco_plantao') is not None and request.GET.get('almoco_plantao') != '':
         almoco_plantao = int(request.GET.get('almoco_plantao', 0) or 0)
@@ -1810,6 +1816,8 @@ def calculo_alimentacao(request):
             quantidade_internos_saida_temporaria 
             + trabalho_externo 
             + outras_subtracoes
+            + internacao_hospitalar_galeria_fechado
+            + internacao_hospitalar_galeria_semiaberto
         )
 
         almoco_internos = total_bruto_internos - total_subtracoes
@@ -1822,10 +1830,11 @@ def calculo_alimentacao(request):
             almoco_fechado_liquido = almoco_fechado + almoco_semiaberto_liquido
             almoco_semiaberto_liquido = 0
 
-        janta_internos = total_bruto_internos - quantidade_internos_saida_temporaria
+        # Subtrai par aa janta  
+        janta_internos = total_bruto_internos - quantidade_internos_saida_temporaria - outras_subtracoes - internacao_hospitalar_galeria_fechado - internacao_hospitalar_galeria_semiaberto
 
-        janta_fechado = quantidade_internos_fechado + quantidade_internos_custodia
-        janta_semiaberto = quantidade_internos_semiaberto + quantidade_internos_pensao
+        janta_fechado = quantidade_internos_fechado + quantidade_internos_custodia - internacao_hospitalar_galeria_fechado
+        janta_semiaberto = quantidade_internos_semiaberto + quantidade_internos_pensao - internacao_hospitalar_galeria_semiaberto
         janta_fechado_liquido = janta_fechado 
         janta_semiaberto_liquido = janta_semiaberto - quantidade_internos_saida_temporaria - outras_subtracoes
         if janta_fechado_liquido < 0:
@@ -1878,6 +1887,7 @@ def calculo_alimentacao(request):
         'internos_fechado_auto':internos_fechado_auto,
         'internos_semiaberto_auto':internos_semiaberto_auto,
         'internos_pensao_auto':internos_pensao_auto,
+        'internacao_hospitalar_auto': internacao_hospitalar_auto,
     }
 
     return render(request, 'calculo_alimentacao.html', context)
