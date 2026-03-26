@@ -61,7 +61,7 @@ class PeriodoLeitura(models.Model):
     )
 
     class Meta:
-        
+        ordering = ('-data_resenha',)
         verbose_name = 'periodo de leitura'
         verbose_name_plural = 'Adicionar periodos de leituras'
        
@@ -120,13 +120,13 @@ class ResenhaLivro(models.Model):
     aprovada = models.BooleanField('Aprovada', default=True)
     gerado_declaracao = models.BooleanField('Gerado declaração', default=False)
     atualizado_em = models.DateTimeField('Atualizado em', auto_now=True)
-    atualizado_por = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='resenhas_atualizadas'
-    )
+    # atualizado_por = models.ForeignKey(
+    #     settings.AUTH_USER_MODEL,
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name='resenhas_atualizadas'
+    # )
     path_resenha = models.CharField(
         'Caminho da resenha gerada:',
         max_length=255,

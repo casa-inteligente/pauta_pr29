@@ -1,0 +1,96 @@
+<div id="modal-declaracao-overlay"
+     class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
+     onclick="if (event.target === this) fecharModalDeclaracao()">
+
+    <div class="w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-800">Confirmar geração das declarações</h2>
+                <p class="text-sm text-slate-500">
+                    Será gerado um PDF único contendo a declaração e, quando existir, o PDF da resenha.
+                </p>
+            </div>
+
+            <button type="button"
+                    onclick="fecharModalDeclaracao()"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="max-h-[60vh] overflow-y-auto px-6 py-5">
+            {% if resenhas %}
+            <div class="space-y-3">
+                {% for resenha in resenhas %}
+                <div class="rounded-xl border border-slate-200 px-4 py-3">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p class="font-medium text-slate-800">{{ resenha.aluno.nome }}</p>
+                            <p class="text-sm text-slate-500">
+                                {{ resenha.aluno.turma.nome }} • {{ resenha.nomelivro }} • {{ resenha.periodoLeitura.intervalo_leitura }} • {{ resenha.dataResenha|date:"d/m/Y" }}
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            {% if resenha.aprovada %}
+                            <span class="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
+                                <i class="fas fa-circle-check"></i>
+                                <span>Satisfatória</span>
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <span>Insatisfatória</span>
+                            </span>
+                            {% endif %}
+
+                            {% if resenha.path_resenha %}
+                            <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                                <i class="fas fa-paperclip"></i>
+                                <span>PDF informado</span>
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+                                <i class="fas fa-file-circle-xmark"></i>
+                                <span>Sem PDF anexo</span>
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                Nenhuma resenha foi selecionada.
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="border-t border-slate-200 px-6 py-4">
+            <form method="post"
+                  action="{% url 'resenha_livro:gerar_declaracoes_selecionadas' %}"
+                  target="_blank"
+                  class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                {% csrf_token %}
+                {% for id in ids %}
+                <input type="hidden" name="resenhas_ids" value="{{ id }}">
+                {% endfor %}
+
+                <button type="button"
+                        onclick="fecharModalDeclaracao()"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                    <i class="fas fa-times"></i>
+                    <span>Cancelar</span>
+                </button>
+
+                <button type="submit"
+                        {% if not ids %}disabled{% endif %}
+                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Gerar PDF único</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

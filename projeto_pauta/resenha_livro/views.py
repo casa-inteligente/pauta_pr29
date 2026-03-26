@@ -1,17 +1,21 @@
 # /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/views.py
 
 import os
+from io import BytesIO
+from pathlib import Path
 from django.http import HttpResponse, JsonResponse
 from django.templatetags.static import static
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
-from .models import Aluno, ResenhaLivro, PeriodoLeitura
+from .models import Aluno, ResenhaLivro, PeriodoLeitura, Turma
 from .forms import ResenhaLivroForm, AlunoForm, PeriodoLeituraForm
 from django.contrib.auth.decorators import login_required
-from .forms import ResenhaLivroForm, AlunoForm
 from django.conf import settings
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from django.db.models import Prefetch
+from django.views.decorators.http import require_POST
+from pypdf import PdfReader, PdfWriter
 import datetime
 
 
@@ -247,3 +251,264 @@ def adicionar_periodo_leitura(request):
         'titulo': 'Adicionar Período de Leitura',
         'ano_corrente': datetime.datetime.now().year,
     })
+
+
+def _resolver_caminho_resenha_pdf(path_resenha):
+    """Resolve o caminho do PDF da resenha."""
+    if not path_resenha:
+        return None
+
+    caminho = Path(path_resenha)
+
+    if caminho.is_absolute() and caminho.exists():
+        return caminho
+
+    caminho_media = Path(settings.MEDIA_ROOT) / path_resenha
+    if caminho_media.exists():
+        return caminho_media
+
+    caminho_base = Path(settings.BASE_DIR) / path_resenha
+    if caminho_base.exists():
+        return caminho_base
+
+    return None
+
+
+def _gerar_declaracao_pdf_bytes(resenha):
+    """Gera o PDF da declaração em memória."""
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    largura, altura = A4
+
+    resultado_resenha = 'satisfatória' if resenha.aprovada else 'insatisfatória'
+
+    pdf.setTitle(f"Declaracao_{resenha.aluno.nome}")
+    pdf.setAuthor("Sistema Pauta")
+
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawCentredString(largura / 2, altura - 70, "DECLARAÇÃO")
+
+    pdf.setFont("Helvetica", 12)
+    texto = pdf.beginText(70, altura - 130)
+    texto.setLeading(22)
+
+    linhas = [
+        f"Declaro, para os devidos fins, que o(a) aluno(a) {resenha.aluno.nome}",
+        f"participou do Projeto Remição pela Leitura no período {resenha.periodoLeitura.intervalo_leitura},",
+        f"com resenha referente à obra \"{resenha.nomelivro}\", de autoria de {resenha.nomeAutor}.",
+        "",
+        f"Resultado da avaliação da resenha: {resultado_resenha}.",
+        f"Data da resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}",
+        f"Professor(a): {resenha.nomeProfessor}",
+        f"Turma: {resenha.aluno.turma.nome}",
+        "",
+        "Documento emitido automaticamente pelo sistema.",
+    ]
+
+    for linha in linhas:
+        texto.textLine(linha)
+
+    pdf.drawText(texto)
+
+    pdf.line(70, 180, largura - 70, 180)
+    pdf.setFont("Helvetica", 11)
+    pdf.drawCentredString(largura / 2, 160, "Presídio Regional de Maravilha")
+
+    pdf.showPage()
+    pdf.save()
+    buffer.seek(0)
+    return buffer
+
+
+def _gerar_pagina_aviso_sem_pdf(resenha):
+    """Cria uma página PDF avisando ausência do anexo da resenha."""
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    largura, altura = A4
+
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawCentredString(largura / 2, altura - 80, "AVISO DE ANEXO NÃO ENCONTRADO")
+
+    texto = pdf.beginText(70, altura - 140)
+    texto.setFont("Helvetica", 12)
+    texto.setLeading(22)
+
+    linhas = [
+        f"Aluno(a): {resenha.aluno.nome}",
+        f"Obra: {resenha.nomelivro}",
+        f"Autor: {resenha.nomeAutor}",
+        f"Período: {resenha.periodoLeitura.intervalo_leitura}",
+        "",
+        "Esta declaração foi gerada, porém o arquivo PDF da resenha",
+        "não foi localizado no caminho informado.",
+    ]
+
+    if resenha.path_resenha:
+        linhas.extend([
+            "",
+            f"Caminho informado: {resenha.path_resenha}",
+        ])
+    else:
+        linhas.extend([
+            "",
+            "Nenhum caminho de anexo foi cadastrado para esta resenha.",
+        ])
+
+    for linha in linhas:
+        texto.textLine(linha)
+
+    pdf.drawText(texto)
+    pdf.showPage()
+    pdf.save()
+    buffer.seek(0)
+    return buffer
+
+@login_required
+def gerar_declaracao(request):
+    """Lista todas as resenhas agrupadas por ano, turma e aluno."""
+    resenhas = (
+        ResenhaLivro.objects
+        .select_related(
+            'aluno',
+            'aluno__turma',
+            'periodoLeitura',
+        )
+        .order_by(
+            '-periodoLeitura__data_resenha',
+            'aluno__turma__nome',
+            'aluno__nome',
+            'nomelivro',
+        )
+    )
+
+    dados_por_ano = {}
+
+    for resenha in resenhas:
+        ano = resenha.periodoLeitura.data_resenha.year
+        turma_nome = resenha.aluno.turma.nome
+        aluno_id = resenha.aluno.id
+
+        if ano not in dados_por_ano:
+            dados_por_ano[ano] = {}
+
+        if turma_nome not in dados_por_ano[ano]:
+            dados_por_ano[ano][turma_nome] = {}
+
+        if aluno_id not in dados_por_ano[ano][turma_nome]:
+            dados_por_ano[ano][turma_nome][aluno_id] = {
+                'aluno': resenha.aluno,
+                'resenhas': [],
+            }
+
+        dados_por_ano[ano][turma_nome][aluno_id]['resenhas'].append(resenha)
+
+    anos_organizados = []
+    for ano, turmas in dados_por_ano.items():
+        turmas_lista = []
+        for turma_nome, alunos_dict in turmas.items():
+            turmas_lista.append({
+                'nome': turma_nome,
+                'alunos': list(alunos_dict.values()),
+            })
+
+        turmas_lista.sort(key=lambda item: item['nome'])
+        anos_organizados.append({
+            'ano': ano,
+            'turmas': turmas_lista,
+        })
+
+    anos_organizados.sort(key=lambda item: item['ano'], reverse=True)
+
+    context = {
+        'titulo': 'Gerar Declaração',
+        'ano_corrente': datetime.datetime.now().year,
+        'anos_organizados': anos_organizados,
+    }
+    return render(request, 'gerar_declaracao.html', context)
+
+
+
+@login_required
+@require_POST
+def alternar_gerado_declaracao(request, resenha_id):
+    """Marca ou desmarca o status de geração da declaração."""
+    resenha = get_object_or_404(ResenhaLivro, id=resenha_id)
+    valor = request.POST.get('gerado_declaracao') == 'on'
+
+    resenha.gerado_declaracao = valor
+    #resenha.atualizado_por = request.user
+    resenha.save(update_fields=['gerado_declaracao', 'atualizado_em'])
+
+    return HttpResponse(status=204)
+
+
+@login_required
+@require_POST
+def popup_confirmar_geracao_declaracao(request):
+    """Exibe popup com as resenhas selecionadas para geração."""
+    ids = request.POST.getlist('resenhas_ids')
+
+    resenhas = (
+        ResenhaLivro.objects
+        .filter(id__in=ids)
+        .select_related('aluno', 'aluno__turma', 'periodoLeitura')
+        .order_by('aluno__turma__nome', 'aluno__nome', '-periodoLeitura__data_resenha')
+    )
+
+    context = {
+        'resenhas': resenhas,
+        'ids': [str(item.id) for item in resenhas],
+    }
+    return render(request, 'popup_confirmar_geracao_declaracao.html', context)
+
+
+@login_required
+@require_POST
+def gerar_declaracoes_selecionadas(request):
+    """Gera PDF único com declaração + anexo da resenha, quando existir."""
+    ids = request.POST.getlist('resenhas_ids')
+
+    resenhas = list(
+        ResenhaLivro.objects
+        .filter(id__in=ids)
+        .select_related('aluno', 'aluno__turma', 'periodoLeitura')
+        .order_by('aluno__turma__nome', 'aluno__nome', '-periodoLeitura__data_resenha')
+    )
+
+    writer = PdfWriter()
+
+    for resenha in resenhas:
+        declaracao_buffer = _gerar_declaracao_pdf_bytes(resenha)
+        declaracao_reader = PdfReader(declaracao_buffer)
+        for page in declaracao_reader.pages:
+            writer.add_page(page)
+
+        caminho_pdf = _resolver_caminho_resenha_pdf(resenha.path_resenha)
+
+        if caminho_pdf and caminho_pdf.suffix.lower() == '.pdf':
+            with open(caminho_pdf, 'rb') as arquivo_pdf:
+                anexo_reader = PdfReader(arquivo_pdf)
+                for page in anexo_reader.pages:
+                    writer.add_page(page)
+        else:
+            aviso_buffer = _gerar_pagina_aviso_sem_pdf(resenha)
+            aviso_reader = PdfReader(aviso_buffer)
+            for page in aviso_reader.pages:
+                writer.add_page(page)
+
+        resenha.gerado_declaracao = True
+        #resenha.atualizado_por = request.user
+
+    if resenhas:
+        ResenhaLivro.objects.bulk_update(
+            resenhas,
+            ['gerado_declaracao', 'atualizado_em']
+        )
+
+    output = BytesIO()
+    writer.write(output)
+    output.seek(0)
+
+    response = HttpResponse(output.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="declaracoes_resenhas.pdf"'
+    return response

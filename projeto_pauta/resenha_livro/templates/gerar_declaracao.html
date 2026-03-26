@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block head %}
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+{% endblock %}
+
+{% block main_class %}mx-auto max-w-7xl px-4 py-6{% endblock %}
+
+{% block main_content %}
+<div class="space-y-6">
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">{{ titulo }}</h1>
+                <p class="mt-1 text-sm text-slate-500">
+                    Lista completa de resenhas agrupadas por ano, turma e aluno.
+                </p>
+            </div>
+
+            
+
+            <a href="{% url 'resenha_livro:configuracao_resenhas' %}"
+               class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+                <i class="fas fa-arrow-left"></i>
+                <span>Voltar</span>
+            </a>
+        </div>
+    </section>
+
+    <a href="#"
+        class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+        <!-- <i class="fas fa-arrow-left"></i> -->
+        <span>Atualizar resenhas nas pastas</span>
+    </a>
+
+    <form id="form-gerar-declaracoes"
+          hx-post="{% url 'resenha_livro:popup_confirmar_geracao_declaracao' %}"
+          hx-target="#modal-container"
+          hx-swap="innerHTML"
+          class="space-y-8">
+        {% csrf_token %}
+
+        <div class="flex justify-end">
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
+                <i class="fas fa-file-pdf"></i>
+                <span>Gerar declarações selecionadas</span>
+            </button>
+        </div>
+
+        {% for bloco_ano in anos_organizados %}
+        <section class="space-y-4">
+            <div class="rounded-2xl border border-slate-300 bg-slate-800 px-6 py-4 text-white shadow-sm">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-calendar-days text-lg"></i>
+                    <h2 class="text-xl font-bold">Ano {{ bloco_ano.ano }}</h2>
+                </div>
+            </div>
+
+            {% for turma in bloco_ano.turmas %}
+            <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-200 px-6 py-4">
+                    <h3 class="text-lg font-semibold text-slate-800">{{ turma.nome }}</h3>
+                </div>
+
+                <div class="space-y-6 p-6">
+                    {% for item_aluno in turma.alunos %}
+                    <div class="rounded-xl border border-slate-200">
+                        <div class="border-b border-slate-200 bg-slate-50 px-4 py-3">
+                            <h4 class="font-semibold text-slate-800">{{ item_aluno.aluno.nome }}</h4>
+                            <p class="text-sm text-slate-500">
+                                Matrícula: {{ item_aluno.aluno.matricula|default:"Não informada" }}
+                            </p>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-slate-100 text-left text-slate-600">
+                                    <tr>
+                                        <th class="px-4 py-3">Selecionar</th>
+                                        <th class="px-4 py-3">Obra</th>
+                                        <th class="px-4 py-3">Autor</th>
+                                        <th class="px-4 py-3">Período</th>
+                                        <th class="px-4 py-3">Data</th>
+                                        <th class="px-4 py-3">Resultado</th>
+                                        <th class="px-4 py-3">Anexo</th>
+                                        <th class="px-4 py-3">Gerado</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    {% for resenha in item_aluno.resenhas %}
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-4 py-3">
+                                            <input type="checkbox"
+                                                   name="resenhas_ids"
+                                                   value="{{ resenha.id }}"
+                                                   class="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500">
+                                        </td>
+                                        <td class="px-4 py-3">{{ resenha.nomelivro }}</td>
+                                        <td class="px-4 py-3">{{ resenha.nomeAutor }}</td>
+                                        <td class="px-4 py-3">{{ resenha.periodoLeitura.intervalo_leitura }}</td>
+                                        <td class="px-4 py-3">{{ resenha.dataResenha|date:"d/m/Y" }}</td>
+                                        <td class="px-4 py-3">
+                                            {% if resenha.aprovada %}
+                                            <span class="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
+                                                <i class="fas fa-circle-check"></i>
+                                                <span>Satisfatória</span>
+                                            </span>
+                                            {% else %}
+                                            <span class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700">
+                                                <i class="fas fa-triangle-exclamation"></i>
+                                                <span>Insatisfatória</span>
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            {% if resenha.path_resenha %}
+                                            <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                                                <i class="fas fa-paperclip"></i>
+                                                <span>Informado</span>
+                                            </span>
+                                            {% else %}
+                                            <span class="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+                                                <i class="fas fa-triangle-exclamation"></i>
+                                                <span>Sem PDF</span>
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <form hx-post="{% url 'resenha_livro:alternar_gerado_declaracao' resenha.id %}"
+                                                  hx-swap="none">
+                                                {% csrf_token %}
+                                                <label class="inline-flex cursor-pointer items-center gap-2">
+                                                    <input type="checkbox"
+                                                           name="gerado_declaracao"
+                                                           {% if resenha.gerado_declaracao %}checked{% endif %}
+                                                           onchange="this.form.requestSubmit()"
+                                                           class="h-4 w-4 rounded border-slate-300 text-green-600 focus:ring-green-500">
+                                                    <span class="text-xs font-medium {% if resenha.gerado_declaracao %}text-green-700{% else %}text-slate-500{% endif %}">
+                                                        {% if resenha.gerado_declaracao %}Gerado{% else %}Pendente{% endif %}
+                                                    </span>
+                                                </label>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-slate-500">Nenhum aluno com resenha cadastrada nesta turma.</p>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
+        </section>
+        {% empty %}
+        <section class="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+            <p class="text-sm text-slate-500">Nenhuma resenha encontrada.</p>
+        </section>
+        {% endfor %}
+    </form>
+</div>
+
+<div id="modal-container"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function fecharModalDeclaracao() {
+        const modal = document.getElementById('modal-declaracao-overlay');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            fecharModalDeclaracao();
+        }
+    });
+</script>
+{% endblock %}
