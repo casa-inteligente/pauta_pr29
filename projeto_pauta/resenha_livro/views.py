@@ -5,14 +5,14 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from .models import Aluno, ResenhaLivro, PeriodoLeitura
 from .forms import ResenhaLivroForm
-#from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required
 from .forms import ResenhaLivroForm, AlunoForm
 from django.conf import settings
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 import datetime
 
-ano_corrente = datetime.datetime.now().year
+
 
 
 def listar_alunos(request):
@@ -24,7 +24,11 @@ def listar_alunos(request):
             resenhas_por_periodo = {}
         else:
             resenhas_por_periodo = {
-                periodo: ResenhaLivro.objects.filter(periodoLeitura=periodo).select_related('aluno', 'periodoLeitura')
+                periodo: ResenhaLivro.objects.filter(
+                    periodoLeitura=periodo
+                ).select_related(
+                    'aluno', 
+                    'periodoLeitura')
                 for periodo in periodos
             }
     except Exception as e:
@@ -34,7 +38,7 @@ def listar_alunos(request):
 
     return render(request, 'listar_alunos.html', {'resenhas_por_periodo': resenhas_por_periodo,
                                                   'titulo': 'Listar Alunos',
-                                                  'ano_corrente': ano_corrente,
+                                                  'ano_corrente': datetime.datetime.now().year,
                                                   })
 
 def imprimir_resenha(request, aluno_id, periodo_id):
@@ -77,6 +81,7 @@ def editar_resenha(request, resenha_id):
         form = ResenhaLivroForm(instance=resenha)
     return render(request, 'editar_resenha.html', {'form': form,
                                                    'titulo': 'Editar Resenha',
+                                                    'ano_corrente': datetime.datetime.now().year,
                                                    })
 
 def excluir_resenha(request, resenha_id):
@@ -215,3 +220,25 @@ def adicionar_aluno_popup(request):
     return render(request, 'adicionar_aluno_popup.html', {'form': form,
                                                           'titulo': 'Adicionar Aluno',
                                                           })
+
+
+@login_required
+def gerar_decraracao_resenha(request, aluno_id):
+    """ Gerar uma declaração de cada participante do projeto, com nome do aluno, nome do livro, nome do autor, periodo de leitura, se foi aprovado ou não. Em um modelo .pdf, caso o 'gerado' for falso e marcar o 'gerado como verdadeiro'
+    
+    return: um arquivo .pdf que deverá abrir em uma nova aba do navegador.
+
+    """
+    pass
+
+@login_required
+def configuracao_resenhas(request):
+    """Configurações para as resenhas, como adicionar ou editar períodos de leitura, alunos, e geracao de declaracao de resenhas.
+
+        return: uma página de configurações onde o usuário pode gerenciar os períodos de leitura, alunos, etc.
+    """
+    context = {
+        'titulo': 'Configurações de Resenhas',
+        'ANO_CORRENTE': datetime.datetime.now().year,
+    }
+    return render(request, 'configuracao_resenhas.html', context)

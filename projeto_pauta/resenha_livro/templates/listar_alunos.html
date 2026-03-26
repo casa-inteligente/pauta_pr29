@@ -7,6 +7,36 @@
     <meta charset="UTF-8">
     <title>{{ titulo }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root{
+            --primary: #00953B;
+            --secondary: #E30613;
+            --accent: #A1C84D;
+            --dark: #244131;
+            --secondary-accent: #E25D5E;
+            --secondary-dark: #8C0011;
+            
+        }
+
+        .text-primary  { color: var(--primary); }
+        .bg-primary    { background-color: var(--primary); }
+        .text-secondary{ color: var(--secondary); }
+        .bg-secondary  { background-color: var(--secondary); }
+        .text-accent   { color: var(--accent); }
+        .bg-accent     { background-color: var(--accent); }
+        .text-dark     { color: var(--dark); }
+        .bg-dark       { background-color: var(--dark); }
+        .bg-secondary-accent { background-color: var(--secondary-accent); }
+        .text-secondary-dark { color: var(--secondary-dark); }
+
+        .hover\:bg-accent:hover  { background-color: var(--accent); }
+        .hover\:text-accent:hover{ color: var(--accent); }
+        .hover\:text-primary:hover{ color: var(--primary); }
+        .hover\:bg-secondary-dark:hover { background-color: var(--secondary-dark); }
+        .hover\:bg-primary-dark:hover { background-color: var(--dark); }
+    </style>
+
 </head>
 
 <body class="bg-gray-50 text-gray-800 font-sans">
@@ -17,6 +47,12 @@
                 class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-900 text-sm">
                 &#43; Resenhas
             </a>
+
+            <a href="{% url 'resenha_livro:configuracao_resenhas' %}"
+            class="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary-dark">
+                <i class="fas fa-solid fa-gears"></i> configurações
+            </a>
+
             <h1 class="text-xl font-bold text-center w-full">Listar Resenhas por Período de Leitura</h1>
         </div>
 
@@ -25,7 +61,9 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <h2 class="text-lg font-semibold text-gray-700">
                     📖 Período: {{ periodo.intervalo_leitura }} — Data da Resenha:
-                    {{ periodo.data_resenha|date:"d/m/Y" }}
+                    {{ periodo.data_resenha|date:"d/m/Y" }} 
+                    <span class="bg-primary text-white text-xs px-2 py-0.5 rounded-full">{{ resenhas|length }}</span>
+                    
                 </h2>
                 <div class="flex gap-2">
                     <a href="{% url 'resenha_livro:gerar_todas_resenhas' periodo.id %}"
@@ -72,6 +110,10 @@
                                         Excluir</a>
                                 </td>
                             </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="p-2 border text-center">Nenhuma resenha cadastrada para este período: 📖 {{ periodo.intervalo_leitura }}.</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -82,7 +124,7 @@
     </div>
     <!-- Rodapé -->
     <footer class="mt-10 py-4 bg-gray-100 text-center text-sm text-gray-600">
-        {{ ano_corrente }} Presídio Regional de Maravilha &#8211; Todos os direitos reservados
+         &copy; 2025 - {{ ano_corrente }} Presídio Regional de Maravilha &#8211; Todos os direitos reservados
     </footer>
     <!-- Scripts para compatibilidade do toggle (sem Bootstrap) -->
     <script>

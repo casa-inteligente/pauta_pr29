@@ -8,43 +8,78 @@
     <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root{
+            --primary: #5fb157;
+            --secondary: #ed1c24;
+            --accent: #a1c84d;
+            --dark: #325332;
+        }
+
+        .text-primary  { color: var(--primary); }
+        .bg-primary    { background-color: var(--primary); }
+        .text-secondary{ color: var(--secondary); }
+        .bg-secondary  { background-color: var(--secondary); }
+        .text-accent   { color: var(--accent); }
+        .bg-accent     { background-color: var(--accent); }
+        .text-dark     { color: var(--dark); }
+        .bg-dark       { background-color: var(--dark); }
+
+        .hover\:bg-accent:hover  { background-color: var(--accent); }
+        .hover\:text-accent:hover{ color: var(--accent); }
+        .hover\:text-primary:hover{ color: var(--primary); }
+    </style>
 </head>
 
 <body class="bg-gray-200 text-gray-800 font-sans min-h-screen p-8">
     <!-- Menu de navegação -->
-    <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
-        <a href="{% url 'pauta:pauta_all' %}"
-            class="bg-indigo-500 text-white px-3 py-2 rounded text-sm hover:bg-indigo-900 flex items-center gap-2">
-            <img src="{% static 'img/home.png' %}" alt="" class="h-4 inline"> Início
-        </a>
-        <button onclick="window.print()"
-            class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
-            <i class="fas fa-print"></i> Imprimir
-        </button>
-        
-        <h6 class="text-sm text-gray-600 text-center italic">
-                <details class="border border-transparent rounded-2xl open:border-black/10 open:bg-green-100">
-                    <summary class="bg-yellow-500 hover:bg-green-700 hover:text-white rounded px-3 py-2 cursor-pointer flex items-center gap-2">
-                       
-                        <i class="fas fa-file-upload"></i>
-                        Atualização de Detentos
-                        
-                    </summary>
-                    
-                    <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
-                        action="{% url 'relação_detentos:upload_pdf' %}">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="pdfFile">Relatório 1.9 do IPEN</label> <br>
-                            <input type="file" class="form-control-file" id="pdfFile" name="pdfFile" accept="application/pdf"
-                            required>
-                        </div>
-                        <button type="submit" class="bg-fuchsia-500 text-white px-3 py-2 rounded text-sm hover:bg-slate-700">
-                            Enviar
-                        </button>
-                    </form>
-                </details>
-        </h6>
+    <nav class="max-w-5xl mx-auto mb-6 flex flex-col gap-4 print:hidden" id="topo">
+        <div class="flex flex-wrap justify-center gap-3">
+            <a href="{% url 'pauta:pauta_all' %}"
+                class="bg-indigo-500 text-white px-3 py-2 rounded text-sm hover:bg-indigo-900 flex items-center gap-2 self-start">
+                <img src="{% static 'img/home.png' %}" alt="" class="h-4 inline"> Início
+            </a>
+            <button onclick="window.print()"
+                class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2 self-start">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+        </div>
+
+        <fieldset class="border-2 border-yellow-400 rounded-xl p-4 bg-white w-full max-w-md relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-24 h-24 bg-yellow-200/40 rounded-full pointer-events-none"></div>
+        <div class="absolute -bottom-8 -left-8 w-20 h-20 bg-green-200/40 rounded-full pointer-events-none"></div>
+        <div class="absolute top-1/2 left-1/2 w-20 h-20 bg-green-200/40 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
+         <div class="absolute top-1/4 left-1/4 w-40 h-40 bg-yellow-200/40 rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute top-1/2 right-6 w-12 h-12 bg-lime-200/30 rounded-full pointer-events-none -translate-y-1/2"></div>
+
+        <legend class="bg-yellow-500 text-black text-xs rounded px-3 py-2 flex items-center gap-2 relative z-10">
+            <i class="fas fa-file-upload"></i>
+            Atualização de Detentos
+            <span class="bg-primary text-white text-xs px-2 py-0.5 rounded-full">
+                [{{ ultima_data_atualizado|date:"d/m" }}]
+            </span>
+        </legend>
+
+        <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
+            action="{% url 'relação_detentos:upload_pdf' %}" class="relative z-10">
+            {% csrf_token %}
+            <div class="form-group mb-3">
+                <label for="pdfFile">Relatório 1.9 do IPEN</label><br>
+                <input
+                    type="file"
+                    class="form-control-file"
+                    id="pdfFile"
+                    name="pdfFile"
+                    accept="application/pdf"
+                    required
+                >
+            </div>
+            <button type="submit" class="bg-primary text-white px-3 py-2 rounded text-sm hover:bg-dark">
+                Enviar
+            </button>
+        </form>
+    </fieldset>
     </nav>
 
     <div class="max-w-5xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
@@ -66,21 +101,24 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="almoco_plantao" class="block text-sm font-medium mb-1 text-blue-700">Almoço Plantão:</label>
-                        <input type="number" name="almoco_plantao" id="almoco_plantao" min="0"
+                        <input type="number" name="almoco_plantao" id="almoco_plantao" min="0" max="100"
                                value="{{ request.GET.almoco_plantao|default:'0' }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                        <span class="text-xs text-gray-500 italic">Insira Manualmente</span>
                     </div>
                     <div>
                         <label for="lanche_plantao" class="block text-sm font-medium mb-1 text-blue-700">Lanche Plantão:</label>
-                        <input type="number" name="lanche_plantao" id="lanche_plantao" min="0"
+                        <input type="number" name="lanche_plantao" id="lanche_plantao" min="0" max="100"
                                value="{{ request.GET.lanche_plantao|default:'0' }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                        <span class="text-xs text-gray-500 italic">Insira Manualmente</span>
                     </div>
                     <div>
                         <label for="janta_plantao" class="block text-sm font-medium mb-1 text-blue-700">Janta Plantão:</label>
-                        <input type="number" name="janta_plantao" id="janta_plantao" min="0"
+                        <input type="number" name="janta_plantao" id="janta_plantao" min="0" max="100"
                                value="{{ request.GET.janta_plantao|default:'0' }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                        <span class="text-xs text-gray-500 italic">Insira Manualmente</span>
                     </div>
                 </div>
             </fieldset>
@@ -93,15 +131,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="almoco_administrativo" class="block text-sm font-medium mb-1 text-blue-700">Almoço Administrativo:</label>
-                        <input type="number" name="almoco_administrativo" id="almoco_administrativo" min="0"
+                        <input type="number" name="almoco_administrativo" id="almoco_administrativo" min="0" max="100"
                                value="{{ request.GET.almoco_administrativo|default:'0' }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                        <span class="text-xs text-gray-500 italic">Insira Manualmente</span>
                     </div>
                     <div>
                         <label for="lanche_administrativo" class="block text-sm font-medium mb-1 text-blue-700">Lanche Administrativo:</label>
-                        <input type="number" name="lanche_administrativo" id="lanche_administrativo" min="0"
+                        <input type="number" name="lanche_administrativo" id="lanche_administrativo" min="0" max="100"
                                value="{{ request.GET.lanche_administrativo|default:'0' }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                        <span class="text-xs text-gray-500 italic">Insira Manualmente</span>
                     </div>
                 </div>
             </fieldset>
@@ -114,27 +154,28 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label for="quantidade_internos_fechado" class="block text-sm font-medium mb-1 text-orange-700">Fechado (Galerias A+C):</label>
-                        <input type="number" name="quantidade_internos_fechado" id="quantidade_internos_fechado" min="0"
+                        <input type="number" name="quantidade_internos_fechado" id="quantidade_internos_fechado" min="0" max="1000"
                                value="{{ request.GET.quantidade_internos_fechado|default:internos_fechado_auto }}"
                                class="border-2 border-orange-300 rounded px-3 py-2 w-full focus:border-orange-500 focus:outline-none bg-orange-50">
                         <span class="text-xs text-gray-500 italic">Auto: {{ internos_fechado_auto }} (do banco)</span>
                     </div>
                     <div>
                         <label for="quantidade_internos_semiaberto" class="block text-sm font-medium mb-1 text-emerald-700">Semiaberto (Galerias B+D):</label>
-                        <input type="number" name="quantidade_internos_semiaberto" id="quantidade_internos_semiaberto" min="0"
+                        <input type="number" name="quantidade_internos_semiaberto" id="quantidade_internos_semiaberto" min="0" max="1000"
                                value="{{ request.GET.quantidade_internos_semiaberto|default:internos_semiaberto_auto }}"
                                class="border-2 border-emerald-300 rounded px-3 py-2 w-full focus:border-emerald-500 focus:outline-none bg-emerald-50">
                         <span class="text-xs text-gray-500 italic">Auto: {{ internos_semiaberto_auto }} (do banco)</span>
                     </div>
                     <div>
                         <label for="quantidade_internos_custodia" class="block text-sm font-medium mb-1 text-blue-700">Custódia&Feminina:</label>
-                        <input type="number" name="quantidade_internos_custodia" id="quantidade_internos_custodia" min="0"
+                        <input type="number" name="quantidade_internos_custodia" id="quantidade_internos_custodia" min="0"max="100"
                                value="{{ request.GET.quantidade_internos_custodia|default:'0' }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
+                        <span class="text-xs text-secondary italic">Insira Manualmente</span>
                     </div>
                     <div>
                         <label for="quantidade_internos_pensao" class="block text-sm font-medium mb-1 text-blue-700">Pensão Alimentícia (Galeria E):</label>
-                        <input type="number" name="quantidade_internos_pensao" id="quantidade_internos_pensao" min="0"
+                        <input type="number" name="quantidade_internos_pensao" id="quantidade_internos_pensao" min="0" max="10"
                                value="{{ request.GET.quantidade_internos_pensao|default:internos_pensao_auto }}"
                                class="border-2 border-blue-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none bg-blue-50">
                         <span class="text-xs text-gray-500 italic">Auto: {{ internos_pensao_auto }} (do banco)</span>
@@ -150,28 +191,28 @@
                 <div class="grid grid-cols-1 {% if internacao_hospitalar_auto > 0 %}md:grid-cols-4{% else %}md:grid-cols-3{% endif %} gap-4">
                     <div>
                         <label for="quantidade_internos_saida_temporaria" class="block text-sm font-medium mb-1 text-red-700">Saída Temporária:</label>
-                        <input type="number" name="quantidade_internos_saida_temporaria" id="quantidade_internos_saida_temporaria" min="0"
+                        <input type="number" name="quantidade_internos_saida_temporaria" id="quantidade_internos_saida_temporaria" min="0" max="{{ resultado.total_bruto_internos }}"
                                value="{{ request.GET.quantidade_internos_saida_temporaria|default:saida_temporaria_auto }}"
                                class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
                         <span class="text-xs text-gray-500 italic">Auto: {{ saida_temporaria_auto }} (do banco)</span>
                     </div>
                     <div>
                         <label for="trabalho_externo" class="block text-sm font-medium mb-1 text-red-700">Trabalho Externo:</label>
-                        <input type="number" name="trabalho_externo" id="trabalho_externo" min="0"
+                        <input type="number" name="trabalho_externo" id="trabalho_externo" min="0" max="{{ resultado.total_bruto_internos }}"
                                value="{{ request.GET.trabalho_externo|default:trabalho_externo_auto }}"
                                class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
                         <span class="text-xs text-gray-500 italic">Auto: {{ trabalho_externo_auto }} (do banco)</span>
                     </div>
                     <div>
                         <label for="outras_subtracoes" class="block text-sm font-medium mb-1 text-red-700">Outras Subtrações(Júri, etc):</label>
-                        <input type="number" name="outras_subtracoes" id="outras_subtracoes" min="0"
+                        <input type="number" name="outras_subtracoes" id="outras_subtracoes" min="0" max="{{ resultado.total_bruto_internos }}"
                                value="{{ request.GET.outras_subtracoes|default:'0' }}"
                                class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
                     </div>
                     {% if internacao_hospitalar_auto > 0 %}
                     <div>
                         <label for="internacao_hospitalar" class="block text-sm font-medium mb-1 text-red-700">Internação Hospitalar:</label>
-                        <input type="number" name="internacao_hospitalar" id="internacao_hospitalar" min="0"
+                        <input type="number" name="internacao_hospitalar" id="internacao_hospitalar" min="0" max="50"
                             value="{{ request.GET.internacao_hospitalar|default:internacao_hospitalar_auto }}"
                             class="border-2 border-red-300 rounded px-3 py-2 w-full focus:border-red-500 focus:outline-none bg-red-50">
                         <span class="text-xs text-gray-500 italic">Auto: {{ internacao_hospitalar_auto }} (do banco)</span>
@@ -412,7 +453,7 @@
 
     <!-- Rodapé -->
     <footer class="max-w-5xl mx-auto mt-12 mb-6 text-center text-sm text-gray-600">
-        &copy; {{ ano_corrente }} Presídio Regional de Maravilha. Todos os direitos reservados.
+        &copy; 2026 - {{ ano_corrente }} Presídio Regional de Maravilha. Todos os direitos reservados.
     </footer>
 
     <script>

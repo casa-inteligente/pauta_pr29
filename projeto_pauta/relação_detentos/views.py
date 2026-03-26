@@ -56,7 +56,6 @@ arial_bold_path = os.path.join(settings.BASE_DIR, 'projeto_pauta', 'static', 'fo
 pdfmetrics.registerFont(TTFont('Arial', arial_path))
 pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 
-ANO_CORRENTE = timezone.now().year
 
 if settings.DEBUG:
     from projeto_pauta.decoradores.calcula_tempo import calcula_tempo, calcula_tempo_fun
@@ -139,6 +138,7 @@ def relacao_list(request):
         'qtd_semiaberto': qtd_semiaberto, #Quantidade de alocados no semiaberto
         'qtd_total': qtd_total, #quantidade de alocados na unidade
         'qtd_preventiva' : qtd_preventiva, #quantidade de preventivos
+        'ano_corrente': timezone.now().year, #ano corrente para exibir no rodapé
     })
 
 @csrf_exempt
@@ -212,7 +212,7 @@ def upload_pdf(request):
         Arquivo PDF, oriundo do sistema IPEN relatorio 1.9    
     
     Template:
-        pauta/template/relacao_list.html
+        relação_detentos/template/calculo_alimentacao.html
     '''
     if request.method == 'POST' and request.FILES.get('pdfFile'):
         pdf_file = request.FILES['pdfFile']
@@ -222,8 +222,8 @@ def upload_pdf(request):
 
         process_pdf(file_path)
 
-        return redirect('relação_detentos:view_termo_rouparia')
-    return render(request, 'relacao_list.html')
+        return redirect('relação_detentos:calculo_alimentacao')
+    return render(request, 'calculo_alimentacao.html')
 
 def upload_regime_pdf(request):
     if request.method == 'POST' and request.FILES.get('regimePdfFile'):
@@ -330,7 +330,7 @@ def view_termo_rouparia(request):
         'com_kit_higiene': com_kit_higiene,
         'ultima_data_atualizado': ultima_data_atualizado,
         'form': form,
-        'ano_corrente': ANO_CORRENTE,
+        'ano_corrente': timezone.now().year,
     })
 
 @checked_debug_decorador
@@ -805,7 +805,7 @@ def cadastro_trampo_view(request):
         'empresa_conveniada': empresa_conveniada,
         'empresa_conveniada_nome': empresa_conveniada_nome,
         'empresas_conveniadas': Relacao.empresas_conveniadas, 
-        'ano_corrente': ANO_CORRENTE,
+        'ano_corrente': timezone.now().year,
     })
 
 
@@ -1715,6 +1715,12 @@ def calculo_alimentacao(request):
     registro = None
     historico = CalculoAlimentacao.objects.all()[:10]
 
+    ultima_data_atualizado = (
+        Relacao.objects
+        .exclude(atualizado__isnull=True)
+        .aggregate(Max('atualizado')).get('atualizado__max')
+    )
+
     # Contagens automáticas do banco (para pré-preencher o formulário)
     contagens = Relacao.objects.aggregate(
         trabalho_externo_auto=Count('id', filter=Q(situacao_penal='TRABALHO EXTERNO')),
@@ -1728,14 +1734,12 @@ def calculo_alimentacao(request):
         situacao_penal='INTERNAÇÃO HOSPITALAR')
         .values_list('local_galeria', flat=True)
     )
-    #print(f"Galerias dos internos em internação hospitalar: {galeria_internacao_hospitalar}")
-    #print(f"Quantos estao em internacao hospitalar: {len(galeria_internacao_hospitalar)}")
+
 
     #  Classifica os internos em internação hospitalar entre fechado (A e C) e semiaberto (B, D e E)
     internacao_hospitalar_galeria_fechado = galeria_internacao_hospitalar.count('A') + galeria_internacao_hospitalar.count('C')
     internacao_hospitalar_galeria_semiaberto = galeria_internacao_hospitalar.count('B') + galeria_internacao_hospitalar.count('D') + galeria_internacao_hospitalar.count('E')
-    #print(f"Internação hospitalar - Galeria Fechado (A e C): {internacao_hospitalar_galeria_fechado}")
-    #print(f"Internação hospitalar - Galeria Semiaberto (B, D e E): {internacao_hospitalar_galeria_semiaberto}")
+
 
 
 
@@ -1881,13 +1885,14 @@ def calculo_alimentacao(request):
         'descricao': 'Ferramenta para calcular a quantidade de refeições necessárias para a unidade prisional.',
         'resultado': resultado,
         'historico': historico,
-        'ano_corrente': ANO_CORRENTE,
+        'ano_corrente': timezone.now().year,
         'trabalho_externo_auto': trabalho_externo_auto,
         'saida_temporaria_auto': saida_temporaria_auto,
         'internos_fechado_auto':internos_fechado_auto,
         'internos_semiaberto_auto':internos_semiaberto_auto,
         'internos_pensao_auto':internos_pensao_auto,
         'internacao_hospitalar_auto': internacao_hospitalar_auto,
+        'ultima_data_atualizado': ultima_data_atualizado
     }
 
     return render(request, 'calculo_alimentacao.html', context)
