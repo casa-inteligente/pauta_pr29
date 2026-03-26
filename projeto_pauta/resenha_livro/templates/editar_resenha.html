@@ -1,69 +1,81 @@
+<!-- filepath: /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/templates/editar_resenha.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ titulo }}</title>
     <link rel="stylesheet" href="{% static 'resenha_livro/css/style.css' %}">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: rgb(241, 238, 232);
+    <script src="https://cdn.tailwindcss.com"></script>
+     <style>
+        :root{
+            --primary: #00953B;
+            --secondary: #E30613;
+            --accent: #A1C84D;
+            --dark: #244131;
+            --secondary-accent: #E25D5E;
+            --secondary-dark: #8C0011;
+            
         }
 
-        .header {
-            background-color: #343a40;
-            color: white;
-            padding: 5px 0;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-        }
+        .text-primary  { color: var(--primary); }
+        .bg-primary    { background-color: var(--primary); }
+        .text-secondary{ color: var(--secondary); }
+        .bg-secondary  { background-color: var(--secondary); }
+        .text-accent   { color: var(--accent); }
+        .bg-accent     { background-color: var(--accent); }
+        .text-dark     { color: var(--dark); }
+        .bg-dark       { background-color: var(--dark); }
+        .bg-secondary-accent { background-color: var(--secondary-accent); }
+        .text-secondary-dark { color: var(--secondary-dark); }
 
-        .footer {
-            background-color: #343a40;
-            color: white;
-            padding: 10px 0;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-        }
-
-        .class1 {
-            margin-top: 80px;
-        }
+        .hover\:bg-accent:hover  { background-color: var(--accent); }
+        .hover\:text-accent:hover{ color: var(--accent); }
+        .hover\:text-primary:hover{ color: var(--primary); }
+        .hover\:bg-secondary-dark:hover { background-color: var(--secondary-dark); }
     </style>
 </head>
 
-<body>
-
-    <!-- Cabeçalho -->
-    <header class="header">
-        <div class="container">
-            <h2 class="text-center">Presídio Regional de Maravilha </h2>
+<body class="min-h-screen bg-stone-100 text-gray-800">
+    <header class="fixed top-0 z-50 w-full bg-gray-800 py-3 text-white shadow-md">
+        <div class="mx-auto max-w-5xl px-4">
+            <h2 class="text-center text-xl font-semibold">Presídio Regional de Maravilha</h2>
         </div>
     </header>
 
-    <div class="container class1">
-        <h1>{{ titulo }}</h1>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Salvar</button>
-            <button class="btn btn-voltar ">Voltar</button>
+    <main class="mx-auto max-w-3xl px-4 pb-28 pt-24">
+        <div class="rounded-2xl bg-white p-6 shadow-lg md:p-8">
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-green-700">{{ titulo }}</h1>
+                <p class="mt-1 text-sm text-gray-500">Atualize os dados da resenha e salve as alterações.</p>
+            </div>
 
-        </form>
-        <!-- <button>Voltar</button> -->
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                {{ form.as_p }}
 
-    </div>
+                <div class="flex flex-wrap gap-3 pt-4">
+                    <button
+                        type="submit"
+                        class="rounded-lg bg-green-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-green-700">
+                        Salvar
+                    </button>
 
-    <!-- Rodapé -->
-    <footer class="footer">
-        <div class="container">
-            <p class="mb-0">2025 Presídio Regional de Maravilha &#8211; Todos os direitos reservados</p>
+                    <a
+                        href="javascript:history.back()"
+                        class="rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100">
+                        Voltar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="fixed bottom-0 w-full bg-gray-800 py-3 text-white shadow-inner">
+        <div class="mx-auto max-w-5xl px-4 text-center text-sm">
+            <p>&copy; 2025 - {{ ano_corrente }} Presídio Regional de Maravilha &#8211; Todos os direitos reservados</p>
         </div>
     </footer>
 </body>

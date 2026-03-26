@@ -113,6 +113,7 @@ python manage.py startapp nome_do_app
 
 # Fazer migrações após alterações no modelo
 python manage.py makemigrations
+python manage.py migrate --database=resenha_livro # esta aplicação possui 2 DB
 python manage.py migrate
 ```
 
@@ -221,4 +222,4 @@ Verde: bg-[#32A041]
 
 **Versão**: 1.0.1
 **Status**: Em desenvolvimento ativo  
-**Última atualização**: janeiro 2026
+**Última atualização**: março 2026

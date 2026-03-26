@@ -52,8 +52,8 @@ except Exception as e:
 
 #Variaveis de ambiente para login
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'pauta:pauta_all'
+LOGOUT_REDIRECT_URL = 'pauta:pauta_all'
 
 
 

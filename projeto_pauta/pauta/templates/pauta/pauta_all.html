@@ -1,241 +1,290 @@
+{% extends "base.html" %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="pt-br">
+{% block titulo %}{{ titulo }}{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>{{ titulo }}</title>
-    <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
+{% block body_class %}min-h-screen bg-slate-50 text-slate-800{% endblock %}
 
-<body class="bg-gray-50 text-gray-800 font-sans">
+{% block nav %}
+<div id="topo" class="border-b border-slate-200 bg-white/90 backdrop-blur">
+    <div class="mx-auto max-w-7xl px-4 py-4">
+        <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">{{ nome_unidade }} &#8211; Pauta</h2>
+                <p class="text-sm text-slate-500">Painel principal de compromissos e funcionalidades.</p>
+            </div>
 
-    <!-- Cabeçalho -->
-    <header class="bg-white shadow p-4 mb-6">
-        <div class="max-w-5xl mx-auto text-center">
-            <h2 class="text-2xl font-semibold">{{ nome_unidade }} &#8211; Pauta</h2>
-        </div>
-    </header>
+            <div class="flex flex-wrap items-center gap-2 print:hidden">
+                <button onclick="alert('Para utilizar a LISTA DE FUNCIONALIDADES, atualize os dados através de relatórios do IPEN-1_9. Acesse o Termo de Rouparia e importe o .pdf (Atualização de Detentos)')"
+                    class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm transition hover:bg-slate-100"
+                    title="Ajuda">
+                    <img src="{% static 'img/help.svg' %}" alt="Ajuda" class="h-5 w-5">
+                    <span>Ajuda</span>
+                </button>
 
-    <!-- Menu de navegação -->
-    <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center items-center gap-2 print:hidden" id="topo">
-        <button onclick="alert('Para utilizar a LISTA DE FUNCIONALIDADES, atualize os dados através de relatórios do IPEN-1_9. Acesse o Termo de Rouparia e importe o .pdf (Atualização de Detentos)')" 
-            class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors duration-200 border border-gray-200"
-            title="Ajuda">
-            <img src="{% static 'img/help.svg' %}" alt="Ajuda" class="h-5">
-        </button>
-        <a href="{% url 'admin:index' %}"
-            class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
-            <img src="{% static 'img/login.png' %}" alt="Login" class="h-4"> Admin
-        </a>
-        <div class="relative" id="dropdown-wrapper">
-            <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors duration-200 shadow-sm hover:shadow-md">
-                <i class="fas fa-bars"></i>
-                Funcionalidades
-                <i class="fas fa-chevron-down text-xs ml-1 transition-transform duration-200" id="dropdown-arrow"></i>
-            </button>
-            <div id="dropdown-menu" class="absolute hidden bg-white border border-gray-200 rounded-lg shadow-lg z-50 top-full left-0 mt-1 min-w-[240px] overflow-hidden">
-                
-                <div class="py-1">
-                    <a href="{% url 'relação_detentos:relacao_list' %}"
-                        class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50 text-sm text-gray-700 transition-colors duration-150">
-                        <i class="fas fa-users text-indigo-400 w-5 text-center"></i>
-                        Relação de Detentos
-                    </a>
-                    <a href="{% url 'relação_detentos:cadastro_trampo' %}"
-                        class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50 text-sm text-gray-700 transition-colors duration-150">
-                        <i class="fas fa-briefcase text-indigo-400 w-5 text-center"></i>
-                        Termo Trabalho Externo
-                    </a>
-                    <a href="#" 
-                        class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50 text-sm text-gray-700 transition-colors duration-150">
-                        <i class="fas fa-file-alt text-indigo-400 w-5 text-center"></i>
-                        Geração de Ofícios
-                    </a>
-                    <a href="{% url 'relação_detentos:gerar_memorandos_todos' %}" target="_blank"
-                        class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50 text-sm text-gray-700 transition-colors duration-150">
-                        <i class="fa-solid fa-file-signature text-indigo-400 w-5 text-center"></i>
-                        Geração de Memorandos <span class="text-xs text-gray-400">(Todos)</span>
-                    </a>
-                    <a href="{% url 'relação_detentos:gerar_termo_kit_higiene' %}"
-                        class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50 text-sm text-gray-700 transition-colors duration-150">
-                        <i class="fas fa-shower text-indigo-400 w-5 text-center"></i>
-                        Termo Kit Higiene
-                    </a>
-                    <a href="{% url 'relação_detentos:view_termo_rouparia' %}"
-                        class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50 text-sm text-gray-700 transition-colors duration-150">
-                        <i class="fas fa-tshirt text-indigo-400 w-5 text-center"></i>
-                        Termo Rouparia
-                    </a>
-                    <a href="{% url 'relação_detentos:calculo_alimentacao' %}"
-                        class="flex items-center gap-2 px-4 py-2.5 hover:bg-indigo-50 text-sm text-gray-700 transition-colors duration-150">
-                        <i class="fas fa-cutlery text-indigo-400 w-5 text-center"></i>
-                        Alimentação  <span class="text-xs text-gray-400">(Calcula a quantidade de refeições)</span>
-                    </a>
-                </div>
+                <a href="{% url 'admin:index' %}"
+                    class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700">
+                    <img src="{% static 'img/login.png' %}" alt="Admin" class="h-4 w-4">
+                    <span>Admin</span>
+                </a>
 
-                <div class="border-t border-gray-100 px-4 py-3 bg-gray-50">
-                    <label class="text-xs text-gray-500 font-medium mb-1 block">Termo Monitorado</label>
-                    <input type="number" 
-                        id="ipen_termo_monitorado" 
-                        placeholder="IPEN (6 dígitos)" 
-                        class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition">
-                    <button onclick="window.location.href='{% url 'relação_detentos:termo_monitorado' 0 %}'.replace('0', document.getElementById('ipen_termo_monitorado').value)"
-                        class="w-full mt-2 bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-600 transition-colors duration-200">
-                        <i class="fas fa-file-export mr-1"></i> Gerar Termo
-                    </button>
-                </div>
-
-                <div class="border-t border-gray-100 py-1">
-                    <a href="{% url 'servidores:lista_escala_servidores' %}"
-                        class="flex items-center gap-2 px-4 py-2.5 hover:bg-amber-50 text-sm text-gray-700 transition-colors duration-150">
-                        <i class="fas fa-calendar-alt text-amber-500 w-5 text-center"></i>
-                        Escala
-                    </a>
-                    <a href="{% url 'servidores:folha_ponto' %}"
-                        class="flex items-center gap-2 px-4 py-2.5 hover:bg-amber-50 text-sm text-gray-700 transition-colors duration-150">
-                        <i class="fas fa-clock text-amber-500 w-5 text-center"></i>
-                        Folha Ponto
-                    </a>
-                </div>
+                <button onclick="window.print()"
+                    class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition hover:bg-slate-100"
+                    title="Imprimir">
+                    <img src="{% static 'img/printer.png' %}" alt="Imprimir" class="h-4 w-4">
+                    <span>Imprimir</span>
+                </button>
             </div>
         </div>
+
+        <div class="flex flex-wrap items-start gap-3 print:hidden">
+            <details class="group relative">
+                <summary
+                    class="flex cursor-pointer list-none items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700">
+                    <i class="fas fa-bars"></i>
+                    <span>Funcionalidades</span>
+                    <i class="fas fa-chevron-down text-xs transition group-open:rotate-180"></i>
+                </summary>
+
+                <div
+                    class="absolute left-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                    <div class="border-b border-slate-100 px-4 py-3">
+                        <p class="text-sm font-semibold text-slate-700">Lista de funcionalidades</p>
+                    </div>
+
+                    <div class="py-2">
+                        <a href="{% url 'relação_detentos:relacao_list' %}"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-indigo-50">
+                            <i class="fas fa-users w-5 text-center text-indigo-500"></i>
+                            <span>Relação de Detentos</span>
+                        </a>
+
+                        <a href="{% url 'relação_detentos:cadastro_trampo' %}"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-indigo-50">
+                            <i class="fas fa-briefcase w-5 text-center text-indigo-500"></i>
+                            <span>Termo Trabalho Externo</span>
+                        </a>
+
+                        <a href="#"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-indigo-50">
+                            <i class="fas fa-file-alt w-5 text-center text-indigo-500"></i>
+                            <span>Geração de Ofícios</span>
+                        </a>
+
+                        <a href="{% url 'relação_detentos:gerar_memorandos_todos' %}" target="_blank"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-indigo-50">
+                            <i class="fa-solid fa-file-signature w-5 text-center text-indigo-500"></i>
+                            <span>Geração de Memorandos <span class="text-xs text-slate-400">(Todos)</span></span>
+                        </a>
+
+                        <a href="{% url 'relação_detentos:gerar_termo_kit_higiene' %}"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-indigo-50">
+                            <i class="fas fa-shower w-5 text-center text-indigo-500"></i>
+                            <span>Termo Kit Higiene</span>
+                        </a>
+
+                        <a href="{% url 'relação_detentos:view_termo_rouparia' %}"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-indigo-50">
+                            <i class="fas fa-tshirt w-5 text-center text-indigo-500"></i>
+                            <span>Termo Rouparia</span>
+                        </a>
+
+                        <a href="{% url 'relação_detentos:calculo_alimentacao' %}"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-indigo-50">
+                            <i class="fas fa-cutlery w-5 text-center text-indigo-500"></i>
+                            <span>Alimentação <span class="text-xs text-slate-400">(Calcula refeições)</span></span>
+                        </a>
+                    </div>
+
+                    <div class="border-y border-slate-100 bg-slate-50 px-4 py-3">
+                        <label for="ipen_termo_monitorado" class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            Termo Monitorado
+                        </label>
+                        <input type="number"
+                            id="ipen_termo_monitorado"
+                            placeholder="IPEN (6 dígitos)"
+                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+                        <button type="button"
+                            onclick="window.location.href='{% url 'relação_detentos:termo_monitorado' 0 %}'.replace('0', document.getElementById('ipen_termo_monitorado').value)"
+                            class="mt-2 w-full rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700">
+                            <i class="fas fa-file-export mr-1"></i>
+                            Gerar Termo
+                        </button>
+                    </div>
+
+                    <div class="py-2">
+                        <a href="{% url 'servidores:lista_escala_servidores' %}"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-amber-50">
+                            <i class="fas fa-calendar-alt w-5 text-center text-amber-500"></i>
+                            <span>Escala</span>
+                        </a>
+
+                        <a href="{% url 'servidores:folha_ponto' %}"
+                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-amber-50">
+                            <i class="fas fa-clock w-5 text-center text-amber-500"></i>
+                            <span>Folha Ponto</span>
+                        </a>
+                    </div>
+                </div>
+            </details>
+
+            <a href="{% url 'pauta:index_7' %}"
+                class="inline-flex items-center gap-2 rounded-xl bg-yellow-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-yellow-700">
+                <img src="{% static 'img/age-restriction-seven.png' %}" alt="Pauta 7 Dias" class="h-4 w-4">
+                <span>Pauta 7 Dias</span>
+            </a>
+
+            <a href="{% url 'estatisticas:estatisticas_view' %}"
+                class="inline-flex items-center gap-2 rounded-xl bg-indigo-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-800">
+                <img src="{% static 'img/estatisticas.png' %}" alt="Estatísticas" class="h-4 w-4">
+                <span>Estatísticas</span>
+            </a>
+
+            <a href="{% url 'resenha_livro:listar_alunos' %}"
+                class="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-green-700">
+                <img src="{% static 'img/folha_resenha.png' %}" alt="Resenhas" class="h-5 w-5">
+                <span>Resenhas</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block main_class %}mx-auto max-w-7xl px-4 py-6{% endblock %}
+
+{% block main_content %}
+<div class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 px-5 py-4">
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-800">Compromissos</h3>
         
-        <!-- Botões adicionais -->
-        <a href="{% url 'pauta:index_7' %}"
-            class="bg-yellow-600 text-white px-3 py-2 rounded text-sm hover:bg-yellow-700">
-            <img src="{% static 'img/age-restriction-seven.png' %}" alt="7 dias" class="h-4 inline"> Pauta 7 Dias
-        </a>
+                </div>
+                <span class="inline-flex w-fit items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                    {{ pauta_all|length }} registros
+                </span>
+            </div>
+        </div>
 
-        <a href="{% url 'estatisticas:estatisticas_view' %}"
-            class="bg-indigo-600 text-white px-3 py-2 rounded text-sm hover:bg-indigo-700">
-            <img src="{% static 'img/estatisticas.png' %}" alt="Estatísticas" class="h-4 inline"> Estatísticas
-        </a>
-
-        <a href="{% url 'resenha_livro:listar_alunos' %}"
-            class="transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 hover:bg-green-900 duration-300 bg-green-600 text-white px-3 py-2 rounded text-sm">
-            <img src="{% static 'img/folha_resenha.png' %}" alt="Folha" class="h-6 inline"> Resenhas
-        </a>
-
-        <button onclick="window.print()" 
-            class="bg-white hover:bg-gray-100 text-gray-600 px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors duration-200 border border-gray-200"
-            title="Imprimir">
-            <img src="{% static 'img/printer.png' %}" alt="Imprimir" class="h-4">
-        </button>
-    </nav>
-
-    <!-- Conteúdo Principal -->
-    <main class="max-w-7xl mx-auto grid md:grid-cols-[70%_30%] gap-6" id="topo">
-
-        <!-- Lista de compromissos -->
-        <section>
-            <!-- <h3 class="text-lg font-medium mb-3">Compromissos</h3> -->
-            <table class="min-w-full table-auto border-collapse border border-gray-300">
-                <thead class="bg-gray-200">
-                    <tr class="text-center text-sm">
-                        <th class="border p-2 w-[15%]">📅 Data</th>
-                        <th class="border p-2 w-[15%]">🕒 Hora</th>
-                        <th class="border p-2 w-[35%]">👤 Nome</th>
-                        <th class="border p-2 w-[35%]">📋 Situação</th>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-100">
+                    <tr class="text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                        <th class="px-4 py-3">Data</th>
+                        <th class="px-4 py-3">Hora</th>
+                        <th class="px-4 py-3">Nome</th>
+                        <th class="px-4 py-3">Situação</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-100">
                     {% for pauta in pauta_all %}
-                    <tr class="text-center text-sm hover:bg-yellow-100 odd:bg-white">
-                        <td class="border p-2">{{ pauta.data|date:"d/m/y" }}</td>
-                        <td class="border p-2">{{ pauta.hora }}</td>
-                        <td class="border p-2 text-left">{{ pauta.nome|safe|linebreaksbr }}</td>
-                        <td class="border p-2 text-left">
+                    <tr class="align-top transition hover:bg-amber-50/60">
+                        <td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-700">
+                            {{ pauta.data|date:"d/m/y" }}
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
+                            {{ pauta.hora }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-slate-700">
+                            {{ pauta.nome|safe|linebreaksbr }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-slate-700">
                             {{ pauta.situacao|safe|linebreaksbr }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-4 py-10 text-center text-sm text-slate-500">
+                            Nenhum compromisso cadastrado.
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-        </section>
+        </div>
+    </section>
 
-        <!-- Inserção de novos compromissos -->
-        <section class="print:hidden">
-            <h3 class="text-lg font-medium mb-3 text-center">
-                📅📋📝
-                Inserir Compromisso
-            </h3>
-            <form method="post" action="{% url 'pauta:pauta_all' %}"
-                class="space-y-4 bg-white p-4 border rounded shadow">
-                {% csrf_token %}
-                {{ form.as_p }}
+    <aside class="print:hidden">
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-5 py-4">
+                <h3 class="text-lg font-semibold text-slate-800">Inserir Compromisso</h3>
+            </div>
 
-                <button type="submit"
-                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">💾 Salvar</button>
-                <p class="text-sm mt-2">
-                    Lembre-se de lançar o compromisso no
-                    <a href="https://www.sc.gov.br/sap/ipen/signin" target="_blank"
-                        class="underline text-blue-600 hover:text-blue-800"><strong>i-PEN</strong></a>
-                </p>
-            </form>
-        </section>
-    </main>
+            <div class="p-5">
+                <form method="post" action="{% url 'pauta:pauta_all' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <div class="space-y-4 form-pauta">
+                        {{ form.as_p }}
+                    </div>
 
-    <!-- Rodapé -->
-    <footer class="mt-10 py-4 bg-gray-100 text-center text-sm text-gray-600">
-        {{ ano_corrente }} Presídio Regional de Maravilha &#8211; Todos os direitos reservados
-    </footer>
+                    <button type="submit"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700">
+                        <img src="{% static 'img/save.png' %}" alt="Salvar" class="h-4 w-4">
+                        <span>Salvar compromisso</span>
+                    </button>
 
-    <!-- Script impressão -->
-    <div class="hidden print:block">
-        <p id="print-time"></p>
-        <p id="document-url"></p>
-    </div>
+                    <div class="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                        Lembre-se de lançar o compromisso no
+                        <a href="https://www.sc.gov.br/sap/ipen/signin" target="_blank"
+                            class="font-semibold text-blue-600 underline transition hover:text-blue-800">
+                            i-PEN
+                        </a>.
+                    </div>
+                </form>
+            </div>
+        </div>
+    </aside>
+</div>
 
-    <a href="#topo" class="fixed bottom-6 right-6 z-50 print:hidden">
-        <img src="{% static 'img/arrow-circle-up.png' %}" alt="Topo" class="h-10 w-10 hover:scale-110 transition">
-    </a>
+<div class="hidden print:block px-4 py-2 text-xs text-slate-600">
+    <p id="print-time"></p>
+    <p id="document-url"></p>
+</div>
 
+<a href="#topo"
+    class="fixed bottom-6 right-6 z-50 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg transition hover:scale-105 print:hidden">
+    <img src="{% static 'img/arrow-circle-up.png' %}" alt="Topo" class="h-8 w-8">
+</a>
+{% endblock %}
 
-    <script>
-        window.addEventListener('beforeprint', function () {
-            var now = new Date();
-            var printTime = now.toLocaleString();
-            var documentURL = window.location.href;
-            document.getElementById('print-time').innerText = printTime;
-            document.getElementById('document-url').innerText = documentURL;
-        });
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const formWrapper = document.querySelector('.form-pauta');
+        if (formWrapper) {
+            formWrapper.querySelectorAll('input, select, textarea').forEach(function (field) {
+                field.classList.add(
+                    'mt-1', 'w-full', 'rounded-xl', 'border', 'border-slate-300',
+                    'px-3', 'py-2', 'text-sm', 'text-slate-700', 'outline-none',
+                    'transition', 'focus:border-green-500', 'focus:ring-4', 'focus:ring-green-100'
+                );
+            });
 
+            formWrapper.querySelectorAll('label').forEach(function (label) {
+                label.classList.add('mb-1', 'block', 'text-sm', 'font-medium', 'text-slate-700');
+            });
 
-        // Dropdown
-        const dropdownWrapper = document.getElementById('dropdown-wrapper');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-        let dropdownTimeout;
+            formWrapper.querySelectorAll('p').forEach(function (item) {
+                item.classList.add('space-y-1');
+            });
+        }
+    });
 
-        dropdownWrapper.addEventListener('mouseenter', function () {
-            clearTimeout(dropdownTimeout);
-            dropdownMenu.classList.remove('hidden');
-        });
+    window.addEventListener('beforeprint', function () {
+        const now = new Date();
+        const printTime = now.toLocaleString();
+        const documentURL = window.location.href;
 
-        dropdownWrapper.addEventListener('mouseleave', function () {
-            dropdownTimeout = setTimeout(function () {
-                dropdownMenu.classList.add('hidden');
-            }, 200);
-        });
+        const printTimeEl = document.getElementById('print-time');
+        const documentUrlEl = document.getElementById('document-url');
 
-        document.addEventListener('click', function (e) {
-            if (!dropdownWrapper.contains(e.target)) {
-                dropdownMenu.classList.add('hidden');
-            }
-        });
-
-        window.addEventListener('beforeprint', function () {
-            var now = new Date();
-            var printTime = now.toLocaleString();
-            var documentURL = window.location.href;
-            document.getElementById('print-time').innerText = printTime;
-            document.getElementById('document-url').innerText = documentURL;
-        });
-    </script>
-</body>
-
-</html>
+        if (printTimeEl) {
+            printTimeEl.innerText = printTime;
+        }
+        if (documentUrlEl) {
+            documentUrlEl.innerText = documentURL;
+        }
+    });
+</script>
+{% endblock %}

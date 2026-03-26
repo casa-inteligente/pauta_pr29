@@ -1,14 +1,14 @@
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 import re
 
-ANO_CORRENTE = timezone.now().year
 
 class ResenhaLivroManager(models.Manager):
     """ 
     Classe para gerenciar buscas de resenhas de livros
     """
-    def search_by_aluno_nome(self, nome_aluno:str, ano=ANO_CORRENTE ):
+    def search_by_aluno_nome(self, nome_aluno:str, ano=timezone.now().year ):
         """Busca resenhas pelo nome do aluno, ignorando maiúsculas/minúsculas e espaços, e pelo ano."""
         nome_aluno_clean = re.sub(r'\s+', ' ', nome_aluno.strip().lower())
         return self.filter(
@@ -61,12 +61,13 @@ class PeriodoLeitura(models.Model):
     )
 
     class Meta:
-        
+        ordering = ('-data_resenha',)
         verbose_name = 'periodo de leitura'
         verbose_name_plural = 'Adicionar periodos de leituras'
+       
 
     def __str__(self):
-        return f'{self.turma.nome} - {self.intervalo_leitura}'
+        return f'{self.turma.nome} - {self.intervalo_leitura} 📅 [{self.data_resenha.strftime("%d/%m/%Y")}]'
 
 class Aluno(models.Model):
     """Modelo para aluno"""
@@ -112,10 +113,27 @@ class ResenhaLivro(models.Model):
     periodoLeitura = models.ForeignKey(
         PeriodoLeitura, 
         on_delete=models.CASCADE, 
-        related_name='resenhas'
+        related_name='resenhas',
+        verbose_name='Período de leitura:',
     )
     nomeProfessor = models.CharField('Nome do professor(a):', max_length=150, blank=False, null=False, default='Terlene Bolzan')
     aprovada = models.BooleanField('Aprovada', default=True)
+    gerado_declaracao = models.BooleanField('Gerado declaração', default=False)
+    atualizado_em = models.DateTimeField('Atualizado em', auto_now=True)
+    # atualizado_por = models.ForeignKey(
+    #     settings.AUTH_USER_MODEL,
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name='resenhas_atualizadas'
+    # )
+    path_resenha = models.CharField(
+        'Caminho da resenha gerada:',
+        max_length=255,
+        blank=True,
+        null=True
+    )
+    
 
     def __str__(self):
         return f'{self.aluno.nome} - {self.nomelivro}'
