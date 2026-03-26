@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <title>{{ titulo }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </head>
 
 <body class="bg-[#f1eee8] text-gray-800 font-sans min-h-screen flex items-center justify-center">
@@ -27,23 +28,36 @@
                 🔙 Voltar
             </a>
 
-            <button onclick="openPopup()"
+            <button type="button"
+                hx-get="{% url 'resenha_livro:adicionar_aluno_popup' %}"
+                hx-target="#modal-container"
+                hx-swap="innerHTML"
                 class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition w-full sm:w-auto">
                 ➕ Adicionar Aluno
             </button>
         </div>
     </div>
 
+    <div id="modal-container"></div>
+
     <script>
-        function openPopup() {
-            const popupUrl = "{% url 'resenha_livro:adicionar_aluno_popup' %}";
-            const popupWindow = window.open(
-                popupUrl,
-                "Adicionar Aluno",
-                "width=400,height=800,resizable=yes,scrollbars=yes"
-            );
-            popupWindow.focus();
+        function fecharModalResenha() {
+            const modal = document.getElementById('modal-resenha-overlay');
+            if (modal) {
+                modal.remove();
+            }
         }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                fecharModalResenha();
+            }
+        });
+
+        document.body.addEventListener('alunoAdicionado', function () {
+            fecharModalResenha();
+            window.location.reload();
+        });
     </script>
 
 </body>

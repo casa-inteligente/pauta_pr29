@@ -1,8 +1,132 @@
-{% extends "base.html" %} 
+{# /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/templates/configuracao_resenhas.html #}
+{% extends "base.html" %}
 {% load static %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block head %}
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+{% endblock %}
+
+{% block main_class %}mx-auto max-w-7xl px-4 py-6{% endblock %}
+
 {% block main_content %}
-<div class="max-w-7xl mx-auto p-4">
-    <h1 class="text-xl font-bold text-center mb-6">Configurações de Resenhas</h1>
-    <!-- Adicione aqui os formulários e opções de configuração -->
+<div class="space-y-6">
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">{{ titulo }}</h1>
+                <p class="mt-1 text-sm text-slate-500">
+                    Gerencie alunos, resenhas e edições em um único painel.
+                </p>
+            </div>
+
+            <a href="{% url 'resenha_livro:listar_alunos' %}"
+               class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+                <i class="fas fa-arrow-left"></i>
+                <span>Voltar à listagem</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="grid gap-4 md:grid-cols-3">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-medium text-slate-500">Alunos cadastrados</p>
+            <p class="mt-2 text-3xl font-bold text-slate-800">{{ total_alunos }}</p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-medium text-slate-500">Resenhas cadastradas</p>
+            <p class="mt-2 text-3xl font-bold text-slate-800">{{ total_resenhas }}</p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p class="text-sm font-medium text-slate-500">Períodos de leitura</p>
+            <p class="mt-2 text-3xl font-bold text-slate-800">{{ total_periodos }}</p>
+        </div>
+    </section>
+
+    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-800">Adicionar aluno</h2>
+                    <p class="text-sm text-slate-500">Cadastre um novo aluno sem sair da tela.</p>
+                </div>
+            </div>
+
+            <button type="button"
+                    hx-get="{% url 'resenha_livro:adicionar_aluno_popup' %}"
+                    hx-target="#modal-container"
+                    hx-swap="innerHTML"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+                <i class="fas fa-plus"></i>
+                <span>Abrir cadastro</span>
+            </button>
+        </article>
+
+        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-file-circle-plus"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-800">Adicionar resenha</h2>
+                    <p class="text-sm text-slate-500">Lance uma nova resenha vinculada ao aluno.</p>
+                </div>
+            </div>
+
+            <a href="{% url 'resenha_livro:adicionar_resenha' %}"
+               class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700">
+                <i class="fas fa-pen-to-square"></i>
+                <span>Nova resenha</span>
+            </a>
+        </article>
+
+        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                    <i class="fas fa-pen"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-800">Editar resenhas</h2>
+                    <p class="text-sm text-slate-500">Acesse a listagem para editar ou excluir.</p>
+                </div>
+            </div>
+
+            <a href="{% url 'resenha_livro:listar_alunos' %}"
+               class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-600">
+                <i class="fas fa-list"></i>
+                <span>Abrir listagem</span>
+            </a>
+        </article>
+    </section>
 </div>
+
+<div id="modal-container"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function fecharModalResenha() {
+        const modal = document.getElementById('modal-resenha-overlay');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            fecharModalResenha();
+        }
+    });
+
+    document.body.addEventListener('alunoAdicionado', function () {
+        fecharModalResenha();
+        window.location.reload();
+    });
+</script>
 {% endblock %}

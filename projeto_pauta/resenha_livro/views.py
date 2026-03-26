@@ -1,3 +1,5 @@
+# /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/views.py
+
 import os
 from django.http import HttpResponse, JsonResponse
 from django.templatetags.static import static
@@ -13,13 +15,10 @@ from reportlab.lib.pagesizes import A4
 import datetime
 
 
-
-
 def listar_alunos(request):
     """Listar todos os alunos e suas resenhas por período de leitura."""
     try:
         periodos = PeriodoLeitura.objects.all().order_by('-data_resenha')
-        #print(periodos)
         if not periodos.exists():
             resenhas_por_periodo = {}
         else:
@@ -27,19 +26,21 @@ def listar_alunos(request):
                 periodo: ResenhaLivro.objects.filter(
                     periodoLeitura=periodo
                 ).select_related(
-                    'aluno', 
-                    'periodoLeitura')
+                    'aluno',
+                    'aluno__turma',
+                    'periodoLeitura',
+                )
                 for periodo in periodos
             }
-    except Exception as e:
+    except Exception:
         resenhas_por_periodo = {}
 
-    #print(resenhas_por_periodo)
+    return render(request, 'listar_alunos.html', {
+        'resenhas_por_periodo': resenhas_por_periodo,
+        'titulo': 'Listar Alunos',
+        'ano_corrente': datetime.datetime.now().year,
+    })
 
-    return render(request, 'listar_alunos.html', {'resenhas_por_periodo': resenhas_por_periodo,
-                                                  'titulo': 'Listar Alunos',
-                                                  'ano_corrente': datetime.datetime.now().year,
-                                                  })
 
 def imprimir_resenha(request, aluno_id, periodo_id):
     """Renderiza a página para imprimir a resenha do aluno."""
@@ -47,7 +48,7 @@ def imprimir_resenha(request, aluno_id, periodo_id):
     periodo = get_object_or_404(PeriodoLeitura, id=periodo_id)
     resenhas = ResenhaLivro.objects.using('resenha_livro').filter(aluno=aluno, periodoLeitura=periodo)
     linhas = range(68)
-    
+
     return render(request, 'imprimir_resenha.html', {
         'titulo': 'Imprimir Resenha',
         'aluno': aluno,
@@ -65,9 +66,11 @@ def adicionar_resenha(request):
             return redirect('resenha_livro:listar_alunos')
     else:
         form = ResenhaLivroForm()
-    return render(request, 'adicionar_resenha.html', {'form': form,
-                                                      'titulo': 'Adicionar Resenha',
-                                                      })
+    return render(request, 'adicionar_resenha.html', {
+        'form': form,
+        'titulo': 'Adicionar Resenha',
+    })
+
 
 def editar_resenha(request, resenha_id):
     """Editar uma resenha existente."""
@@ -79,10 +82,12 @@ def editar_resenha(request, resenha_id):
             return redirect('resenha_livro:listar_alunos')
     else:
         form = ResenhaLivroForm(instance=resenha)
-    return render(request, 'editar_resenha.html', {'form': form,
-                                                   'titulo': 'Editar Resenha',
-                                                    'ano_corrente': datetime.datetime.now().year,
-                                                   })
+    return render(request, 'editar_resenha.html', {
+        'form': form,
+        'titulo': 'Editar Resenha',
+        'ano_corrente': datetime.datetime.now().year,
+    })
+
 
 def excluir_resenha(request, resenha_id):
     """Excluir uma resenha existente."""
@@ -93,152 +98,127 @@ def excluir_resenha(request, resenha_id):
 
 def gerar_todas_resenhas(request, periodo_id):
     """Gerar um PDF com todas as resenhas de um período de leitura."""
-    # Obter o período de leitura
     periodo = get_object_or_404(PeriodoLeitura, id=periodo_id)
     resenhas = ResenhaLivro.objects.filter(periodoLeitura=periodo)
 
-    # Criar o PDF
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="resenhas_periodo_{periodo.id}.pdf"'
 
-    # Configurar o canvas do PDF
     pdf = canvas.Canvas(response, pagesize=A4)
-    pdf.setLineWidth(0.5)#Define a espessura da linha
-    pdf.setStrokeColorRGB(0, 0, 0, 0.7)#Define a cor da linhas
+    pdf.setLineWidth(0.5)
+    pdf.setStrokeColorRGB(0, 0, 0, 0.7)
     pdf.setAuthor("MRLTech")
     largura, altura = A4
 
-    # Adicionar as resenhas ao PDF
     for resenha in resenhas:
-        # Centralizar o título
         pdf.setFont("Helvetica-Bold", 16)
-        pdf.setLineWidth(0.5)#Define a espessura da linha
-        pdf.setStrokeColorRGB(0, 0, 0, 0.7)#Define a cor da linhas
+        pdf.setLineWidth(0.5)
+        pdf.setStrokeColorRGB(0, 0, 0, 0.7)
         titulo = "PROJETO REMIÇÃO PELA LEITURA"
         pdf.drawCentredString(largura / 2, altura - 50, titulo)
 
-        # Tabela do cabeçalho com linhas laterais
         pdf.setFont("Helvetica", 12)
         y = altura - 100
         margem_esquerda = 50
         margem_direita = largura - 50
 
-        # Desenhar as linhas laterais da tabela
-        pdf.line(margem_esquerda, y + 20, margem_direita, y + 20)  # Linha superior
-        pdf.line(margem_esquerda, y - 8, margem_direita, y - 8)  # Linha professor
-        pdf.line(margem_esquerda, y - 25, margem_direita, y - 25)  # Linha professor
-        pdf.line(margem_esquerda, y - 45, margem_direita, y - 45)  # Linha professor
-        pdf.line(margem_esquerda, y - 65, margem_direita, y - 65)  # Linha autor/obra
-        pdf.line(margem_esquerda, y - 85, margem_direita, y - 85)  # Linha inferior
+        pdf.line(margem_esquerda, y + 20, margem_direita, y + 20)
+        pdf.line(margem_esquerda, y - 8, margem_direita, y - 8)
+        pdf.line(margem_esquerda, y - 25, margem_direita, y - 25)
+        pdf.line(margem_esquerda, y - 45, margem_direita, y - 45)
+        pdf.line(margem_esquerda, y - 65, margem_direita, y - 65)
+        pdf.line(margem_esquerda, y - 85, margem_direita, y - 85)
 
-        pdf.line(margem_esquerda + 280 , y - 8, margem_esquerda + 280, y - 45)  # Linha divisoria
-        pdf.line(margem_esquerda, y + 20, margem_esquerda, y - 85)  # Linha esquerda
-        pdf.line(margem_direita, y + 20, margem_direita, y - 85)  # Linha direita
+        pdf.line(margem_esquerda + 280, y - 8, margem_esquerda + 280, y - 45)
+        pdf.line(margem_esquerda, y + 20, margem_esquerda, y - 85)
+        pdf.line(margem_direita, y + 20, margem_direita, y - 85)
 
-        # Preencher os dados na tabela
         pdf.drawString(margem_esquerda + 10, y, f"Aluno: {resenha.aluno.nome}")
         y -= 20
         pdf.drawString(margem_esquerda + 10, y, f"Data da Resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}")
         pdf.drawString(margem_direita - 200, y, f"Período de Leitura: {resenha.periodoLeitura.intervalo_leitura}")
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, 'Local: CEJA/Ud Presídio Regional de Maravilha') 
+        pdf.drawString(margem_esquerda + 10, y, 'Local: CEJA/Ud Presídio Regional de Maravilha')
         pdf.drawString(margem_direita - 200, y, f"Professor(a): {resenha.nomeProfessor}")
 
         y -= 20
-        #pdf.drawString(margem_esquerda + 10, y, f"Livro:")
         pdf.drawCentredString(margem_direita - 250, y, f"{resenha.nomelivro}")
-        #pdf.drawString(margem_direita - 250, y, f"{resenha.nomelivro}")
         y -= 20
-        #pdf.drawString(margem_esquerda + 10, y, f"Autor:")
         pdf.drawString(margem_esquerda + 15, y, f"{resenha.nomeAutor}")
 
-
-        #ditancia entre linhas
         size_lines = 18
-        #quantidade de linhas na primeira folha
         qtd_linha_1folha = 31
-        # Linhas para escrita (frente da folha)
         y -= 40
-        # Desenhar a linha vertical da esquerda
-        pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_1folha -1)))  # Linha esquerda
-        # Desenhar a linha vertical da direita
-        pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_1folha -1)))  # Linha direita
 
-        for _ in range(qtd_linha_1folha):  # 20 linhas por página
+        pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_1folha - 1)))
+        pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_1folha - 1)))
+
+        for _ in range(qtd_linha_1folha):
             pdf.line(margem_esquerda, y, margem_direita, y)
             y -= size_lines
 
-            if y < 50:  # Verificar se a página precisa ser trocada
+            if y < 50:
                 pdf.showPage()
                 pdf.setFont("Helvetica", 12)
                 y = altura - 50
 
-        # Adicionar uma nova página para o verso
         pdf.showPage()
         pdf.setFont("Helvetica", 12)
-
-        # Linhas para escrita (verso da folha)
         y = altura - 50
 
-        #quantidade de linhas na segunda folha
         qtd_linha_2folha = 40
-        # Desenhar a linha vertical da esquerda
-        pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_2folha -1)))  # Linha esquerda
-        # Desenhar a linha vertical da direita
-        pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_2folha -1)))  # Linha direita
+        pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_2folha - 1)))
+        pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_2folha - 1)))
 
-        for _ in range(qtd_linha_2folha):  # qtd linhas no verso
+        for _ in range(qtd_linha_2folha):
             pdf.line(margem_esquerda, y, margem_direita, y)
-            pdf.setLineWidth(0.5)#Define a espessura da linha
-            pdf.setStrokeColorRGB(0, 0, 0, 0.7)#Define a cor da linhas
-            
+            pdf.setLineWidth(0.5)
+            pdf.setStrokeColorRGB(0, 0, 0, 0.7)
+
             y -= size_lines
-            if y < 50:  # Verificar se a página precisa ser trocada
+            if y < 50:
                 pdf.showPage()
                 pdf.setFont("Helvetica", 12)
                 y = altura - 50
 
-        # Adicionar uma nova página para a próxima resenha
         pdf.showPage()
 
-    # Finalizar o PDF
     pdf.save()
     return response
 
-#@require_POST
-def adicionar_aluno_popup(request):     
-    """Adicionar um novo aluno através de um popup."""
+
+def adicionar_aluno_popup(request):
+    """Adicionar um novo aluno por modal HTMX."""
     if request.method == 'POST':
         form = AlunoForm(request.POST)
         if form.is_valid():
-            aluno = form.save()
-            # Retornar o ID do aluno recém-criado para o popup
-            return JsonResponse({'id': aluno.id, 'nome': aluno.nome, 'matricula': aluno.matricula})
+            form.save()
+            response = HttpResponse('')
+            response['HX-Trigger'] = 'alunoAdicionado'
+            return response
     else:
         form = AlunoForm()
 
-    return render(request, 'adicionar_aluno_popup.html', {'form': form,
-                                                          'titulo': 'Adicionar Aluno',
-                                                          })
+    return render(request, 'adicionar_aluno_popup.html', {
+        'form': form,
+        'titulo': 'Adicionar Aluno',
+    })
 
 
 @login_required
 def gerar_decraracao_resenha(request, aluno_id):
-    """ Gerar uma declaração de cada participante do projeto, com nome do aluno, nome do livro, nome do autor, periodo de leitura, se foi aprovado ou não. Em um modelo .pdf, caso o 'gerado' for falso e marcar o 'gerado como verdadeiro'
-    
-    return: um arquivo .pdf que deverá abrir em uma nova aba do navegador.
-
-    """
+    """Gerar declaração da resenha."""
     pass
+
 
 @login_required
 def configuracao_resenhas(request):
-    """Configurações para as resenhas, como adicionar ou editar períodos de leitura, alunos, e geracao de declaracao de resenhas.
-
-        return: uma página de configurações onde o usuário pode gerenciar os períodos de leitura, alunos, etc.
-    """
+    """Tela de configurações das resenhas."""
     context = {
         'titulo': 'Configurações de Resenhas',
         'ano_corrente': datetime.datetime.now().year,
+        'total_alunos': Aluno.objects.count(),
+        'total_resenhas': ResenhaLivro.objects.count(),
+        'total_periodos': PeriodoLeitura.objects.count(),
     }
     return render(request, 'configuracao_resenhas.html', context)
