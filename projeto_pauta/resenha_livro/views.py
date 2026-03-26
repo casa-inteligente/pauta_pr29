@@ -6,7 +6,7 @@ from django.templatetags.static import static
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from .models import Aluno, ResenhaLivro, PeriodoLeitura
-from .forms import ResenhaLivroForm
+from .forms import ResenhaLivroForm, AlunoForm, PeriodoLeituraForm
 from django.contrib.auth.decorators import login_required
 from .forms import ResenhaLivroForm, AlunoForm
 from django.conf import settings
@@ -214,11 +214,36 @@ def gerar_decraracao_resenha(request, aluno_id):
 @login_required
 def configuracao_resenhas(request):
     """Tela de configurações das resenhas."""
+    ano_atual = datetime.datetime.now().year
+
     context = {
         'titulo': 'Configurações de Resenhas',
-        'ano_corrente': datetime.datetime.now().year,
-        'total_alunos': Aluno.objects.count(),
-        'total_resenhas': ResenhaLivro.objects.count(),
-        'total_periodos': PeriodoLeitura.objects.count(),
+        'ano_corrente': ano_atual,
+        'total_alunos': Aluno.objects.filter(
+            resenhas__periodoLeitura__data_resenha__year=ano_atual
+        ).distinct().count(),
+        'total_resenhas': ResenhaLivro.objects.filter(
+            periodoLeitura__data_resenha__year=ano_atual
+        ).count(),
+        'total_periodos': PeriodoLeitura.objects.filter(
+            data_resenha__year=ano_atual
+        ).count(),
     }
     return render(request, 'configuracao_resenhas.html', context)
+
+@login_required
+def adicionar_periodo_leitura(request):
+    """Adicionar um novo período de leitura."""
+    if request.method == 'POST':
+        form = PeriodoLeituraForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('resenha_livro:configuracao_resenhas')
+    else:
+        form = PeriodoLeituraForm()
+
+    return render(request, 'adicionar_periodo_leitura.html', {
+        'form': form,
+        'titulo': 'Adicionar Período de Leitura',
+        'ano_corrente': datetime.datetime.now().year,
+    })

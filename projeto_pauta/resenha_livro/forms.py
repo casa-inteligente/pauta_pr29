@@ -1,5 +1,6 @@
 from django import forms
 from .models import ResenhaLivro, Aluno, PeriodoLeitura
+from relação_detentos.forms.django_toggle_switch import ToggleSwitchWidget
 
 class ResenhaLivroForm(forms.ModelForm):
     class Meta:
@@ -21,9 +22,14 @@ class ResenhaLivroForm(forms.ModelForm):
             'nomeProfessor': forms.TextInput(attrs={
                 'class': 'w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300'
             }),
-            'aprovada': forms.CheckboxInput(attrs={
-                'class': 'h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500'
-            }),
+            'aprovada': ToggleSwitchWidget(
+                size='md',
+                active_color='#16a34a',
+                inactive_color='#cbd5e1',
+                active_text='Aprovado',
+                inactive_text='Reprovado',
+                show_label=True,
+            ),
         }
 
 class AlunoForm(forms.ModelForm):
@@ -57,7 +63,12 @@ class PeriodoLeituraForm(forms.ModelForm):
                 'class': 'w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300',
                 'type': 'date'
             }),
-            'aprovada': forms.CheckboxInput(attrs={
-                'class': 'h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500'
-            }),
+            'aprovada': ToggleSwitchWidget(
+                size='md',
+                active_color='#16a34a',
+                inactive_color='#cbd5e1',
+                active_text='Aprovado',
+                inactive_text='Reprovado',
+                show_label=True,
+            ),
         }

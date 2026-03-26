@@ -17,7 +17,7 @@
             <div>
                 <h1 class="text-2xl font-bold text-slate-800">{{ titulo }}</h1>
                 <p class="mt-1 text-sm text-slate-500">
-                    Gerencie alunos, resenhas e edições em um único painel.
+                    Gerencie alunos, resenhas e edições.
                 </p>
             </div>
 
@@ -54,7 +54,6 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-semibold text-slate-800">Adicionar aluno</h2>
-                    <p class="text-sm text-slate-500">Cadastre um novo aluno sem sair da tela.</p>
                 </div>
             </div>
 
@@ -75,7 +74,6 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-semibold text-slate-800">Adicionar resenha</h2>
-                    <p class="text-sm text-slate-500">Lance uma nova resenha vinculada ao aluno.</p>
                 </div>
             </div>
 
@@ -101,6 +99,41 @@
                class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-600">
                 <i class="fas fa-list"></i>
                 <span>Abrir listagem</span>
+            </a>
+        </article>
+        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-800">Adicionar período</h2>
+                    <p class="text-sm text-slate-500">Cadastre novos períodos de leitura.</p>
+                </div>
+            </div>
+
+            <a href="{% url 'resenha_livro:adicionar_periodo_leitura' %}"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-700">
+                <i class="fas fa-calendar-plus"></i>
+                <span>Novo período</span>
+            </a>
+        </article>
+
+        <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-800">Gerar Declaração</h2>
+                    <p class="text-sm text-slate-500">Gere as declarações e anexa as resenhas.</p>
+                </div>
+            </div>
+
+            <a href="#"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-700">
+                <i class="fas fa-file-pdf"></i>
+                <span>Gerar Declaração</span>
             </a>
         </article>
     </section>
