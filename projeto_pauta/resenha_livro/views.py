@@ -239,6 +239,6 @@ def configuracao_resenhas(request):
     """
     context = {
         'titulo': 'Configurações de Resenhas',
-        'ANO_CORRENTE': datetime.datetime.now().year,
+        'ano_corrente': datetime.datetime.now().year,
     }
     return render(request, 'configuracao_resenhas.html', context)
