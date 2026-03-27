@@ -1,30 +1,37 @@
 # /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/views.py
 
+# /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/views.py
+
+import datetime
 import os
+import re
+import shutil
+from collections import OrderedDict
 from io import BytesIO
 from pathlib import Path
-from django.http import HttpResponse, JsonResponse
-from django.templatetags.static import static
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.decorators.http import require_POST
-from .models import Aluno, ResenhaLivro, PeriodoLeitura, Turma
-from .forms import ResenhaLivroForm, AlunoForm, PeriodoLeituraForm
-from django.contrib.auth.decorators import login_required
+
+import pypdfium2 as pdfium
+import pytesseract
 from django.conf import settings
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from collections import OrderedDict
-from reportlab.lib import colors
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_RIGHT, TA_CENTER
-from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
-from django.db.models import Prefetch
+from django.contrib.auth.decorators import login_required
+from django.db.models import Prefetch, Q
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.templatetags.static import static
+from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 from pypdf import PdfReader, PdfWriter
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-import datetime
+from reportlab.pdfgen import canvas
+from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from .forms import AlunoForm, PeriodoLeituraForm, ResenhaLivroForm
+from .models import Aluno, PeriodoLeitura, ResenhaLivro, Turma
 
 
 # Registre Arial e Arial-Bold (se quiser usar negrito)
@@ -794,3 +801,226 @@ def gerar_declaracoes_selecionadas(request):
     response = HttpResponse(output.getvalue(), content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="declaracoes_resenhas_por_aluno.pdf"'
     return response
+
+### Organizacao de resenhas nas pastas por período de leitura ###
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def _extrair_texto_primeira_pagina_ocr(caminho_pdf):
+    """Extrai o texto da primeira página do PDF usando OCR com pytesseract."""
+    documento = pdfium.PdfDocument(str(caminho_pdf))
+    try:
+        pagina = documento[0]
+        imagem = pagina.render(scale=2.8).to_pil()
+        texto = pytesseract.image_to_string(imagem, lang='por')
+    finally:
+        documento.close()
+
+    texto = (texto or '').replace('\r', '')
+    texto = re.sub(r'[ \t]+', ' ', texto)
+    return texto.strip()
+
+
+def _extrair_dados_resenha_ocr(caminho_pdf):
+    """Extrai aluno, data da resenha e período de leitura da primeira página."""
+    texto = _extrair_texto_primeira_pagina_ocr(caminho_pdf)
+
+    if not texto:
+        return {
+            'sucesso': False,
+            'mensagem': 'Nenhum texto foi reconhecido pelo OCR.',
+        }
+
+    aluno_match = re.search(r'^\s*Aluno:\s*(.+?)\s*$', texto, re.IGNORECASE | re.MULTILINE)
+    data_match = re.search(r'^\s*Data da Resenha:\s*(\d{2}/\d{2}/\d{4})\s*$', texto, re.IGNORECASE | re.MULTILINE)
+    periodo_match = re.search(r'^\s*Per[ií]odo de Leitura:\s*(.+?)\s*$', texto, re.IGNORECASE | re.MULTILINE)
+
+    if not aluno_match or not data_match or not periodo_match:
+        return {
+            'sucesso': False,
+            'mensagem': 'OCR executado, mas os campos padrão não foram encontrados.',
+        }
+
+    return {
+        'sucesso': True,
+        'aluno': aluno_match.group(1).strip(),
+        'data_resenha': data_match.group(1).strip(),
+        'periodo_leitura': periodo_match.group(1).strip(),
+    }
+
+
+def _normalizar_nome_arquivo(nome):
+    """Normaliza texto para uso em nome de arquivo."""
+    nome_normalizado = slugify(nome)
+    return nome_normalizado or 'resenha'
+
+
+def _normalizar_nome_pasta(periodo_leitura):
+    """Normaliza o nome da pasta do período."""
+    pasta_normalizada = slugify(periodo_leitura)
+    return pasta_normalizada or 'periodo-sem-identificacao'
+
+
+
+
+
+
+
+
+
+@login_required
+@require_POST
+def organizar_resenhas_por_periodo(request):
+    """
+    Lê os PDFs escaneados, extrai os dados com OCR, cria a pasta do período,
+    renomeia o arquivo com o nome do aluno + id da resenha e atualiza `path_resenha`.
+    """
+    path_base = Path('/home/ogliari/Área de trabalho/RESENHAS-BOOT')
+    path_resenha_analise = path_base / 'scanner'
+
+    status = []
+
+    if not path_resenha_analise.exists():
+        status.append({
+            'arquivo': str(path_resenha_analise),
+            'sucesso': False,
+            'mensagem': 'A pasta de análise não foi encontrada.',
+        })
+
+        return render(request, 'partial/popup_resultado_organizacao_resenhas.html', {
+            'titulo': 'Atualizar resenhas nas pastas',
+            'status': status,
+            'total_processados': 0,
+            'total_sucesso': 0,
+            'total_erros': 1,
+        })
+
+    arquivos_pdf = sorted(path_resenha_analise.glob('*.pdf'))
+
+    if not arquivos_pdf:
+        return render(request, 'partial/popup_resultado_organizacao_resenhas.html', {
+            'titulo': 'Atualizar resenhas nas pastas',
+            'status': [],
+            'total_processados': 0,
+            'total_sucesso': 0,
+            'total_erros': 0,
+        })
+
+    for arquivo_pdf in arquivos_pdf:
+        try:
+            dados_extraidos = _extrair_dados_resenha_ocr(arquivo_pdf)
+        except Exception as exc:
+            status.append({
+                'arquivo': arquivo_pdf.name,
+                'sucesso': False,
+                'mensagem': f'Falha ao executar OCR: {exc}',
+            })
+            continue
+
+        if not dados_extraidos.get('sucesso'):
+            status.append({
+                'arquivo': arquivo_pdf.name,
+                'sucesso': False,
+                'mensagem': dados_extraidos.get('mensagem', 'Não foi possível extrair os dados do PDF.'),
+            })
+            continue
+
+        try:
+            data_resenha = datetime.datetime.strptime(
+                dados_extraidos['data_resenha'],
+                '%d/%m/%Y'
+            ).date()
+        except ValueError:
+            status.append({
+                'arquivo': arquivo_pdf.name,
+                'sucesso': False,
+                'mensagem': f"Data inválida encontrada no OCR: {dados_extraidos['data_resenha']}",
+            })
+            continue
+
+        queryset_resenha = (
+            ResenhaLivro.objects
+            .select_related('aluno', 'periodoLeitura')
+            .filter(
+                aluno__nome__iexact=dados_extraidos['aluno'],
+                periodoLeitura__data_resenha=data_resenha,
+                periodoLeitura__intervalo_leitura__iexact=dados_extraidos['periodo_leitura'],
+            )
+            .order_by('id')
+        )
+
+        resenha = (
+            queryset_resenha
+            .filter(Q(path_resenha__isnull=True) | Q(path_resenha=''))
+            .first()
+            or queryset_resenha.first()
+        )
+
+        if not resenha:
+            status.append({
+                'arquivo': arquivo_pdf.name,
+                'sucesso': False,
+                'mensagem': (
+                    'Nenhuma resenha foi encontrada para '
+                    f"aluno '{dados_extraidos['aluno']}', "
+                    f"data '{dados_extraidos['data_resenha']}' e "
+                    f"período '{dados_extraidos['periodo_leitura']}'."
+                ),
+            })
+            continue
+
+        pasta_periodo = path_base / _normalizar_nome_pasta(resenha.periodoLeitura.intervalo_leitura)
+        pasta_periodo.mkdir(parents=True, exist_ok=True)
+
+        nome_arquivo = f"{_normalizar_nome_arquivo(resenha.aluno.nome)}-{resenha.id}.pdf"
+        destino = pasta_periodo / nome_arquivo
+
+        contador = 1
+        while destino.exists():
+            destino = pasta_periodo / f"{_normalizar_nome_arquivo(resenha.aluno.nome)}-{resenha.id}-{contador}.pdf"
+            contador += 1
+
+        try:
+            shutil.move(str(arquivo_pdf), str(destino))
+        except Exception as exc:
+            status.append({
+                'arquivo': arquivo_pdf.name,
+                'sucesso': False,
+                'mensagem': f'Falha ao mover o arquivo: {exc}',
+            })
+            continue
+
+        resenha.path_resenha = str(destino)
+        resenha.save(update_fields=['path_resenha', 'atualizado_em'])
+
+        status.append({
+            'arquivo': arquivo_pdf.name,
+            'sucesso': True,
+            'mensagem': 'PDF processado, renomeado e vinculado com sucesso.',
+            'destino': str(destino),
+        })
+
+    total_processados = len(status)
+    total_sucesso = len([item for item in status if item['sucesso']])
+    total_erros = total_processados - total_sucesso
+
+    return render(request, 'popup_resultado_organizacao_resenhas.html', {
+        'titulo': 'Atualizar resenhas nas pastas',
+        'status': status,
+        'total_processados': total_processados,
+        'total_sucesso': total_sucesso,
+        'total_erros': total_erros,
+        'ano_corrente': datetime.datetime.now().year,
+    })

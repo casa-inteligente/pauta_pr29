@@ -5,6 +5,20 @@
 
 {% block head %}
 <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<style>
+    .htmx-indicator {
+        display: none;
+    }
+
+    .htmx-request .htmx-indicator,
+    .htmx-request.htmx-indicator {
+        display: inline-flex;
+    }
+
+    .htmx-request .label-padrao {
+        display: none;
+    }
+</style>
 {% endblock %}
 
 {% block main_class %}mx-auto max-w-7xl px-4 py-6{% endblock %}
@@ -20,8 +34,6 @@
                 </p>
             </div>
 
-            
-
             <a href="{% url 'resenha_livro:configuracao_resenhas' %}"
                class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
                 <i class="fas fa-arrow-left"></i>
@@ -30,26 +42,42 @@
         </div>
     </section>
 
-    <a href="#"
-        class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
-        <!-- <i class="fas fa-arrow-left"></i> -->
-        <span>Atualizar resenhas nas pastas</span>
-    </a>
+    <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <form hx-post="{% url 'resenha_livro:organizar_resenhas_por_periodo' %}"
+            hx-target="#modal-container"
+            hx-swap="innerHTML"
+            hx-disabled-elt="button"
+            class="inline-flex">
+            {% csrf_token %}
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70">
+                <span class="label-padrao inline-flex items-center gap-2">
+                    <i class="fas fa-folder-tree"></i>
+                    <span>Atualizar resenhas nas pastas</span>
+                </span>
+
+                <span class="htmx-indicator inline-flex items-center gap-2 text-amber-700">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Processando OCR, aguarde...</span>
+                </span>
+            </button>
+        </form>
+
+
+        <button type="submit"
+                form="form-gerar-declaracoes"
+                class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
+            <i class="fas fa-file-pdf"></i>
+            <span>Gerar declarações selecionadas</span>
+        </button>
+    </div>
 
     <form id="form-gerar-declaracoes"
-          hx-post="{% url 'resenha_livro:popup_confirmar_geracao_declaracao' %}"
-          hx-target="#modal-container"
-          hx-swap="innerHTML"
-          class="space-y-8">
+        hx-post="{% url 'resenha_livro:popup_confirmar_geracao_declaracao' %}"
+        hx-target="#modal-container"
+        hx-swap="innerHTML"
+        class="space-y-8">
         {% csrf_token %}
-
-        <div class="flex justify-end">
-            <button type="submit"
-                    class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
-                <i class="fas fa-file-pdf"></i>
-                <span>Gerar declarações selecionadas</span>
-            </button>
-        </div>
 
         {% for bloco_ano in anos_organizados %}
         <section class="space-y-4">
@@ -171,16 +199,27 @@
 
 {% block scripts %}
 <script>
-    function fecharModalDeclaracao() {
-        const modal = document.getElementById('modal-declaracao-overlay');
-        if (modal) {
-            modal.remove();
+    function fecharModal(modalId = null) {
+        if (modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.remove();
+            }
+            return;
         }
+
+        document.querySelectorAll('[data-modal-overlay="true"]').forEach((modal) => {
+            modal.remove();
+        });
+    }
+
+    function fecharModalDeclaracao() {
+        fecharModal('modal-declaracao-overlay');
     }
 
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
-            fecharModalDeclaracao();
+            fecharModal();
         }
     });
 </script>

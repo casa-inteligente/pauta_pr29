@@ -1,0 +1,83 @@
+<!-- /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/templates/partial/popup_resultado_organizacao_resenhas.html -->
+
+<div id="modal-organizacao-resenhas-overlay"
+     data-modal-overlay="true"
+     class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
+     onclick="if (event.target === this) fecharModal('modal-organizacao-resenhas-overlay')">
+
+    <div class="w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+            <div>
+                <h2 class="text-lg font-semibold text-slate-800">{{ titulo }}</h2>
+                <p class="text-sm text-slate-500">
+                    Resultado da leitura OCR, organização por período e atualização do campo path_resenha.
+                </p>
+            </div>
+
+            <button type="button"
+                    onclick="fecharModal('modal-organizacao-resenhas-overlay')"
+                    class="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="grid gap-4 border-b border-slate-200 bg-slate-50 px-6 py-4 md:grid-cols-3">
+            <div class="rounded-xl border border-slate-200 bg-white px-4 py-3">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Processados</p>
+                <p class="mt-1 text-2xl font-bold text-slate-800">{{ total_processados }}</p>
+            </div>
+            <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3">
+                <p class="text-xs font-semibold uppercase tracking-wide text-green-700">Sucesso</p>
+                <p class="mt-1 text-2xl font-bold text-green-800">{{ total_sucesso }}</p>
+            </div>
+            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                <p class="text-xs font-semibold uppercase tracking-wide text-red-700">Erros</p>
+                <p class="mt-1 text-2xl font-bold text-red-800">{{ total_erros }}</p>
+            </div>
+        </div>
+
+        <div class="max-h-[60vh] overflow-y-auto px-6 py-5">
+            {% if status %}
+            <div class="space-y-3">
+                {% for item in status %}
+                <div class="rounded-xl border px-4 py-3 {% if item.sucesso %}border-green-200 bg-green-50{% else %}border-red-200 bg-red-50{% endif %}">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div class="min-w-0">
+                            <p class="font-medium {% if item.sucesso %}text-green-900{% else %}text-red-900{% endif %}">
+                                {{ item.arquivo }}
+                            </p>
+                            <p class="mt-1 text-sm {% if item.sucesso %}text-green-800{% else %}text-red-800{% endif %}">
+                                {{ item.mensagem }}
+                            </p>
+                            {% if item.destino %}
+                            <p class="mt-1 break-all text-xs text-slate-600">
+                                Destino: {{ item.destino }}
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {% if item.sucesso %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                            <i class="fas {% if item.sucesso %}fa-circle-check{% else %}fa-circle-xmark{% endif %}"></i>
+                            <span>{% if item.sucesso %}Processado{% else %}Falhou{% endif %}</span>
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                Nenhum PDF foi localizado na pasta de análise.
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="border-t border-slate-200 px-6 py-4 text-right">
+            <button type="button"
+                    onclick="fecharModal('modal-organizacao-resenhas-overlay')"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                <i class="fas fa-check"></i>
+                <span>Fechar</span>
+            </button>
+        </div>
+    </div>
+</div>
