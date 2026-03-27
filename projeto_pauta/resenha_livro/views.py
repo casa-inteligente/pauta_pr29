@@ -16,7 +16,7 @@ from reportlab.lib.pagesizes import A4
 from collections import OrderedDict
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_RIGHT, TA_CENTER
 from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from django.db.models import Prefetch
 from django.views.decorators.http import require_POST
@@ -310,9 +310,9 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
     estilo_instituicao = ParagraphStyle(
         name='Instituicao',
         parent=estilos['Normal'],
-        fontName='Arial-Bold',
-        fontSize=11,
-        leading=14,
+        fontName='Arial',
+        fontSize=10,
+        leading=10,
         alignment=TA_LEFT,
         textColor=colors.black,
         spaceAfter=0,
@@ -322,11 +322,22 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
         name='CorpoDeclaracao',
         parent=estilos['Normal'],
         fontName='Arial',
-        fontSize=11,
-        leading=18,
+        fontSize=10,
+        leading=12,
         alignment=TA_JUSTIFY,
         textColor=colors.black,
     )
+
+    estilo_titulo = ParagraphStyle(
+        name='TituloDeclaracao',
+        parent=estilos['Normal'],
+        fontName='Arial-Bold',
+        fontSize=12,
+        leading=18,
+        alignment=TA_CENTER,
+        textColor=colors.black,
+    )
+
 
     estilo_tabela = ParagraphStyle(
         name='TabelaTexto',
@@ -368,6 +379,18 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
         textColor=colors.HexColor('#6b7280'),
     )
 
+    estilo_quadro_final = ParagraphStyle(
+        name='QuadroFinal',
+        parent=estilos['Normal'],
+        fontName='Arial',
+        fontSize=9,
+        leading=11,
+        alignment=TA_CENTER,
+        textColor=colors.black,
+        spaceBefore=0,
+        spaceAfter=0,
+    )
+
     story = []
 
     logo_path = os.path.join(
@@ -387,7 +410,10 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
     nome_instituicao = Paragraph(
         "ESTADO DE SANTA CATARINA<br/>"
         "COORDENADORIA REGIONAL DE EDUCAÇÃO<br/>"
-        "CENTRO DE EDUCAÇÃO DE JOVENS E ADULTOS – CEJA - MH",
+        "CENTRO DE EDUCAÇÃO DE JOVENS E ADULTOS – CEJA - MH<br/>"
+        "Endereço: Rua: General Ozório - 319 – CEP: 89874-000<br/>"
+        "Telefone: (49) 3664-6632<br/>"
+        "E-mail: cejamaravilha@sed.sc.gov.br",
         estilo_instituicao
     )
 
@@ -410,13 +436,24 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
     numero_obras = len(resenhas)
     numero_matricula = aluno.matricula or 'não informado'
 
+    texto_titulo = Paragraph(
+        (
+            "DECLARAÇÃO DE PARTICIPAÇÃO NO PROJETO DESPERTAR PELA LEITURA"
+        ), 
+        estilo_titulo
+    )
+
+    story.append(texto_titulo)
+    story.append(Spacer(1, 16))
+
+
     texto_declaracao = Paragraph(
         (
-            f"Declaramos para os devidos fins de Remição de Pena pela Leitura que o aluno "
-            f"<b>{aluno.nome}</b>, matriculado no Centro de Educação de Jovens e Adultos – "
-            f"CEJA de MARAVILHA, sob o número de inscrição <b>{numero_matricula}</b>, "
-            f"participou do Projeto “Despertar pela Leitura” no Presídio de Maravilha, "
-            f"realizando a leitura de <b>{numero_obras}</b> obras, conforme quadro abaixo:"
+            f"Certificamos, para os devidos fins de Remição de Pena pela Leitura, que o aluno <font name='Arial-Bold'>{aluno.nome}</font>, regularmente matriculado no Centro de Educação de Jovens e Adultos de Maravilha – CEJA, sob o número de inscrição "
+            f"<font name='Arial-Bold'>{numero_matricula}</font>, participou do Projeto "
+            f"“Despertar pela Leitura”, realizado no Presídio Regional de Maravilha, "
+            f"realizando a leitura de <font name='Arial-Bold'>{numero_obras}</font> obra(s), "
+            f"na forma discriminada no quadro abaixo."
         ),
         estilo_corpo
     )
@@ -426,7 +463,7 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
 
     dados_tabela = [[
         Paragraph("N.", estilo_tabela_cabecalho),
-        Paragraph("Obra / Autor", estilo_tabela_cabecalho),
+        Paragraph("Obra - Autor", estilo_tabela_cabecalho),
         Paragraph("Período", estilo_tabela_cabecalho),
         Paragraph("Resultado", estilo_tabela_cabecalho),
     ]]
@@ -435,7 +472,7 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
         resultado = "Satisfatória" if resenha.aprovada else "Insatisfatória"
 
         obra_autor = Paragraph(
-            f"{resenha.nomelivro} / {resenha.nomeAutor}",
+            f"{resenha.nomelivro} - {resenha.nomeAutor}",
             estilo_tabela
         )
 
@@ -453,7 +490,7 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
 
     tabela_resenhas = Table(
         dados_tabela,
-        colWidths=[35, 235, 125, 100],
+        colWidths=[30, 305, 80, 80],
         repeatRows=1,
     )
 
@@ -486,6 +523,51 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
         )
     )
 
+
+    # Caracteristicas da gestora do CEJA
+    story.append(Spacer(1, 18))
+
+    quadro_coluna_1 = Paragraph(
+        (
+            "CEJA – Centro de Educação de Jovens e Adultos<br/>"
+            "Rua General Osório, 319, Ed. Iluminato, Sala 102<br/>"
+            "Centro – Maravilha/SC – CEP: 89.874-000<br/>"
+            "Telefone: (49) 3664 6632<br/>"
+            "E-mail: cejamaravilha@sed.sc.gov.br<br/>"
+            "Resolução n° 093 e no parecer n° 221,<br/>"
+            "Aprovado em 02/09/2003."
+        ),
+        estilo_quadro_final
+    )
+
+    quadro_coluna_2 = Paragraph(
+        (
+            "JOICE HENDGES DA LUS<br/>"
+            "Diretora de unidade<br/>"
+            "Matrícula 334464-9-04<br/>"
+            "CEJA MARAVILHA"
+        ),
+        estilo_quadro_final
+    )
+
+    tabela_final = Table(
+        [[quadro_coluna_1, quadro_coluna_2]],
+        colWidths=[doc.width / 2, doc.width / 2],
+    )
+
+    tabela_final.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.7, colors.HexColor('#4b5563'), None, (2, 3)),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#6b7280'), None, (1, 2)),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+    ]))
+
+    story.append(tabela_final)
+
     def desenhar_rodape(canvas_obj, doc_obj):
         canvas_obj.saveState()
         canvas_obj.setFont('Arial', 8)
@@ -493,7 +575,7 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
         canvas_obj.drawCentredString(
             A4[0] / 2,
             20,
-            "Gerado automaticamente pelo sistema interno"
+            "Emissão automática - PR29"
         )
         canvas_obj.restoreState()
 
