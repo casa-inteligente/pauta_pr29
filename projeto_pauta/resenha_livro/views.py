@@ -13,10 +13,29 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from collections import OrderedDict
+from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_RIGHT
+from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 from django.db.models import Prefetch
 from django.views.decorators.http import require_POST
 from pypdf import PdfReader, PdfWriter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import datetime
+
+
+
+# Registre Arial e Arial-Bold (se quiser usar negrito)
+# Registre Arial e Arial-Bold (se quiser usar negrito)
+# Caminhos relativos à pasta base do projeto
+arial_path = os.path.join(settings.BASE_DIR, 'projeto_pauta', 'static', 'fonts', 'arial.ttf')
+arial_bold_path = os.path.join(settings.BASE_DIR, 'projeto_pauta', 'static', 'fonts', 'arialbd.ttf')
+
+# Registra as fontes
+pdfmetrics.registerFont(TTFont('Arial', arial_path))
+pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 
 
 def listar_alunos(request):
@@ -273,49 +292,212 @@ def _resolver_caminho_resenha_pdf(path_resenha):
 
     return None
 
-
-def _gerar_declaracao_pdf_bytes(resenha):
-    """Gera o PDF da declaração em memória."""
+def _gerar_declaracao_pdf_bytes(aluno, resenhas):
+    """Gera uma declaração única por aluno, com cabeçalho, parágrafo e tabela."""
     buffer = BytesIO()
-    pdf = canvas.Canvas(buffer, pagesize=A4)
-    largura, altura = A4
 
-    resultado_resenha = 'satisfatória' if resenha.aprovada else 'insatisfatória'
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        leftMargin=40,
+        rightMargin=40,
+        topMargin=36,
+        bottomMargin=36,
+    )
 
-    pdf.setTitle(f"Declaracao_{resenha.aluno.nome}")
-    pdf.setAuthor("Sistema Pauta")
+    estilos = getSampleStyleSheet()
 
-    pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawCentredString(largura / 2, altura - 70, "DECLARAÇÃO")
+    estilo_instituicao = ParagraphStyle(
+        name='Instituicao',
+        parent=estilos['Normal'],
+        fontName='Arial-Bold',
+        fontSize=11,
+        leading=14,
+        alignment=TA_LEFT,
+        textColor=colors.black,
+        spaceAfter=0,
+    )
 
-    pdf.setFont("Helvetica", 12)
-    texto = pdf.beginText(70, altura - 130)
-    texto.setLeading(22)
+    estilo_corpo = ParagraphStyle(
+        name='CorpoDeclaracao',
+        parent=estilos['Normal'],
+        fontName='Arial',
+        fontSize=11,
+        leading=18,
+        alignment=TA_JUSTIFY,
+        textColor=colors.black,
+    )
 
-    linhas = [
-        f"Declaro, para os devidos fins, que o(a) aluno(a) {resenha.aluno.nome}",
-        f"participou do Projeto Remição pela Leitura no período {resenha.periodoLeitura.intervalo_leitura},",
-        f"com resenha referente à obra \"{resenha.nomelivro}\", de autoria de {resenha.nomeAutor}.",
-        "",
-        f"Resultado da avaliação da resenha: {resultado_resenha}.",
-        f"Data da resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}",
-        f"Professor(a): {resenha.nomeProfessor}",
-        f"Turma: {resenha.aluno.turma.nome}",
-        "",
-        "Documento emitido automaticamente pelo sistema.",
-    ]
+    estilo_tabela = ParagraphStyle(
+        name='TabelaTexto',
+        parent=estilos['Normal'],
+        fontName='Arial',
+        fontSize=9,
+        leading=11,
+        alignment=TA_LEFT,
+        textColor=colors.black,
+    )
 
-    for linha in linhas:
-        texto.textLine(linha)
+    estilo_tabela_cabecalho = ParagraphStyle(
+        name='TabelaCabecalho',
+        parent=estilos['Normal'],
+        fontName='Arial-Bold',
+        fontSize=9,
+        leading=11,
+        alignment=TA_LEFT,
+        textColor=colors.white,
+    )
 
-    pdf.drawText(texto)
+    estilo_data = ParagraphStyle(
+        name='DataLocal',
+        parent=estilos['Normal'],
+        fontName='Arial',
+        fontSize=11,
+        leading=14,
+        alignment=TA_RIGHT,
+        textColor=colors.black,
+    )
 
-    pdf.line(70, 180, largura - 70, 180)
-    pdf.setFont("Helvetica", 11)
-    pdf.drawCentredString(largura / 2, 160, "Presídio Regional de Maravilha")
+    estilo_rodape = ParagraphStyle(
+        name='RodapeSistema',
+        parent=estilos['Normal'],
+        fontName='Arial',
+        fontSize=8,
+        leading=10,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor('#6b7280'),
+    )
 
-    pdf.showPage()
-    pdf.save()
+    story = []
+
+    logo_path = os.path.join(
+        settings.BASE_DIR,
+        'resenha_livro',
+        'static',
+        'resenha_livro',
+        'img',
+        'logo_ceja.png',
+    )
+
+    if os.path.exists(logo_path):
+        logo = Image(logo_path, width=52, height=52)
+    else:
+        logo = Paragraph("Logo", estilo_tabela)
+
+    nome_instituicao = Paragraph(
+        "ESTADO DE SANTA CATARINA<br/>"
+        "COORDENADORIA REGIONAL DE EDUCAÇÃO<br/>"
+        "CENTRO DE EDUCAÇÃO DE JOVENS E ADULTOS – CEJA - MH",
+        estilo_instituicao
+    )
+
+    tabela_cabecalho = Table(
+        [[logo, nome_instituicao]],
+        colWidths=[65, doc.width - 65],
+    )
+    tabela_cabecalho.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+
+    story.append(tabela_cabecalho)
+    story.append(Spacer(1, 18))
+
+    numero_obras = len(resenhas)
+    numero_matricula = aluno.matricula or 'não informado'
+
+    texto_declaracao = Paragraph(
+        (
+            f"Declaramos para os devidos fins de Remição de Pena pela Leitura que o aluno "
+            f"<b>{aluno.nome}</b>, matriculado no Centro de Educação de Jovens e Adultos – "
+            f"CEJA de MARAVILHA, sob o número de inscrição <b>{numero_matricula}</b>, "
+            f"participou do Projeto “Despertar pela Leitura” no Presídio de Maravilha, "
+            f"realizando a leitura de <b>{numero_obras}</b> obras, conforme quadro abaixo:"
+        ),
+        estilo_corpo
+    )
+
+    story.append(texto_declaracao)
+    story.append(Spacer(1, 16))
+
+    dados_tabela = [[
+        Paragraph("N.", estilo_tabela_cabecalho),
+        Paragraph("Obra / Autor", estilo_tabela_cabecalho),
+        Paragraph("Período", estilo_tabela_cabecalho),
+        Paragraph("Resultado", estilo_tabela_cabecalho),
+    ]]
+
+    for indice, resenha in enumerate(resenhas, start=1):
+        resultado = "Satisfatória" if resenha.aprovada else "Insatisfatória"
+
+        obra_autor = Paragraph(
+            f"{resenha.nomelivro} / {resenha.nomeAutor}",
+            estilo_tabela
+        )
+
+        periodo = Paragraph(
+            f"{resenha.periodoLeitura.intervalo_leitura}",
+            estilo_tabela
+        )
+
+        dados_tabela.append([
+            Paragraph(str(indice), estilo_tabela),
+            obra_autor,
+            periodo,
+            Paragraph(resultado, estilo_tabela),
+        ])
+
+    tabela_resenhas = Table(
+        dados_tabela,
+        colWidths=[35, 235, 125, 100],
+        repeatRows=1,
+    )
+
+    tabela_resenhas.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.black),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Arial-Bold'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+
+    story.append(tabela_resenhas)
+    story.append(Spacer(1, 18))
+
+    hoje = datetime.datetime.now()
+    dia = hoje.strftime('%d')
+    mes = hoje.strftime('%B').capitalize()
+    ano = hoje.strftime('%Y')
+
+    story.append(
+        Paragraph(
+            f"Maravilha, {dia} de {mes} de {ano}",
+            estilo_data
+        )
+    )
+
+    def desenhar_rodape(canvas_obj, doc_obj):
+        canvas_obj.saveState()
+        canvas_obj.setFont('Arial', 8)
+        canvas_obj.setFillColor(colors.HexColor('#6b7280'))
+        canvas_obj.drawCentredString(
+            A4[0] / 2,
+            20,
+            "Gerado automaticamente pelo sistema interno"
+        )
+        canvas_obj.restoreState()
+
+    doc.build(story, onFirstPage=desenhar_rodape, onLaterPages=desenhar_rodape)
     buffer.seek(0)
     return buffer
 
@@ -465,39 +647,57 @@ def popup_confirmar_geracao_declaracao(request):
 @login_required
 @require_POST
 def gerar_declaracoes_selecionadas(request):
-    """Gera PDF único com declaração + anexo da resenha, quando existir."""
+    """Gera um PDF único com 1 declaração por aluno + anexos das resenhas em sequência."""
     ids = request.POST.getlist('resenhas_ids')
 
     resenhas = list(
         ResenhaLivro.objects
         .filter(id__in=ids)
         .select_related('aluno', 'aluno__turma', 'periodoLeitura')
-        .order_by('aluno__turma__nome', 'aluno__nome', '-periodoLeitura__data_resenha')
+        .order_by(
+            'aluno__turma__nome',
+            'aluno__nome',
+            'periodoLeitura__data_resenha',
+            'id',
+        )
     )
+
+    grupos_alunos = OrderedDict()
+    for resenha in resenhas:
+        if resenha.aluno_id not in grupos_alunos:
+            grupos_alunos[resenha.aluno_id] = {
+                'aluno': resenha.aluno,
+                'resenhas': [],
+            }
+        grupos_alunos[resenha.aluno_id]['resenhas'].append(resenha)
 
     writer = PdfWriter()
 
-    for resenha in resenhas:
-        declaracao_buffer = _gerar_declaracao_pdf_bytes(resenha)
+    for grupo in grupos_alunos.values():
+        aluno = grupo['aluno']
+        resenhas_aluno = grupo['resenhas']
+
+        declaracao_buffer = _gerar_declaracao_pdf_bytes(aluno, resenhas_aluno)
         declaracao_reader = PdfReader(declaracao_buffer)
+
         for page in declaracao_reader.pages:
             writer.add_page(page)
 
-        caminho_pdf = _resolver_caminho_resenha_pdf(resenha.path_resenha)
+        for resenha in resenhas_aluno:
+            caminho_pdf = _resolver_caminho_resenha_pdf(resenha.path_resenha)
 
-        if caminho_pdf and caminho_pdf.suffix.lower() == '.pdf':
-            with open(caminho_pdf, 'rb') as arquivo_pdf:
-                anexo_reader = PdfReader(arquivo_pdf)
-                for page in anexo_reader.pages:
+            if caminho_pdf and caminho_pdf.suffix.lower() == '.pdf':
+                with open(caminho_pdf, 'rb') as arquivo_pdf:
+                    anexo_reader = PdfReader(arquivo_pdf)
+                    for page in anexo_reader.pages:
+                        writer.add_page(page)
+            else:
+                aviso_buffer = _gerar_pagina_aviso_sem_pdf(resenha)
+                aviso_reader = PdfReader(aviso_buffer)
+                for page in aviso_reader.pages:
                     writer.add_page(page)
-        else:
-            aviso_buffer = _gerar_pagina_aviso_sem_pdf(resenha)
-            aviso_reader = PdfReader(aviso_buffer)
-            for page in aviso_reader.pages:
-                writer.add_page(page)
 
-        resenha.gerado_declaracao = True
-        #resenha.atualizado_por = request.user
+            resenha.gerado_declaracao = True
 
     if resenhas:
         ResenhaLivro.objects.bulk_update(
@@ -510,5 +710,5 @@ def gerar_declaracoes_selecionadas(request):
     output.seek(0)
 
     response = HttpResponse(output.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="declaracoes_resenhas.pdf"'
+    response['Content-Disposition'] = 'inline; filename="declaracoes_resenhas_por_aluno.pdf"'
     return response
