@@ -805,19 +805,6 @@ def gerar_declaracoes_selecionadas(request):
 ### Organizacao de resenhas nas pastas por período de leitura ###
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 def _extrair_texto_primeira_pagina_ocr(caminho_pdf):
     """Extrai o texto da primeira página do PDF usando OCR com pytesseract."""
     documento = pdfium.PdfDocument(str(caminho_pdf))
@@ -830,8 +817,53 @@ def _extrair_texto_primeira_pagina_ocr(caminho_pdf):
 
     texto = (texto or '').replace('\r', '')
     texto = re.sub(r'[ \t]+', ' ', texto)
-    #print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\nPressione Enter para continuar...")
+    print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\n")
+    print(40*'*')
     return texto.strip()
+
+def _limpar_linha_ocr(linha):
+    """Remove ruídos comuns do OCR no início e no fim da linha."""
+    linha = linha.replace('\r', '').strip()
+    linha = re.sub(r'^[\|\[\]\*•·:;,_\-\s]+', '', linha)
+    linha = re.sub(r'\s+', ' ', linha)
+    return linha.strip(' |')
+
+
+def _extrair_livro_autor_ocr(linhas):
+    """Extrai livro e autor a partir do bloco logo após a linha do professor."""
+    indice_professor = None
+
+    for indice, linha in enumerate(linhas):
+        if 'Professor(a):' in linha:
+            indice_professor = indice
+            break
+
+    if indice_professor is None:
+        return None, None
+
+    candidatos = []
+    for linha in linhas[indice_professor + 1:]:
+        linha_limpa = _limpar_linha_ocr(linha)
+        if not linha_limpa:
+            continue
+        if re.search(r'Aluno:|Data da Resenha:|Per[ií]odo de Leitura:|Local:', linha_limpa, re.IGNORECASE):
+            continue
+        if len(linha_limpa) == 1:
+            continue
+        candidatos.append(linha_limpa)
+
+    if not candidatos:
+        return None, None
+
+    nomelivro = candidatos[0]
+    nome_autor = None
+
+    for candidato in candidatos[1:]:
+        if re.search(r'[A-Za-zÀ-ÿ]{2,}', candidato):
+            nome_autor = candidato.rstrip(' .')
+            break
+
+    return nomelivro.rstrip(' .'), nome_autor
 
 
 def _extrair_dados_resenha_ocr(caminho_pdf):
@@ -844,41 +876,61 @@ def _extrair_dados_resenha_ocr(caminho_pdf):
             'mensagem': 'Nenhum texto foi reconhecido pelo OCR.',
         }
 
+    linhas_brutas = [linha for linha in texto.splitlines() if linha.strip()]
+    linhas_limpas = [_limpar_linha_ocr(linha) for linha in linhas_brutas]
+    linhas_limpas = [linha for linha in linhas_limpas if linha]
+    texto_limpo = '\n'.join(linhas_limpas)    
+
     aluno_match = re.search(
         r'Aluno:\s*(.+)',
-        texto,
+        texto_limpo,
         re.IGNORECASE
     )
 
     data_periodo_match = re.search(
-        r'Data da Resenha:\s*(\d{2}/\d{2}/\d{4})\s+Per[ií]odo de Leitura:\s*(.+)',
-        texto,
+        r'Data da Resenha:\s*(\d{2}/\d{2}/\d{4})\s*(?:[\|\*N]+\s*)?Per[ií]odo de Leitura:\s*([0-9]{2}/[0-9]{2}\s*a\s*[0-9]{2}/[0-9]{2})',
+        texto_limpo,
         re.IGNORECASE
     )
 
-    linhas = [linha.strip() for linha in texto.splitlines() if linha.strip()]
+    data_match = re.search(
+        r'Data da Resenha:\s*(\d{2}/\d{2}/\d{4})',
+        texto_limpo,
+        re.IGNORECASE
+    )
 
-    nomelivro = None
-    nomeAutor = None
+    periodo_match = re.search(
+        r'Per[ií]odo de Leitura:\s*([0-9]{2}/[0-9]{2}\s*a\s*[0-9]{2}/[0-9]{2})',
+        texto_limpo,
+        re.IGNORECASE
+    )
 
-    for indice, linha in enumerate(linhas):
-        if 'Professor(a):' in linha and indice + 2 < len(linhas):
-            nomelivro = linhas[indice + 1].strip()
-            nomeAutor = linhas[indice + 2].strip()
-            break
+    nomelivro, nomeAutor = _extrair_livro_autor_ocr(linhas_limpas)
 
-    if not aluno_match or not data_periodo_match or not nomelivro or not nomeAutor:
+    data_resenha = None
+    periodo_leitura = None
+
+    if data_periodo_match:
+        data_resenha = data_periodo_match.group(1).strip()
+        periodo_leitura = data_periodo_match.group(2).strip()
+    else:
+        if data_match:
+            data_resenha = data_match.group(1).strip()
+        if periodo_match:
+            periodo_leitura = periodo_match.group(1).strip()
+   
+    if not aluno_match or not data_resenha or not nomelivro:
         return {
             'sucesso': False,
             'mensagem': 'OCR executado, mas os campos padrão não foram encontrados.',
-            'texto_extraido': texto,
+            'texto_extraido': texto_limpo,
         }
 
     return {
         'sucesso': True,
         'aluno': aluno_match.group(1).strip(),
-        'data_resenha': data_periodo_match.group(1).strip(),
-        'periodo_leitura': data_periodo_match.group(2).strip(),
+        'data_resenha': data_resenha,
+        'periodo_leitura': periodo_leitura,
         'nomelivro': nomelivro,
         'nomeAutor': nomeAutor,
     }
@@ -896,12 +948,60 @@ def _normalizar_nome_pasta(periodo_leitura):
     return pasta_normalizada or 'periodo-sem-identificacao'
 
 
+def _buscar_resenha_por_fallback(dados_extraidos, data_resenha):
+    """Busca a resenha com critérios progressivos quando o OCR variar entre arquivos."""
+    filtros_base = {
+        'aluno__nome__iexact': dados_extraidos['aluno'],
+        'periodoLeitura__data_resenha': data_resenha,
+    }
 
+    combinacoes = [
+        {
+            **filtros_base,
+            'periodoLeitura__intervalo_leitura__iexact': dados_extraidos.get('periodo_leitura'),
+            'nomelivro__iexact': dados_extraidos.get('nomelivro'),
+            'nomeAutor__iexact': dados_extraidos.get('nomeAutor'),
+        },
+        {
+            **filtros_base,
+            'periodoLeitura__intervalo_leitura__iexact': dados_extraidos.get('periodo_leitura'),
+            'nomelivro__iexact': dados_extraidos.get('nomelivro'),
+        },
+        {
+            **filtros_base,
+            'periodoLeitura__intervalo_leitura__iexact': dados_extraidos.get('periodo_leitura'),
+        },
+        {
+            **filtros_base,
+            'nomelivro__iexact': dados_extraidos.get('nomelivro'),
+        },
+        filtros_base,
+    ]
 
+    for combinacao in combinacoes:
+        filtros = {
+            chave: valor for chave, valor in combinacao.items()
+            if valor not in (None, '')
+        }
 
+        queryset = (
+            ResenhaLivro.objects
+            .select_related('aluno', 'periodoLeitura')
+            .filter(**filtros)
+            .order_by('id')
+        )
 
+        resenha = (
+            queryset
+            .filter(Q(path_resenha__isnull=True) | Q(path_resenha=''))
+            .first()
+            or queryset.first()
+        )
 
+        if resenha:
+            return resenha
 
+    return None
 
 @login_required
 @require_POST
@@ -922,7 +1022,7 @@ def organizar_resenhas_por_periodo(request):
             'mensagem': 'A pasta de análise não foi encontrada.',
         })
 
-        return render(request, 'partial/popup_resultado_organizacao_resenhas.html', {
+        return render(request, 'popup_resultado_organizacao_resenhas.html', {
             'titulo': 'Atualizar resenhas nas pastas',
             'status': status,
             'total_processados': 0,
@@ -933,7 +1033,7 @@ def organizar_resenhas_por_periodo(request):
     arquivos_pdf = sorted(path_resenha_analise.glob('*.pdf'))
 
     if not arquivos_pdf:
-        return render(request, 'partial/popup_resultado_organizacao_resenhas.html', {
+        return render(request, 'popup_resultado_organizacao_resenhas.html', {
             'titulo': 'Atualizar resenhas nas pastas',
             'status': [],
             'total_processados': 0,
@@ -973,25 +1073,7 @@ def organizar_resenhas_por_periodo(request):
             })
             continue
 
-        queryset_resenha = (
-            ResenhaLivro.objects
-            .select_related('aluno', 'periodoLeitura')
-            .filter(
-                aluno__nome__iexact=dados_extraidos['aluno'],
-                nomelivro__iexact=dados_extraidos['nomelivro'],
-                nomeAutor__iexact=dados_extraidos['nomeAutor'],
-                periodoLeitura__data_resenha=data_resenha,
-                periodoLeitura__intervalo_leitura__iexact=dados_extraidos['periodo_leitura'],
-            )
-            .order_by('id')
-        )
-
-        resenha = (
-            queryset_resenha
-            .filter(Q(path_resenha__isnull=True) | Q(path_resenha=''))
-            .first()
-            or queryset_resenha.first()
-        )
+        resenha = _buscar_resenha_por_fallback(dados_extraidos, data_resenha)
 
         if not resenha:
             status.append({
@@ -1006,7 +1088,7 @@ def organizar_resenhas_por_periodo(request):
             })
             continue
 
-        pasta_periodo = path_base / _normalizar_nome_pasta(resenha.periodoLeitura.intervalo_leitura)
+        pasta_periodo = path_base / str(data_resenha.year) / _normalizar_nome_pasta(resenha.periodoLeitura.intervalo_leitura)
         pasta_periodo.mkdir(parents=True, exist_ok=True)
 
         nome_arquivo = f"{_normalizar_nome_arquivo(resenha.aluno.nome)}-{resenha.id}.pdf"
