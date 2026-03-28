@@ -830,11 +830,12 @@ def _extrair_texto_primeira_pagina_ocr(caminho_pdf):
 
     texto = (texto or '').replace('\r', '')
     texto = re.sub(r'[ \t]+', ' ', texto)
+    #print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\nPressione Enter para continuar...")
     return texto.strip()
 
 
 def _extrair_dados_resenha_ocr(caminho_pdf):
-    """Extrai aluno, data da resenha e período de leitura da primeira página."""
+    """Extrai aluno, data da resenha, período, obra e autor da primeira página."""
     texto = _extrair_texto_primeira_pagina_ocr(caminho_pdf)
 
     if not texto:
@@ -843,21 +844,43 @@ def _extrair_dados_resenha_ocr(caminho_pdf):
             'mensagem': 'Nenhum texto foi reconhecido pelo OCR.',
         }
 
-    aluno_match = re.search(r'^\s*Aluno:\s*(.+?)\s*$', texto, re.IGNORECASE | re.MULTILINE)
-    data_match = re.search(r'^\s*Data da Resenha:\s*(\d{2}/\d{2}/\d{4})\s*$', texto, re.IGNORECASE | re.MULTILINE)
-    periodo_match = re.search(r'^\s*Per[ií]odo de Leitura:\s*(.+?)\s*$', texto, re.IGNORECASE | re.MULTILINE)
+    aluno_match = re.search(
+        r'Aluno:\s*(.+)',
+        texto,
+        re.IGNORECASE
+    )
 
-    if not aluno_match or not data_match or not periodo_match:
+    data_periodo_match = re.search(
+        r'Data da Resenha:\s*(\d{2}/\d{2}/\d{4})\s+Per[ií]odo de Leitura:\s*(.+)',
+        texto,
+        re.IGNORECASE
+    )
+
+    linhas = [linha.strip() for linha in texto.splitlines() if linha.strip()]
+
+    nomelivro = None
+    nomeAutor = None
+
+    for indice, linha in enumerate(linhas):
+        if 'Professor(a):' in linha and indice + 2 < len(linhas):
+            nomelivro = linhas[indice + 1].strip()
+            nomeAutor = linhas[indice + 2].strip()
+            break
+
+    if not aluno_match or not data_periodo_match or not nomelivro or not nomeAutor:
         return {
             'sucesso': False,
             'mensagem': 'OCR executado, mas os campos padrão não foram encontrados.',
+            'texto_extraido': texto,
         }
 
     return {
         'sucesso': True,
         'aluno': aluno_match.group(1).strip(),
-        'data_resenha': data_match.group(1).strip(),
-        'periodo_leitura': periodo_match.group(1).strip(),
+        'data_resenha': data_periodo_match.group(1).strip(),
+        'periodo_leitura': data_periodo_match.group(2).strip(),
+        'nomelivro': nomelivro,
+        'nomeAutor': nomeAutor,
     }
 
 
@@ -955,6 +978,8 @@ def organizar_resenhas_por_periodo(request):
             .select_related('aluno', 'periodoLeitura')
             .filter(
                 aluno__nome__iexact=dados_extraidos['aluno'],
+                nomelivro__iexact=dados_extraidos['nomelivro'],
+                nomeAutor__iexact=dados_extraidos['nomeAutor'],
                 periodoLeitura__data_resenha=data_resenha,
                 periodoLeitura__intervalo_leitura__iexact=dados_extraidos['periodo_leitura'],
             )
