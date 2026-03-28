@@ -4,10 +4,11 @@ from django.urls import path
 from .views import (
     listar_alunos, imprimir_resenha,
     adicionar_resenha, editar_resenha,
-    gerar_todas_resenhas,  adicionar_aluno_popup,
+    gerar_todas_resenhas, adicionar_aluno_popup,
     excluir_resenha, configuracao_resenhas,
     adicionar_periodo_leitura, alternar_gerado_declaracao, gerar_declaracao,
-    popup_confirmar_geracao_declaracao, gerar_declaracoes_selecionadas
+    popup_confirmar_geracao_declaracao, gerar_declaracoes_selecionadas,
+    organizar_resenhas_por_periodo,
 )
 
 app_name = 'resenha_livro'
@@ -28,4 +29,5 @@ urlpatterns = [
     path('alternar_gerado_declaracao/<int:resenha_id>/', alternar_gerado_declaracao, name='alternar_gerado_declaracao'),
     path('popup_confirmar_geracao_declaracao/', popup_confirmar_geracao_declaracao, name='popup_confirmar_geracao_declaracao'),
     path('gerar_declaracoes_selecionadas/', gerar_declaracoes_selecionadas, name='gerar_declaracoes_selecionadas'),
+    path('organizar-resenhas-por-periodo/', organizar_resenhas_por_periodo, name='organizar_resenhas_por_periodo'),
 ]
