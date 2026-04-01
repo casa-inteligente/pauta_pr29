@@ -98,6 +98,7 @@ def relacao_list(request):
         When(regime='PRE', then=Value(2)),
         When(regime='F', then=Value(3)),
         When(regime='SA', then=Value(4)),
+        When(regime='A', then=Value(5)),
     )
 
     relacoes = Relacao.objects.all().annotate(
@@ -288,7 +289,7 @@ def view_termo_rouparia(request):
         .aggregate(Max('atualizado')).get('atualizado__max')
     )
 
-    #print(f'Ultima data atualizado: {ultima_data_atualizado}')
+    
     
     ipen = request.GET.get('ipen')
     numero_rouparia = request.GET.get('numero_rouparia')
