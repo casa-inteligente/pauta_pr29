@@ -36,7 +36,7 @@ from django.db.models import Case, When, Value, Max, Count, Q
 from django.db.models.functions import Concat
 from django.utils import timezone
 
-from .process_table import process_pdf, process_regime_pdf, exctrai_date_exit
+from .process_table import process_pdf, process_regime_pdf, exctrai_date_exit, process_pdf_1_8
 from .models import Relacao, DescricaoKitHigiene, Descricao_termo_rouparia, CalculoAlimentacao
 
 
@@ -200,6 +200,26 @@ def salvar_alteracoes(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Método não permitido'})
+
+def extracao_relatorio_1_8(request):
+    '''
+    Recebe o arquivo PDF enviado pelo usuário, processa o conteúdo para extrair informações relevantes e atualiza o banco de dados com esses dados.
+
+    Returns:
+        render com a pagina renderizada e atualizada com 1 de 3 atualizaçoes
+    '''
+    #pass
+    if request.method == 'POST' and request.FILES.get('pdfFile'):
+        pdf_file = request.FILES['pdfFile']
+        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'relatorio1-8'))
+        filename = fs.save(pdf_file.name, pdf_file)
+        file_path = fs.path(filename)
+
+        process_pdf_1_8(file_path)
+
+        return redirect('relação_detentos:calculo_alimentacao')
+    return render(request, 'calculo_alimentacao.html')
+
 
 
 def upload_pdf(request):
