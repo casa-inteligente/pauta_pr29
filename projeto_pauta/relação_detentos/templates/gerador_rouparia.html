@@ -1,96 +1,112 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Termo Rouparia</title>
-    <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
+{% block titulo %}Termo Rouparia{% endblock %}
+{% block nav_wrapper %}{% endblock %}
+{% block body_class %}min-h-screen bg-gray-200 text-gray-800 font-sans{% endblock %}
+{% block main_class %}max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8{% endblock %}
 
-<body class="bg-gray-200 text-gray-800 font-sans min-h-screen p-8">
-    <!-- Menu de navegação -->
-    <nav class="max-w-5xl mx-auto mb-6 flex flex-wrap justify-center gap-3 print:hidden" id="topo">
-        <a href="{% url 'pauta:pauta_all' %}"
-            class="bg-indigo-500 text-white px-3 py-2 rounded text-sm hover:bg-indigo-900 flex items-center gap-2">
-            <img src="{% static 'img/home.png' %}" alt="" class="h-4 inline"> Início
-        </a>
-        <a href="{% url 'admin:index' %}"
-            class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2">
-            <img src="{% static 'img/login.png' %}" alt="" class="h-4"> Admin
-        </a>
+{% block head %}
+<link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
+{% endblock %}
 
-        <h6 class="text-sm text-gray-600 text-center italic">
-                <details class="border border-transparent rounded-2xl open:border-black/10 open:bg-green-100">
-                    <summary class="bg-yellow-500 hover:bg-green-700 hover:text-white rounded px-3 py-2 cursor-pointer flex items-center gap-2">
-                       
-                        <i class="fas fa-file-upload"></i>
-                        Atualização de Detentos
-                        
-                    </summary>
-                    
-                    <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
-                        action="{% url 'relação_detentos:process_pdf_1_8' %}">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="pdfFile">Relatório 1.8 do IPEN</label> <br>
-                            <input type="file" class="form-control-file" id="pdfFile" name="pdfFile" accept="application/pdf"
-                            required>
-                        </div>
-                        <button type="submit" class="bg-fuchsia-500 text-white px-3 py-2 rounded text-sm hover:bg-slate-700">
-                            Enviar
-                        </button>
-                    </form>
-                </details>
-        </h6>
+{% block main_content %}
+<div class="space-y-6">
+    <nav class="flex flex-col gap-4 print:hidden" id="topo">
+
+        <div class="mx-auto w-full max-w-md">
+            <details class="overflow-hidden rounded-2xl border border-transparent bg-white shadow-sm open:border-black/10 open:bg-green-100">
+                <summary class="flex cursor-pointer items-center gap-2 bg-yellow-500 px-4 py-3 text-sm font-medium text-black transition hover:bg-green-700 hover:text-white">
+                    <i class="fas fa-file-upload"></i>
+                    Atualização de Detentos
+                    {% if ultima_data_atualizado %}
+                    <span class="ml-auto rounded-full bg-black/15 px-2 py-0.5 text-xs">
+                        {{ ultima_data_atualizado|date:"d/m" }}
+                    </span>
+                    {% endif %}
+                </summary>
+
+                <form id="uploadPdfForm"
+                      method="post"
+                      enctype="multipart/form-data"
+                      action="{% url 'relação_detentos:process_pdf_1_8' %}"
+                      class="space-y-4 p-4">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="pdfFile" class="mb-1 block text-sm font-medium text-gray-700">
+                            Relatório 1.8 do IPEN
+                        </label>
+                        <input type="file"
+                               id="pdfFile"
+                               name="pdfFile"
+                               accept="application/pdf"
+                               required
+                               class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium">
+                    </div>
+
+                    <button type="submit"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded bg-fuchsia-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700">
+                        <i class="fas fa-upload"></i>
+                        Enviar
+                    </button>
+                </form>
+            </details>
+        </div>
     </nav>
 
-    <div class="max-w-4xl mx-auto mt-8 bg-green-100 rounded-2xl shadow p-8">
-               
-        <h1 class="text-2xl font-bold mb-4 text-center">
-            <i class="fas fa-solid fa-shirt"></i>
-            Termo de Rouparia <span class="text-sm text-gray-400">[{{ ultima_data_atualizado|date:'d/m' }}]</span>
-        </h1>
-                             
+    <section class="rounded-2xl bg-green-100 p-6 shadow sm:p-8">
+        <header class="mb-6 text-center">
+            <h1 class="text-2xl font-bold">
+                <i class="fas fa-shirt"></i>
+                Termo de Rouparia
+                <span class="text-sm text-gray-400">[{{ ultima_data_atualizado|date:'d/m' }}]</span>
+            </h1>
+        </header>
+
         <form method="get" class="mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                <!-- IPEN Input -->
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-5 md:items-end">
                 <div>
-                    <label for="ipen" class="block text-sm font-medium mb-1">IPEN:</label>
-                    <input type="number" name="ipen" placeholder="Digite o IPEN" min='100000' max='999999' 
-                           id="ipen" value="{{ request.GET.ipen }}"
-                           class="border-2 border-gray-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none">
+                    <label for="ipen" class="mb-1 block text-sm font-medium">IPEN:</label>
+                    <input type="number"
+                           name="ipen"
+                           id="ipen"
+                           min="100000"
+                           max="999999"
+                           placeholder="Digite o IPEN"
+                           value="{{ request.GET.ipen }}"
+                           class="w-full rounded border-2 border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none">
                 </div>
-                
-                <!-- Número Rouparia Input -->
+
                 <div>
-                    <label for="numero_rouparia" class="block text-sm font-medium mb-1">Número do Kit:</label>
-                    <input type="number" name="numero_rouparia" placeholder="Número do Kit" min="0" max="200" 
-                           id="numero_rouparia" value="{{ request.GET.numero_rouparia }}"
-                           class="border-2 border-gray-300 rounded px-3 py-2 w-full focus:border-blue-500 focus:outline-none">
+                    <label for="numero_rouparia" class="mb-1 block text-sm font-medium">Número do Kit:</label>
+                    <input type="number"
+                           name="numero_rouparia"
+                           id="numero_rouparia"
+                           min="0"
+                           max="200"
+                           placeholder="Número do Kit"
+                           value="{{ request.GET.numero_rouparia }}"
+                           class="w-full rounded border-2 border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none">
                 </div>
-                
-                <!-- Toggle Switch para Regime -->
+
                 <div>
-                    <label class="block text-sm font-medium mb-1">Alocado no:</label>
-                    <div class="flex justify-center">
+                    <label class="mb-1 block text-sm font-medium">Alocado no:</label>
+                    <div class="flex min-h-[42px] items-center justify-center rounded border-2 border-gray-300 bg-white px-3 py-2">
                         {{ form.escolha_tipo_regime }}
                     </div>
                 </div>
-                <!-- checked para Kit Higiene -->
 
                 <div>
-                    <label class="block text-sm font-medium mb-1">Com Higiene:</label>
-                    <div class="flex justify-center items-center">
+                    <label class="mb-1 block text-sm font-medium">Com Higiene:</label>
+                    <div class="flex min-h-[42px] items-center justify-center rounded border-2 border-gray-300 bg-white px-3 py-2">
                         {{ form.com_higiene }}
                     </div>
                 </div>
 
-                <!-- Botão Buscar -->
                 <div>
-                    <button type="submit" class="bg-violet-400 text-white px-6 py-2 rounded hover:bg-violet-600 w-full">
+                    <button type="submit"
+                            class="w-full rounded bg-violet-400 px-6 py-2 text-white transition hover:bg-violet-600">
                         Buscar
                     </button>
                 </div>
@@ -98,63 +114,68 @@
         </form>
 
         {% if detento %}
-        <div class="mb-6 bg-white rounded-lg p-4 shadow">
-            <h2 class="text-lg font-semibold mb-2">Dados do Interno:</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section class="mb-6 rounded-lg bg-white p-4 shadow">
+            <h2 class="mb-4 text-lg font-semibold">Dados do Interno:</h2>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div><strong>IPEN:</strong> {{ detento.IPEN }}</div>
                 <div><strong>Nome:</strong> {{ detento.nome }}</div>
                 <div><strong>Número do Kit:</strong> {{ numero_rouparia|default:"Não informado" }}</div>
-                <div><strong>Alocado no:</strong> 
+                <div>
+                    <strong>Alocado no:</strong>
                     {% if request.GET.escolha_tipo_regime %}
                         Fechado
                     {% else %}
                         Semiaberto
                     {% endif %}
                 </div>
-                <div><strong>Inclui Kit Higiene:</strong> 
+                <div class="md:col-span-2">
+                    <strong>Inclui Kit Higiene:</strong>
                     {% if com_kit_higiene %}
                         Sim
                     {% else %}
                         Não
                     {% endif %}
+                </div>
             </div>
-        </div>
-        
-        {% if numero_rouparia %}
-            <form method="post" target="_blank" action="{% url 'relação_detentos:gerar_termo_rouparia' detento.id numero_rouparia request.GET.escolha_tipo_regime|default:'semiaberto' request.GET.com_higiene|default:'0' %}">
-                {% csrf_token %}
-                <button type="submit" class="bg-teal-500 text-white px-4 py-2 rounded hover:bg-green-400 w-full">
-                    <i class="fas fa-file-pdf"></i>
-                    Gerar Termo da Rouparia (PDF)
-                </button>
-            </form>
+        </section>
 
-            {% if com_kit_higiene %}
-            <div class="mt-3 text-green-700 text-center bg-green-50 border border-green-300 rounded-lg p-3 flex items-center justify-center gap-2">
-                <i class="fas fa-check-circle"></i>
-                <span class="text-sm font-medium">O <strong>Memorando Penal</strong> será gerado na página 2 do PDF (Kit Higiene selecionado - <span class="text-red-500"> Entregue ao Interno </span> ).</span>
-            </div>
-                        
-            {% endif %}
-            
-        {% else %}
-            <div class="text-yellow-600 text-center bg-yellow-100 rounded p-4">
-                <i class="fas fa-exclamation-triangle"></i>
-                Informe o número do KIT Rouparia para gerar o termo.
-            </div>
+        {% if numero_rouparia %}
+        <form method="post"
+              target="_blank"
+              action="{% url 'relação_detentos:gerar_termo_rouparia' detento.id numero_rouparia request.GET.escolha_tipo_regime|default:'semiaberto' request.GET.com_higiene|default:'0' %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded bg-teal-500 px-4 py-3 text-white transition hover:bg-green-400">
+                <i class="fas fa-file-pdf"></i>
+                Gerar Termo da Rouparia (PDF)
+            </button>
+        </form>
+
+        {% if com_kit_higiene %}
+        <div class="mt-3 flex items-center justify-center gap-2 rounded-lg border border-green-300 bg-green-50 p-3 text-center text-green-700">
+            <i class="fas fa-check-circle"></i>
+            <span class="text-sm font-medium">
+                O <strong>Memorando Penal</strong> será gerado na página 2 do PDF.
+                Kit higiene selecionado.
+                <span class="text-red-500">Entregue ao Interno</span>.
+            </span>
+        </div>
         {% endif %}
-        
+
+        {% else %}
+        <div class="rounded p-4 text-center text-yellow-600">
+            <i class="fas fa-exclamation-triangle"></i>
+            Informe o número do KIT Rouparia para gerar o termo.
+        </div>
+        {% endif %}
+
         {% elif request.GET.ipen %}
-        <div class="text-red-500 text-center bg-red-100 rounded p-4">
+        <div class="rounded bg-red-100 p-4 text-center text-red-500">
             <i class="fas fa-exclamation-circle"></i>
             Nenhum interno encontrado com o IPEN informado.
         </div>
         {% endif %}
-    </div>
-    <!-- Rodapé -->
-    
-</body>
-    <footer class="max-w-5xl mx-auto mt-12 mb-6 text-center text-sm text-gray-600 print:hidden">
-        &copy; 2025 - {{ ano_corrente }} Presídio Regional de Maravilha. Todos os direitos reservados.
-    </footer>
-</html>
+    </section>
+</div>
+{% endblock %}

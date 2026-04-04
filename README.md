@@ -9,11 +9,11 @@ Sistema web desenvolvido em Django para gerenciamento de pautas e administraçã
 - [x] Criação e gerenciamento de pautas virtuais
 - [x] Controle de acesso e permissões
 - [x] Interface responsiva e moderna
-- [x] Sistema de alertas e notificações
+
 
 ### 👥 Gestão de Detentos
 
-- [x] Cadastro completo de internos
+- [x] Importação de internos através de relatórios
 - [x] Classificação de regime prisional (Fechado/Semiaberto)
 - [x] Geração de termos e documentos oficiais
 - [x] Upload e processamento de PDFs
@@ -23,7 +23,8 @@ Sistema web desenvolvido em Django para gerenciamento de pautas e administraçã
 - [x] Termo de Autorização para Trabalho
 - [x] Termo de Entrega de Kit Higiene
 - [x] Termo de Entrega de Rouparia
-- [x] Relatórios personalizados em PDF
+- [x] Memorandos de apenados
+- [x] Geração de declaração de resenhas com anexos das resenhas
 
 ### 🔄 Funcionalidades Avançadas
 

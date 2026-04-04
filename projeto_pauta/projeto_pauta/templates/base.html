@@ -88,6 +88,11 @@
                     </form>
                 </div>
                 {% else %}
+                <a href="{% url 'pauta:pauta_all' %}"
+                        class="flex items-center space-x-2 text-white transition-colors duration-200 hover:text-accent">
+                        <i class="fas fa-home"></i>
+                        <span>Início</span>
+                    </a>
                 <a href="{% url 'login' %}"
                     class="flex items-center space-x-2 rounded-lg bg-white px-4 py-2 font-semibold text-primary transition-colors duration-200 hover:bg-accent hover:text-dark">
                     <i class="fas fa-sign-in-alt"></i>
