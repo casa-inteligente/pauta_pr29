@@ -1010,7 +1010,8 @@ def organizar_resenhas_por_periodo(request):
     Lê os PDFs escaneados, extrai os dados com OCR, cria a pasta do período,
     renomeia o arquivo com o nome do aluno + id da resenha e atualiza `path_resenha`.
     """
-    path_base = Path('/home/ogliari/Área de trabalho/RESENHAS-BOOT')
+    #path_base = Path('/home/ogliari/Área de trabalho/RESENHAS-BOOT')
+    path_base = settings.VAR_DIR_BASE_RESENHA
     path_resenha_analise = path_base / 'scanner'
 
     status = []

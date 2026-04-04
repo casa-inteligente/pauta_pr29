@@ -62,6 +62,26 @@
         </legend>
 
         <form id="uploadPdfForm" method="post" enctype="multipart/form-data"
+            action="{% url 'relação_detentos:process_pdf_1_8' %}" class="relative z-10">
+            {% csrf_token %}
+            <div class="form-group mb-3">
+                <label for="pdfFile">Relatório 1.8 do IPEN</label><br>
+                <input
+                    type="file"
+                    class="form-control-file"
+                    id="pdfFile"
+                    name="pdfFile"
+                    accept="application/pdf"
+                    required
+                >
+            </div>
+            <button type="submit" class="bg-primary text-white px-3 py-2 rounded text-sm hover:bg-dark">
+                <i class="fas fa-cloud-arrow-up"></i>
+                Enviar
+            </button>
+        </form>
+
+        <!--<form id="uploadPdfForm" method="post" enctype="multipart/form-data"
             action="{% url 'relação_detentos:upload_pdf' %}" class="relative z-10">
             {% csrf_token %}
             <div class="form-group mb-3">
@@ -78,7 +98,7 @@
             <button type="submit" class="bg-primary text-white px-3 py-2 rounded text-sm hover:bg-dark">
                 Enviar
             </button>
-        </form>
+        </form> -->
     </fieldset>
     </nav>
 

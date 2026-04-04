@@ -24,6 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 #DEBUG = False
 DEBUG = True
 
+VAR_DIR_BASE_RESENHA = Path('/home/ogliari/Área de trabalho/RESENHAS-BOOT')
+
 
 if DEBUG:
     print(f'Sistema Operacional: {platform.system()}, Versão: {platform.release()}')

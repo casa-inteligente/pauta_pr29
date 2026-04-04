@@ -41,6 +41,166 @@ def format_pena(pena):
     
     return f'{anos}A, {meses}M, {dias}D'
 
+
+def process_pdf_1_8(file_path):
+    with pdfplumber.open(file_path) as pdf:
+        all_tables = []
+        for page in pdf.pages:
+            tables = page.extract_tables()
+            for table in tables:
+                if table:
+                    all_tables.append(table)
+
+        if len(all_tables) < 2:
+            os.remove(file_path)
+            return []
+
+        # Primeira tabela = resumo
+        first_table = all_tables[0]
+        total_internos = int(str(first_table[1][4]).replace('\n', ' ').strip())
+        #print(f'Total de internos: {total_internos}')
+
+        # Segunda tabela = dados com cabeçalho
+        second_table = all_tables[1]
+        colunas = second_table[0]
+
+        linhas_iniciais = []
+        for linha in second_table[1:]:
+            linha = list(linha or [])
+            if len(linha) < len(colunas):
+                linha.extend([None] * (len(colunas) - len(linha)))
+            elif len(linha) > len(colunas):
+                linha = linha[:len(colunas)]
+            linhas_iniciais.append(linha)
+
+        df = pd.DataFrame(linhas_iniciais, columns=colunas)
+
+        # Demais tabelas = continuação, normalmente sem cabeçalho
+        for table in all_tables[2:]:
+            if len(table) > 0:
+                linhas = table
+
+                if table[0] == colunas:
+                    linhas = table[1:]
+
+                linhas_normalizadas = []
+                for linha in linhas:
+                    linha = list(linha or [])
+                    if len(linha) < len(colunas):
+                        linha.extend([None] * (len(colunas) - len(linha)))
+                    elif len(linha) > len(colunas):
+                        linha = linha[:len(colunas)]
+                    linhas_normalizadas.append(linha)
+
+                additional_df = pd.DataFrame(linhas_normalizadas, columns=colunas)
+                df = pd.concat([df, additional_df], ignore_index=True)
+
+        total_dados_apos_index = len(df)
+        diferenca_total_dados = total_internos - total_dados_apos_index
+
+        #print(f'Total extraído: {total_dados_apos_index}')
+        #print(f'Diferença do resumo: {diferenca_total_dados}')
+
+        if df.shape[1] < 8:
+            os.remove(file_path)
+            return []
+
+        # Colunas do PDF 1.8
+        first_col = df.iloc[:, 0].astype(str).reset_index(drop=True)   # PRONTUÁRIO | NOME
+        second_col = df.iloc[:, 1].reset_index(drop=True)              # SITUAÇÃO
+        third_col = df.iloc[:, 2].reset_index(drop=True)               # ALA
+        fourth_col = df.iloc[:, 3].reset_index(drop=True)              # GAL.
+        fifth_col = df.iloc[:, 4].reset_index(drop=True)               # BLOCO
+        sixth_col = df.iloc[:, 5].reset_index(drop=True)               # PISO
+        seventh_col = df.iloc[:, 6].reset_index(drop=True)             # TIPO RESID.
+        eighth_col = df.iloc[:, 7].reset_index(drop=True)              # RESID.
+
+        registros_processados = []
+        ipens_no_pdf = set()
+
+        for i in range(len(first_col)):
+            texto_ipen_nome = str(first_col[i]).replace('\n', ' ').strip()
+
+            if ' - ' in texto_ipen_nome:
+                ipen_nome = texto_ipen_nome.split(' - ', 1)
+            elif '-' in texto_ipen_nome:
+                ipen_nome = texto_ipen_nome.split('-', 1)
+            else:
+                #print(f'Linha ignorada: {texto_ipen_nome}')
+                continue
+
+            if len(ipen_nome) != 2:
+                #print(f'Linha ignorada: {texto_ipen_nome}')
+                continue
+
+            ipen_txt = ipen_nome[0].strip()
+            nome = ipen_nome[1].strip()
+
+            if not ipen_txt.isdigit():
+                #print(f'Linha ignorada: {texto_ipen_nome}')
+                continue
+
+            ipen = int(ipen_txt)
+            ipens_no_pdf.add(ipen)
+
+            situacao_penal = str(second_col[i]).replace('\n', ' ').strip() if pd.notna(second_col[i]) else 'RECOLHIDO(A)'
+            ala = str(third_col[i]).replace('\n', ' ').strip() if pd.notna(third_col[i]) else ''
+            galeria = str(fourth_col[i]).replace('\n', ' ').strip() if pd.notna(fourth_col[i]) else ''
+            bloco = str(fifth_col[i]).replace('\n', ' ').strip() if pd.notna(fifth_col[i]) else ''
+            piso = str(sixth_col[i]).replace('\n', ' ').strip() if pd.notna(sixth_col[i]) else ''
+            tipo_residencia = str(seventh_col[i]).replace('\n', ' ').strip() if pd.notna(seventh_col[i]) else ''
+            residencia_txt = str(eighth_col[i]).replace('\n', ' ').strip() if pd.notna(eighth_col[i]) else ''
+
+            local_alocacao = map_local_alocacao(galeria)
+            regime = 'A' if galeria == 'E' else local_alocacao
+
+            try:
+                local_residencia = int(residencia_txt) if residencia_txt else None
+            except ValueError:
+                local_residencia = None
+
+            observacoes = 'NI'
+
+            relacao, created = Relacao.objects.get_or_create(
+                IPEN=ipen,
+                defaults={
+                    'nome': nome,
+                    'artigo': 'NI',
+                    'ingresso': None,
+                    'regime': regime,
+                    'pena': '-',
+                    'local_galeria': galeria or None,
+                    'local_alocacao': local_alocacao,
+                    'local_residencia': local_residencia,
+                    'situacao_penal': situacao_penal or 'RECOLHIDO(A)',
+                    'observacoes': observacoes,
+                }
+            )
+
+            if not created:
+                relacao.nome = nome
+                relacao.regime = regime
+                relacao.local_galeria = galeria or None
+                relacao.local_alocacao = local_alocacao
+                relacao.local_residencia = local_residencia
+                relacao.situacao_penal = situacao_penal or 'RECOLHIDO(A)'
+                relacao.observacoes = observacoes
+                relacao.atualizado = timezone.now()
+                relacao.save()
+
+            registros_processados.append(f'{nome} ({ipen})')
+
+        # Remove registros que estão no banco, mas não vieram no PDF atual
+        ipens_no_banco = set(Relacao.objects.values_list('IPEN', flat=True))
+        ipens_a_remover = ipens_no_banco - ipens_no_pdf
+
+        for ipen in ipens_a_remover:
+            Relacao.objects.filter(IPEN=ipen).delete()
+
+    os.remove(file_path)
+    return registros_processados
+
+
 # Função para processar o PDF 1.9 e inserir os dados no banco de dados
 def process_pdf(file_path):
     #print('Chamou a extração de dados')
@@ -78,15 +238,6 @@ def process_pdf(file_path):
         
         total_dados_apos_index = len(df)
         diferenca_total_dados = total_dados - total_dados_apos_index
-
-        #print(f'Total de linhas após anexar tabelas adicionais: {total_dados_apos_index}\n Total de dados: {total_dados}\n\nA diferença é: {diferenca_total_dados} \t\t\tA tabela esta utilizando: {sys.getsizeof(df)} bytes')
-
-        ##se {diferenca_total_dados} for diferente de zero, possui erro no processamento, e deverá leventar um erro e avisar na tela o usuario
-
-        #if diferenca_total_dados != 0:
-            #print('Possui divergencia de informações')
-            #raise ValueError('Ao final das concatenações das tabelas esta faltando informações \n\n O pdf gerado esta incompleto na sua concepção ou houve erro na leitura das tabelas.')
-            #print('Possui divergencia de informações')
 
         # Pegar as colunas necessáriasz
         first_col = df.iloc[:, 0].astype(str).reset_index(drop=True) # Coluna que contém IPEN e NOME

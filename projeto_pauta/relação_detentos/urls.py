@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    relacao_list, salvar_alteracoes, upload_pdf, upload_regime_pdf, exctrai_date_exit_view, cadastro_trampo_view, 
+    relacao_list, salvar_alteracoes, upload_pdf, extracao_relatorio_1_8, upload_regime_pdf, exctrai_date_exit_view, cadastro_trampo_view, 
     gerar_termo_autorizacao, termo_monitorado, gerar_termo_kit_higiene, view_termo_rouparia, gerar_termo_rouparia,
     gerar_memorandos_todos, calculo_alimentacao
 )
@@ -10,7 +10,8 @@ app_name = 'relação_detentos'
 urlpatterns = [
     path('', relacao_list, name='relacao_list'),  # URL para a lista de detentos
     
-    path('upload_pdf/', upload_pdf, name='upload_pdf'),  # URL para upload de PDF
+    path('upload_pdf/', upload_pdf, name='upload_pdf'),  # URL para upload de PDF 1.9
+    path('process_pdf_1_8/', extracao_relatorio_1_8, name='process_pdf_1_8'),  # URL para processar PDF 1.8
     path('upload_regime_pdf/', upload_regime_pdf, name='upload_regime_pdf'),  # URL para upload de PDF de regime
     path('exctrai_date_exit/', exctrai_date_exit_view, name='exctrai_date_exit'),  # URL para extrair data de saída
     path('salvar-alteracoes/', salvar_alteracoes, name='salvar_alteracoes'),  # Nova URL para salvar alterações
