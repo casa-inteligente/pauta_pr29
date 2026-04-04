@@ -41,61 +41,6 @@ def format_pena(pena):
     
     return f'{anos}A, {meses}M, {dias}D'
 
-# def process_pdf_1_8(file_path):
-#     with pdfplumber.open(file_path) as pdf:
-#         all_tables = []
-
-#         for page in pdf.pages:
-#             tables = page.extract_tables()
-#             for table in tables:
-#                 if table:
-#                     all_tables.append(table)
-
-#         if len(all_tables) < 2:
-#             os.remove(file_path)
-#             return []
-
-#         quantidades_tabelas = len(all_tables)
-        
-
-#         total_internos = all_tables[0][1][4]
-#         print(f'Total de internos: {total_internos}\n\n')
-
-#         tabela_internos = all_tables[1]
-#         colunas = tabela_internos[0]
-
-#         df = pd.DataFrame(tabela_internos[1:], columns=colunas)
-
-#         for tabela in all_tables[2:]:
-#             if not tabela:
-#                 continue
-
-#             linhas = tabela
-
-#             if tabela[0] == colunas:
-#                 linhas = tabela[1:]
-
-#             df_tabela = pd.DataFrame(linhas, columns=colunas)
-#             df = pd.concat([df, df_tabela], ignore_index=True)
-
-#         #print(f'Tabela de internos:\n\n{df}')
-
-#         primeira_col = df.iloc[:, 0].astype(str).reset_index(drop=True)   # PRONTUÁRIO | NOME
-#         segunda_col = df.iloc[:, 1].reset_index(drop=True)                # SITUAÇÃO
-#         terceira_col = df.iloc[:, 2].reset_index(drop=True)               # ALA
-#         quarta_col = df.iloc[:, 3].reset_index(drop=True)                 # GAL.
-#         quinta_col = df.iloc[:, 4].reset_index(drop=True)                 # BLOCO
-#         sexta_col = df.iloc[:, 5].reset_index(drop=True)                  # PISO
-#         setima_col = df.iloc[:, 6].reset_index(drop=True)                 # TIPO RESID.
-#         oitava_col = df.iloc[:, 7].reset_index(drop=True)                 # RESID.
-
-
-#         print(f"As colunas extraídas foram:\n\n{primeira_col}\n\n{segunda_col}\n\n{terceira_col}\n\n{quinta_col}\n\n{oitava_col}")
-
-#         registros_processados = []
-#         ipens_no_pdf = set()
-#     os.remove(file_path)
-#     return registros_processados
 
 def process_pdf_1_8(file_path):
     with pdfplumber.open(file_path) as pdf:
@@ -113,7 +58,7 @@ def process_pdf_1_8(file_path):
         # Primeira tabela = resumo
         first_table = all_tables[0]
         total_internos = int(str(first_table[1][4]).replace('\n', ' ').strip())
-        print(f'Total de internos: {total_internos}')
+        #print(f'Total de internos: {total_internos}')
 
         # Segunda tabela = dados com cabeçalho
         second_table = all_tables[1]
@@ -153,8 +98,8 @@ def process_pdf_1_8(file_path):
         total_dados_apos_index = len(df)
         diferenca_total_dados = total_internos - total_dados_apos_index
 
-        print(f'Total extraído: {total_dados_apos_index}')
-        print(f'Diferença do resumo: {diferenca_total_dados}')
+        #print(f'Total extraído: {total_dados_apos_index}')
+        #print(f'Diferença do resumo: {diferenca_total_dados}')
 
         if df.shape[1] < 8:
             os.remove(file_path)
@@ -181,18 +126,18 @@ def process_pdf_1_8(file_path):
             elif '-' in texto_ipen_nome:
                 ipen_nome = texto_ipen_nome.split('-', 1)
             else:
-                print(f'Linha ignorada: {texto_ipen_nome}')
+                #print(f'Linha ignorada: {texto_ipen_nome}')
                 continue
 
             if len(ipen_nome) != 2:
-                print(f'Linha ignorada: {texto_ipen_nome}')
+                #print(f'Linha ignorada: {texto_ipen_nome}')
                 continue
 
             ipen_txt = ipen_nome[0].strip()
             nome = ipen_nome[1].strip()
 
             if not ipen_txt.isdigit():
-                print(f'Linha ignorada: {texto_ipen_nome}')
+                #print(f'Linha ignorada: {texto_ipen_nome}')
                 continue
 
             ipen = int(ipen_txt)
@@ -214,7 +159,7 @@ def process_pdf_1_8(file_path):
             except ValueError:
                 local_residencia = None
 
-            observacoes = f'ALA: {ala} | BLOCO: {bloco} | PISO: {piso} | TIPO: {tipo_residencia}'
+            observacoes = 'NI'
 
             relacao, created = Relacao.objects.get_or_create(
                 IPEN=ipen,
