@@ -126,28 +126,61 @@ def excluir_resenha(request, resenha_id):
     return redirect('resenha_livro:listar_alunos')
 
 
-def gerar_todas_resenhas(request, periodo_id):
-    """Gerar um PDF com todas as resenhas de um período de leitura."""
+def gerar_todas_resenhas(request, periodo_id, aluno_id=None):
+    """Gerar PDF das resenhas de um período ou de um aluno específico dentro do período."""
     periodo = get_object_or_404(PeriodoLeitura, id=periodo_id)
-    resenhas = ResenhaLivro.objects.filter(periodoLeitura=periodo)
+
+    resenhas = (
+        ResenhaLivro.objects
+        .filter(periodoLeitura=periodo)
+        .select_related('aluno', 'aluno__turma', 'periodoLeitura')
+        .order_by('aluno__nome', 'id')
+    )
+
+    print(f"O aluno a ser gerado a resenha é: {aluno_id}")
+
+    if aluno_id is not None:
+        resenhas = resenhas.filter(aluno_id=aluno_id)
+
+    resenhas = list(resenhas)
+
+    if not resenhas:
+        if aluno_id is not None:
+            return HttpResponse(
+                'Nenhuma resenha encontrada para este aluno neste período.',
+                status=404
+            )
+        return HttpResponse(
+            'Nenhuma resenha cadastrada para este período.',
+            status=404
+        )
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="resenhas_periodo_{periodo.id}.pdf"'
+
+    if aluno_id is not None:
+        nome_aluno = slugify(resenhas[0].aluno.nome) or f'aluno_{aluno_id}'
+        response['Content-Disposition'] = (
+            f'inline; filename="resenhas_{nome_aluno}_periodo_{periodo.id}.pdf"'
+        )
+    else:
+        response['Content-Disposition'] = (
+            f'inline; filename="resenhas_periodo_{periodo.id}.pdf"'
+        )
 
     pdf = canvas.Canvas(response, pagesize=A4)
     pdf.setLineWidth(0.5)
     pdf.setStrokeColorRGB(0, 0, 0, 0.7)
-    pdf.setAuthor("MRLTech")
+    pdf.setAuthor("OGLTech")
     largura, altura = A4
 
     for resenha in resenhas:
-        pdf.setFont("Helvetica-Bold", 16)
+        pdf.setFont("Arial-Bold", 16)
         pdf.setLineWidth(0.5)
         pdf.setStrokeColorRGB(0, 0, 0, 0.7)
         titulo = "PROJETO REMIÇÃO PELA LEITURA"
         pdf.drawCentredString(largura / 2, altura - 50, titulo)
 
-        pdf.setFont("Helvetica", 12)
+        pdf.setFont("Arial", 12)
         y = altura - 100
         margem_esquerda = 50
         margem_direita = largura - 50
@@ -165,11 +198,27 @@ def gerar_todas_resenhas(request, periodo_id):
 
         pdf.drawString(margem_esquerda + 10, y, f"Aluno: {resenha.aluno.nome}")
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, f"Data da Resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}")
-        pdf.drawString(margem_direita - 200, y, f"Período de Leitura: {resenha.periodoLeitura.intervalo_leitura}")
+        pdf.drawString(
+            margem_esquerda + 10,
+            y,
+            f"Data da Resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}"
+        )
+        pdf.drawString(
+            margem_direita - 200,
+            y,
+            f"Período de Leitura: {resenha.periodoLeitura.intervalo_leitura}"
+        )
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, 'Local: CEJA/Ud Presídio Regional de Maravilha')
-        pdf.drawString(margem_direita - 200, y, f"Professor(a): {resenha.nomeProfessor}")
+        pdf.drawString(
+            margem_esquerda + 10,
+            y,
+            "Local: CEJA/Ud Presídio Regional de Maravilha"
+        )
+        pdf.drawString(
+            margem_direita - 200,
+            y,
+            f"Professor(a): {resenha.nomeProfessor}"
+        )
 
         y -= 20
         pdf.drawCentredString(margem_direita - 250, y, f"{resenha.nomelivro}")
@@ -180,8 +229,18 @@ def gerar_todas_resenhas(request, periodo_id):
         qtd_linha_1folha = 31
         y -= 40
 
-        pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_1folha - 1)))
-        pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_1folha - 1)))
+        pdf.line(
+            margem_esquerda,
+            y,
+            margem_esquerda,
+            y - (size_lines * (qtd_linha_1folha - 1))
+        )
+        pdf.line(
+            margem_direita,
+            y,
+            margem_direita,
+            y - (size_lines * (qtd_linha_1folha - 1))
+        )
 
         for _ in range(qtd_linha_1folha):
             pdf.line(margem_esquerda, y, margem_direita, y)
@@ -189,16 +248,26 @@ def gerar_todas_resenhas(request, periodo_id):
 
             if y < 50:
                 pdf.showPage()
-                pdf.setFont("Helvetica", 12)
+                pdf.setFont("Arial", 12)
                 y = altura - 50
 
         pdf.showPage()
-        pdf.setFont("Helvetica", 12)
+        pdf.setFont("Arial", 12)
         y = altura - 50
 
         qtd_linha_2folha = 40
-        pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_2folha - 1)))
-        pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_2folha - 1)))
+        pdf.line(
+            margem_esquerda,
+            y,
+            margem_esquerda,
+            y - (size_lines * (qtd_linha_2folha - 1))
+        )
+        pdf.line(
+            margem_direita,
+            y,
+            margem_direita,
+            y - (size_lines * (qtd_linha_2folha - 1))
+        )
 
         for _ in range(qtd_linha_2folha):
             pdf.line(margem_esquerda, y, margem_direita, y)
@@ -208,7 +277,7 @@ def gerar_todas_resenhas(request, periodo_id):
             y -= size_lines
             if y < 50:
                 pdf.showPage()
-                pdf.setFont("Helvetica", 12)
+                pdf.setFont("Arial", 12)
                 y = altura - 50
 
         pdf.showPage()
