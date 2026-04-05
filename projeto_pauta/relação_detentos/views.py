@@ -991,9 +991,9 @@ def _gerar_lote_kit_higiene(dados_lote):
         canvas_obj.drawCentredString(doc_obj.pagesize[0] / 2, 2.1 * cm, "POLÍCIA PENAL DE SANTA CATARINA")
         canvas_obj.drawCentredString(doc_obj.pagesize[0] / 2, 1.7 * cm, "Presídio Regional de Maravilha")
         canvas_obj.drawCentredString(doc_obj.pagesize[0] / 2, 1.3 * cm,
-                                      "Avenida Sul Brasil, 1607, Novo Bairro, Maravilha/SC - CEP 89874-000")
+                                      "Avenida Sul Brasil, 1607, Madalozzo, Maravilha/SC - CEP 89874-000")
         canvas_obj.drawCentredString(doc_obj.pagesize[0] / 2, 0.9 * cm,
-                                      "Telefone: (49) 3664-6672 / pr29@pp.sc.gov.br")
+                                      "Telefone: (49) 3664\u20136672 / pr29@pp.sc.gov.br")
         canvas_obj.restoreState()
 
     doc.build(elementos, onFirstPage=_cabecalho_rodape_worker, onLaterPages=_cabecalho_rodape_worker)
@@ -1268,7 +1268,7 @@ def cabecalho_e_rodape(canvas, doc):
     canvas.drawCentredString(
         x=doc.pagesize[0] / 2,
         y=1.3 * cm,
-        text="Avenida Sul Brasil, 1607, Novo Bairro, Maravilha/SC - CEP 89874-000"
+        text="Avenida Sul Brasil, 1607, Madalozzo, Maravilha/SC - CEP 89874-000"
     )
     canvas.drawCentredString(
         x=doc.pagesize[0] / 2,
@@ -1322,7 +1322,7 @@ def cabecalho_e_rodape_ume(canvas, doc):
     canvas.drawCentredString(
         x=doc.pagesize[0] / 2,
         y=0.7 * cm,
-        text="Tel: (48) 3665-7323 / (48) 3665-7327 / monitoramento@pp.sc.gov.br"
+        text="Telefone: (48) 3665-7323 / (48) 3665-7327 / monitoramento@pp.sc.gov.br"
     )
 
     canvas.restoreState()

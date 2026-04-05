@@ -171,10 +171,18 @@ def gerar_todas_resenhas(request, periodo_id, aluno_id=None):
     pdf.setAuthor("OGLTech")
     largura, altura = A4
 
+    def finalizar_pagina():
+        pdf.saveState()
+        pdf.setFont("Arial", 8)
+        pdf.setFillColorRGB(0, 0, 0, 0.5)
+        pdf.drawCentredString(largura / 2, 20, "Emissão Automática")
+        pdf.restoreState()
+        pdf.showPage()
+
     def linha_pontilhada(x1, y1, x2, y2):
         pdf.saveState()
-        pdf.setLineWidth(0.5)
-        pdf.setStrokeColorRGB(0, 0, 0, 0.7)
+        pdf.setLineWidth(0.9)
+        pdf.setStrokeColorRGB(1, 1, 1, 0.01)
         pdf.setDash(1, 2)
         pdf.line(x1, y1, x2, y2)
         pdf.restoreState()
@@ -253,12 +261,12 @@ def gerar_todas_resenhas(request, periodo_id, aluno_id=None):
             y -= size_lines
 
             if y < 50:
-                pdf.showPage()
-                pdf.setFont("Arial", 12)
+                finalizar_pagina()
+                pdf.setFont("Arial", 8)
                 y = altura - 50
 
-        pdf.showPage()
-        pdf.setFont("Arial", 12)
+        finalizar_pagina()
+        pdf.setFont("Arial", 8)
         y = altura - 50
 
         qtd_linha_2folha = 40
@@ -282,11 +290,11 @@ def gerar_todas_resenhas(request, periodo_id, aluno_id=None):
 
             y -= size_lines
             if y < 50:
-                pdf.showPage()
-                pdf.setFont("Arial", 12)
+                finalizar_pagina()
+                pdf.setFont("Arial", 8)
                 y = altura - 50
 
-        pdf.showPage()
+        finalizar_pagina()
 
     pdf.save()
     return response
@@ -892,8 +900,8 @@ def _extrair_texto_primeira_pagina_ocr(caminho_pdf):
 
     texto = (texto or '').replace('\r', '')
     texto = re.sub(r'[ \t]+', ' ', texto)
-    print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\n")
-    print(40*'*')
+    #print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\n")
+    #print(40*'*')
     return texto.strip()
 
 def _limpar_linha_ocr(linha):
