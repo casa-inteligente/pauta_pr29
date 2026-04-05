@@ -137,8 +137,6 @@ def gerar_todas_resenhas(request, periodo_id, aluno_id=None):
         .order_by('aluno__nome', 'id')
     )
 
-    print(f"O aluno a ser gerado a resenha é: {aluno_id}")
-
     if aluno_id is not None:
         resenhas = resenhas.filter(aluno_id=aluno_id)
 
@@ -173,6 +171,14 @@ def gerar_todas_resenhas(request, periodo_id, aluno_id=None):
     pdf.setAuthor("OGLTech")
     largura, altura = A4
 
+    def linha_pontilhada(x1, y1, x2, y2):
+        pdf.saveState()
+        pdf.setLineWidth(0.5)
+        pdf.setStrokeColorRGB(0, 0, 0, 0.7)
+        pdf.setDash(1, 2)
+        pdf.line(x1, y1, x2, y2)
+        pdf.restoreState()
+
     for resenha in resenhas:
         pdf.setFont("Arial-Bold", 16)
         pdf.setLineWidth(0.5)
@@ -185,16 +191,16 @@ def gerar_todas_resenhas(request, periodo_id, aluno_id=None):
         margem_esquerda = 50
         margem_direita = largura - 50
 
-        pdf.line(margem_esquerda, y + 20, margem_direita, y + 20)
-        pdf.line(margem_esquerda, y - 8, margem_direita, y - 8)
-        pdf.line(margem_esquerda, y - 25, margem_direita, y - 25)
-        pdf.line(margem_esquerda, y - 45, margem_direita, y - 45)
-        pdf.line(margem_esquerda, y - 65, margem_direita, y - 65)
-        pdf.line(margem_esquerda, y - 85, margem_direita, y - 85)
+        linha_pontilhada(margem_esquerda, y + 20, margem_direita, y + 20)
+        linha_pontilhada(margem_esquerda, y - 8, margem_direita, y - 8)
+        linha_pontilhada(margem_esquerda, y - 25, margem_direita, y - 25)
+        linha_pontilhada(margem_esquerda, y - 45, margem_direita, y - 45)
+        linha_pontilhada(margem_esquerda, y - 65, margem_direita, y - 65)
+        linha_pontilhada(margem_esquerda, y - 85, margem_direita, y - 85)
 
-        pdf.line(margem_esquerda + 280, y - 8, margem_esquerda + 280, y - 45)
-        pdf.line(margem_esquerda, y + 20, margem_esquerda, y - 85)
-        pdf.line(margem_direita, y + 20, margem_direita, y - 85)
+        linha_pontilhada(margem_esquerda + 280, y - 8, margem_esquerda + 280, y - 45)
+        linha_pontilhada(margem_esquerda, y + 20, margem_esquerda, y - 85)
+        linha_pontilhada(margem_direita, y + 20, margem_direita, y - 85)
 
         pdf.drawString(margem_esquerda + 10, y, f"Aluno: {resenha.aluno.nome}")
         y -= 20
