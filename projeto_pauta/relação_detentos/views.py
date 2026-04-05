@@ -1051,7 +1051,7 @@ def gerar_termo_kit_higiene(request):
 
     # Determinar número de workers (núcleos disponíveis)
     num_cpus = os.cpu_count() or 2
-    num_workers = min(num_cpus, 4)  # Limitar a 4 workers
+    num_workers = min(num_cpus, 15)  # Limitar a 15 workers
 
     total = len(detentos_serializados)
     tamanho_lote = max(1, math.ceil(total / num_workers))
@@ -1071,7 +1071,7 @@ def gerar_termo_kit_higiene(request):
             'arial_path': arial_path,
             'arial_bold_path': arial_bold_path,
         })
-
+    #print(f"Total detentos: {total}, Lotes criados: {len(lotes)}, Tamanho de cada lote: {tamanho_lote}, workers: {num_workers}")
     if len(lotes) <= 1:
         # Poucos detentos, não vale paralelizar
         pdf_bytes = _gerar_lote_kit_higiene(lotes[0])
