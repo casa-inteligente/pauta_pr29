@@ -126,50 +126,113 @@ def excluir_resenha(request, resenha_id):
     return redirect('resenha_livro:listar_alunos')
 
 
-def gerar_todas_resenhas(request, periodo_id):
-    """Gerar um PDF com todas as resenhas de um período de leitura."""
+def gerar_todas_resenhas(request, periodo_id, aluno_id=None):
+    """Gerar PDF das resenhas de um período ou de um aluno específico dentro do período."""
     periodo = get_object_or_404(PeriodoLeitura, id=periodo_id)
-    resenhas = ResenhaLivro.objects.filter(periodoLeitura=periodo)
+
+    resenhas = (
+        ResenhaLivro.objects
+        .filter(periodoLeitura=periodo)
+        .select_related('aluno', 'aluno__turma', 'periodoLeitura')
+        .order_by('aluno__nome', 'id')
+    )
+
+    if aluno_id is not None:
+        resenhas = resenhas.filter(aluno_id=aluno_id)
+
+    resenhas = list(resenhas)
+
+    if not resenhas:
+        if aluno_id is not None:
+            return HttpResponse(
+                'Nenhuma resenha encontrada para este aluno neste período.',
+                status=404
+            )
+        return HttpResponse(
+            'Nenhuma resenha cadastrada para este período.',
+            status=404
+        )
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="resenhas_periodo_{periodo.id}.pdf"'
+
+    if aluno_id is not None:
+        nome_aluno = slugify(resenhas[0].aluno.nome) or f'aluno_{aluno_id}'
+        response['Content-Disposition'] = (
+            f'inline; filename="resenhas_{nome_aluno}_periodo_{periodo.id}.pdf"'
+        )
+    else:
+        response['Content-Disposition'] = (
+            f'inline; filename="resenhas_periodo_{periodo.id}.pdf"'
+        )
 
     pdf = canvas.Canvas(response, pagesize=A4)
     pdf.setLineWidth(0.5)
     pdf.setStrokeColorRGB(0, 0, 0, 0.7)
-    pdf.setAuthor("MRLTech")
+    pdf.setAuthor("OGLTech")
     largura, altura = A4
 
+    def finalizar_pagina():
+        pdf.saveState()
+        pdf.setFont("Arial", 8)
+        pdf.setFillColorRGB(0, 0, 0, 0.5)
+        pdf.drawCentredString(largura / 2, 20, "Emissão Automática")
+        pdf.restoreState()
+        pdf.showPage()
+
+    def linha_pontilhada(x1, y1, x2, y2):
+        pdf.saveState()
+        pdf.setLineWidth(0.9)
+        pdf.setStrokeColorRGB(1, 1, 1, 0.01)
+        pdf.setDash(1, 2)
+        pdf.line(x1, y1, x2, y2)
+        pdf.restoreState()
+
     for resenha in resenhas:
-        pdf.setFont("Helvetica-Bold", 16)
+        pdf.setFont("Arial-Bold", 16)
         pdf.setLineWidth(0.5)
         pdf.setStrokeColorRGB(0, 0, 0, 0.7)
         titulo = "PROJETO REMIÇÃO PELA LEITURA"
         pdf.drawCentredString(largura / 2, altura - 50, titulo)
 
-        pdf.setFont("Helvetica", 12)
+        pdf.setFont("Arial", 12)
         y = altura - 100
         margem_esquerda = 50
         margem_direita = largura - 50
 
-        pdf.line(margem_esquerda, y + 20, margem_direita, y + 20)
-        pdf.line(margem_esquerda, y - 8, margem_direita, y - 8)
-        pdf.line(margem_esquerda, y - 25, margem_direita, y - 25)
-        pdf.line(margem_esquerda, y - 45, margem_direita, y - 45)
-        pdf.line(margem_esquerda, y - 65, margem_direita, y - 65)
-        pdf.line(margem_esquerda, y - 85, margem_direita, y - 85)
+        linha_pontilhada(margem_esquerda, y + 20, margem_direita, y + 20)
+        linha_pontilhada(margem_esquerda, y - 8, margem_direita, y - 8)
+        linha_pontilhada(margem_esquerda, y - 25, margem_direita, y - 25)
+        linha_pontilhada(margem_esquerda, y - 45, margem_direita, y - 45)
+        linha_pontilhada(margem_esquerda, y - 65, margem_direita, y - 65)
+        linha_pontilhada(margem_esquerda, y - 85, margem_direita, y - 85)
 
-        pdf.line(margem_esquerda + 280, y - 8, margem_esquerda + 280, y - 45)
-        pdf.line(margem_esquerda, y + 20, margem_esquerda, y - 85)
-        pdf.line(margem_direita, y + 20, margem_direita, y - 85)
+        linha_pontilhada(margem_esquerda + 280, y - 8, margem_esquerda + 280, y - 45)
+        linha_pontilhada(margem_esquerda, y + 20, margem_esquerda, y - 85)
+        linha_pontilhada(margem_direita, y + 20, margem_direita, y - 85)
 
         pdf.drawString(margem_esquerda + 10, y, f"Aluno: {resenha.aluno.nome}")
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, f"Data da Resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}")
-        pdf.drawString(margem_direita - 200, y, f"Período de Leitura: {resenha.periodoLeitura.intervalo_leitura}")
+        pdf.drawString(
+            margem_esquerda + 10,
+            y,
+            f"Data da Resenha: {resenha.dataResenha.strftime('%d/%m/%Y')}"
+        )
+        pdf.drawString(
+            margem_direita - 200,
+            y,
+            f"Período de Leitura: {resenha.periodoLeitura.intervalo_leitura}"
+        )
         y -= 20
-        pdf.drawString(margem_esquerda + 10, y, 'Local: CEJA/Ud Presídio Regional de Maravilha')
-        pdf.drawString(margem_direita - 200, y, f"Professor(a): {resenha.nomeProfessor}")
+        pdf.drawString(
+            margem_esquerda + 10,
+            y,
+            "Local: CEJA/Ud Presídio Regional de Maravilha"
+        )
+        pdf.drawString(
+            margem_direita - 200,
+            y,
+            f"Professor(a): {resenha.nomeProfessor}"
+        )
 
         y -= 20
         pdf.drawCentredString(margem_direita - 250, y, f"{resenha.nomelivro}")
@@ -180,25 +243,45 @@ def gerar_todas_resenhas(request, periodo_id):
         qtd_linha_1folha = 31
         y -= 40
 
-        pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_1folha - 1)))
-        pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_1folha - 1)))
+        pdf.line(
+            margem_esquerda,
+            y,
+            margem_esquerda,
+            y - (size_lines * (qtd_linha_1folha - 1))
+        )
+        pdf.line(
+            margem_direita,
+            y,
+            margem_direita,
+            y - (size_lines * (qtd_linha_1folha - 1))
+        )
 
         for _ in range(qtd_linha_1folha):
             pdf.line(margem_esquerda, y, margem_direita, y)
             y -= size_lines
 
             if y < 50:
-                pdf.showPage()
-                pdf.setFont("Helvetica", 12)
+                finalizar_pagina()
+                pdf.setFont("Arial", 8)
                 y = altura - 50
 
-        pdf.showPage()
-        pdf.setFont("Helvetica", 12)
+        finalizar_pagina()
+        pdf.setFont("Arial", 8)
         y = altura - 50
 
         qtd_linha_2folha = 40
-        pdf.line(margem_esquerda, y, margem_esquerda, y - (size_lines * (qtd_linha_2folha - 1)))
-        pdf.line(margem_direita, y, margem_direita, y - (size_lines * (qtd_linha_2folha - 1)))
+        pdf.line(
+            margem_esquerda,
+            y,
+            margem_esquerda,
+            y - (size_lines * (qtd_linha_2folha - 1))
+        )
+        pdf.line(
+            margem_direita,
+            y,
+            margem_direita,
+            y - (size_lines * (qtd_linha_2folha - 1))
+        )
 
         for _ in range(qtd_linha_2folha):
             pdf.line(margem_esquerda, y, margem_direita, y)
@@ -207,11 +290,11 @@ def gerar_todas_resenhas(request, periodo_id):
 
             y -= size_lines
             if y < 50:
-                pdf.showPage()
-                pdf.setFont("Helvetica", 12)
+                finalizar_pagina()
+                pdf.setFont("Arial", 8)
                 y = altura - 50
 
-        pdf.showPage()
+        finalizar_pagina()
 
     pdf.save()
     return response
@@ -817,8 +900,8 @@ def _extrair_texto_primeira_pagina_ocr(caminho_pdf):
 
     texto = (texto or '').replace('\r', '')
     texto = re.sub(r'[ \t]+', ' ', texto)
-    print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\n")
-    print(40*'*')
+    #print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\n")
+    #print(40*'*')
     return texto.strip()
 
 def _limpar_linha_ocr(linha):

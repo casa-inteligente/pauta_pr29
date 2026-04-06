@@ -101,7 +101,7 @@
                         </div>
 
                         <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                            <a href="{% url 'resenha_livro:imprimir_resenha' resenha.aluno.id resenha.periodoLeitura.id %}"
+                            <a href="{% url 'resenha_livro:gerar_resenha_aluno' resenha.periodoLeitura.id resenha.aluno.id %}"                            
                                 class="inline-flex w-full items-center justify-center gap-1 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-indigo-700 sm:w-auto">
                                 <i class="fas fa-print"></i>
                                 <span>Folha</span>
@@ -148,7 +148,7 @@
                                 <td class="p-2 border">{{ resenha.nomeAutor }}</td>
                                 <td class="p-2 border">
                                     <div class="flex flex-wrap gap-2">
-                                        <a href="{% url 'resenha_livro:imprimir_resenha' resenha.aluno.id resenha.periodoLeitura.id %}"
+                                        <a href="{% url 'resenha_livro:gerar_resenha_aluno' resenha.periodoLeitura.id resenha.aluno.id %}"
                                             class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-indigo-700">
                                             <i class="fas fa-print"></i>
                                             <span>Folha</span>
