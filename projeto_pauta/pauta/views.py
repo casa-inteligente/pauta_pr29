@@ -35,7 +35,7 @@ def pauta_all(request):
         form = PautaForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('pauta:pauta_all')  # Use o namespace 'pauta' aqui
+            return redirect('pauta:pauta_all')  
     else:
         form = PautaForm()
     
