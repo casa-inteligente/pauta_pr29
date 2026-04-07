@@ -29,7 +29,7 @@
         </div>
     </section>
 
-    <section class="grid gap-4 md:grid-cols-3">
+    <section class="grid gap-4 md:grid-cols-4 sm:grid-cols-1">
         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p class="text-sm font-medium text-slate-500">Alunos cadastrados</p>
             <p class="mt-2 text-3xl font-bold text-slate-800">{{ total_alunos }}</p>
@@ -38,11 +38,16 @@
         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p class="text-sm font-medium text-slate-500">Resenhas cadastradas</p>
             <p class="mt-2 text-3xl font-bold text-slate-800">{{ total_resenhas }}</p>
+            <span class="text-xs text-slate-500">Total geral {{ total_resenhas_all }}</span>
         </div>
 
         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p class="text-sm font-medium text-slate-500">Períodos de leitura</p>
             <p class="mt-2 text-3xl font-bold text-slate-800">{{ total_periodos }}</p>
+        </div>
+        <div class="rounded-2xl border border-slate-200 bg-red-100 p-5 shadow-sm">
+            <p class="text-sm font-medium text-red-500">Resenhas insatisfatórias</p>
+            <p class="mt-2 text-3xl font-bold text-red-800">{{ total_resenha_insatisfatoria }}</p>
         </div>
     </section>
 

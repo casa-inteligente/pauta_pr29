@@ -45,8 +45,21 @@ pdfmetrics.registerFont(TTFont('Arial', arial_path))
 pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 
 
+
 def listar_alunos(request):
     """Listar todos os alunos e suas resenhas por período de leitura."""
+
+    ano_atual = datetime.datetime.now().year
+    total_periodos = PeriodoLeitura.objects.filter(
+            data_resenha__year=ano_atual
+        ).count()
+    
+
+    total_resenha_insatisfatoria = ResenhaLivro.objects.filter(
+            periodoLeitura__data_resenha__year=ano_atual,
+            aprovada=False
+        ).count()
+
     try:
         periodos = PeriodoLeitura.objects.all().order_by('-data_resenha')
         if not periodos.exists():
@@ -68,7 +81,16 @@ def listar_alunos(request):
     return render(request, 'listar_alunos.html', {
         'resenhas_por_periodo': resenhas_por_periodo,
         'titulo': 'Listar Alunos',
-        'ano_corrente': datetime.datetime.now().year,
+        'ano_corrente': ano_atual,
+        'total_alunos': Aluno.objects.filter(
+            resenhas__periodoLeitura__data_resenha__year=ano_atual
+        ).distinct().count(),
+        'total_resenhas': ResenhaLivro.objects.filter(
+            periodoLeitura__data_resenha__year=ano_atual
+        ).count(),
+        'total_periodos': total_periodos,
+        'total_resenha_insatisfatoria' : total_resenha_insatisfatoria,
+        
     })
 
 
@@ -319,15 +341,21 @@ def adicionar_aluno_popup(request):
 
 
 @login_required
-def gerar_decraracao_resenha(request, aluno_id):
-    """Gerar declaração da resenha."""
-    pass
-
-
-@login_required
 def configuracao_resenhas(request):
     """Tela de configurações das resenhas."""
     ano_atual = datetime.datetime.now().year
+
+
+    total_periodos = PeriodoLeitura.objects.filter(
+            data_resenha__year=ano_atual
+        ).count()
+    
+    total_resenhas_all = ResenhaLivro.objects.all().count()
+
+    total_resenha_insatisfatoria = ResenhaLivro.objects.filter(
+            periodoLeitura__data_resenha__year=ano_atual,
+            aprovada=False
+        ).count()
 
     context = {
         'titulo': 'Configurações de Resenhas',
@@ -338,9 +366,9 @@ def configuracao_resenhas(request):
         'total_resenhas': ResenhaLivro.objects.filter(
             periodoLeitura__data_resenha__year=ano_atual
         ).count(),
-        'total_periodos': PeriodoLeitura.objects.filter(
-            data_resenha__year=ano_atual
-        ).count(),
+        'total_periodos': total_periodos,
+        'total_resenha_insatisfatoria' : total_resenha_insatisfatoria,
+        'total_resenhas_all': total_resenhas_all,
     }
     return render(request, 'configuracao_resenhas.html', context)
 

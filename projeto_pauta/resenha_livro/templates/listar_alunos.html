@@ -40,6 +40,28 @@
 
 <body class="bg-gray-50 text-gray-800 font-sans">
     <div class="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div class="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <div class="inline-flex w-full items-center justify-center border border-gray-400 gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-gray-800 shadow-sm  sm:w-auto">
+                    Total de Alunos cadastrados
+                    <span class="ml-1 inline-flex rounded-full bg-primary px-2 py-0.5 text-xs text-white">{{ total_alunos }}</span>
+                </div>
+                <div class="inline-flex w-full items-center justify-center border border-gray-400 gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-gray-800 shadow-sm  sm:w-auto">
+                    Total de resenhas cadastradas
+                    <span class="ml-1 inline-flex rounded-full bg-primary px-2 py-0.5 text-xs text-white">{{ total_resenhas }}</span>                    
+                </div>
+                <div class="inline-flex w-full items-center justify-center border border-gray-400 gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-gray-800 shadow-sm  sm:w-auto">
+                    Total de resenhas insatisfatórias
+                    <span class="ml-1 inline-flex rounded-full bg-red-300 px-2 py-0.5 text-xs text-white">{{ total_resenha_insatisfatoria }}</span>                    
+                </div>
+                <div class="inline-flex w-full items-center justify-center border border-gray-400 gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-gray-800 shadow-sm  sm:w-auto">
+                    Total de períodos cadastrados
+                    <span class="ml-1 inline-flex rounded-full bg-primary px-2 py-0.5 text-xs text-white">{{ total_periodos }}</span>                    
+                </div>
+            </div>
+        </div>
+       
+
         <div class="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:flex-row lg:items-center lg:justify-between">
             <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <a href="{% url 'resenha_livro:adicionar_resenha' %}"
