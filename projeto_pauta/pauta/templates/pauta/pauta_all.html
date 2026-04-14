@@ -120,8 +120,35 @@
                             id="ipen_termo_monitorado"
                             placeholder="IPEN (6 dígitos)"
                             class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+
+                        <input type="number"
+                            id="numero_tornozeleira"
+                            placeholder="Número da Tornozeleira"
+                            class="w-full rounded-xl border border-slate-300 mt-2 px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+
                         <button type="button"
-                            onclick="window.location.href='{% url 'relação_detentos:termo_monitorado' 0 %}'.replace('0', document.getElementById('ipen_termo_monitorado').value)"
+                            onclick="
+                                const ipen = document.getElementById('ipen_termo_monitorado').value.trim();
+                                const num = document.getElementById('numero_tornozeleira').value.trim();
+
+                                if (!ipen) {
+                                    alert('Informe o IPEN.');
+                                    return;
+                                }
+
+                                let url = '{% url 'relação_detentos:termo_monitorado' 0 %}'
+                                    .replace('/0/', '/' + ipen + '/');
+
+                                if (num) {
+                                    url += '?numero_tornozeleira=' + encodeURIComponent(num);
+                                }
+
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.target = '_blank';
+                                link.rel = 'noopener noreferrer';
+                                link.click();
+                            "
                             class="mt-2 w-full rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700">
                             <i class="fas fa-file-export mr-1"></i>
                             Gerar Termo
@@ -253,6 +280,19 @@
                         </a>.
                     </div>
                 </form>
+                <div class="my-4 border-t border-slate-200 mt-6"></div>
+
+                <div id="frase-motivacional-compacta"
+                    class="mt-6 rounded-lg border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700">
+                    <p class="font-semibold text-indigo-700">
+                        <i class="fas fa-spa text-indigo-500"></i>
+                        <span>Pare, respire e reflita</span>
+                    </p>
+                    <p id="mot-quote-compacta" class="mt-1 leading-snug">Carregando frase...</p>
+                    <p id="mot-author-compacta" class="mt-1 text-[11px] text-slate-500"></p>
+                </div>
+
+
             </div>
         </div>
     </aside>
@@ -306,6 +346,28 @@
         if (documentUrlEl) {
             documentUrlEl.innerText = documentURL;
         }
+    });
+    async function carregarFraseMotivacionalCompacta() {
+        const quoteEl = document.getElementById('mot-quote-compacta');
+        const authorEl = document.getElementById('mot-author-compacta');
+
+        if (!quoteEl || !authorEl) return;
+
+        try {
+            const resp = await fetch("{% url 'servidores:frase_motivacional' %}");
+            const data = await resp.json();
+
+            quoteEl.textContent = `"${data.q}"`;
+            authorEl.textContent = `— ${data.a}`;
+        } catch (e) {
+            quoteEl.textContent = "Não foi possível carregar a frase agora.";
+            authorEl.textContent = "";
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // ... seu código atual ...
+        carregarFraseMotivacionalCompacta(); // carrega uma única vez
     });
 </script>
 {% endblock %}
