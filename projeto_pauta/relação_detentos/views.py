@@ -1,5 +1,4 @@
 import pdfplumber
-
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT, TA_RIGHT
@@ -27,7 +26,6 @@ from django.templatetags.static import static
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from .forms.geradores import DescricaoKitHigieneForm, TermoRoupariaForm 
@@ -142,7 +140,7 @@ def relacao_list(request):
         'ano_corrente': timezone.now().year, #ano corrente para exibir no rodapé
     })
 
-@csrf_exempt
+
 def salvar_alteracoes(request):
     """
     Responsavél por salvar as informações alteradas na lista de detentos
@@ -311,10 +309,10 @@ def view_termo_rouparia(request):
 
     
     
-    ipen = request.GET.get('ipen')
-    numero_rouparia = request.GET.get('numero_rouparia')
-    escolha_tipo_regime = request.GET.get('escolha_tipo_regime')
-    com_higiene = request.GET.get('com_higiene')
+    ipen = request.POST.get('ipen')
+    numero_rouparia = request.POST.get('numero_rouparia')
+    escolha_tipo_regime = request.POST.get('escolha_tipo_regime')
+    com_higiene = request.POST.get('com_higiene')
 
     # Usar o form alternativo que funciona melhor
     initial_data = {}
@@ -1281,7 +1279,6 @@ def cabecalho_e_rodape(canvas, doc):
 def cabecalho_e_rodape_ume(canvas, doc):
     
    
-
     # Cabeçalho
     canvas.saveState()
 
@@ -1289,12 +1286,12 @@ def cabecalho_e_rodape_ume(canvas, doc):
     caminho_logo = os.path.join(settings.BASE_DIR, 'staticfiles', 'img', 'logo.png')
     if os.path.exists(caminho_logo):
         logo = ImageReader(caminho_logo)
-        canvas.drawImage(logo, x=doc.leftMargin, y=A4[1] - 3*cm, width=2*cm, height=2.5*cm, mask='auto')
+        canvas.drawImage(logo, x=doc.leftMargin, y=A4[1] - 3.6*cm, width=2*cm, height=2.5*cm, mask='auto')
 
     # Texto institucional (centralizado à direita da logo)
     canvas.setFont("Helvetica-Bold", 9)
     x_texto = doc.leftMargin + 2.3 * cm
-    y_topo = A4[1] - 1.2 * cm
+    y_topo = A4[1] - 1.8 * cm
 
     linhas = [
         "ESTADO DE SANTA CATARINA",
@@ -1335,13 +1332,19 @@ def termo_monitorado(request, detento_ipen):
     IPEN = detento_ipen
     detento = get_object_or_404(Relacao, IPEN=IPEN)
 
+    numero_tornozeleira = request.GET.get('numero_tornozeleira', '').strip()
+    numero_exibicao = numero_tornozeleira if numero_tornozeleira else "___________________"
+
+
+    #print(f"Gerando termo de monitoramento para detento {detento.nome} (IPEN: {detento.IPEN}) com tornozeleira {numero_exibicao}")
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
         rightMargin=2.5 * cm,
         leftMargin=2 * cm,
-        topMargin=1.5 * cm,
+        topMargin=2 * cm,
         bottomMargin=2 * cm
     )
 
@@ -1393,7 +1396,7 @@ def termo_monitorado(request, detento_ipen):
 
     # Corpo do termo conforme modelo atualizado
     elementos.append(Paragraph(
-        f"Eu, {detento.nome} ({detento.IPEN}), declaro para os devidos fins, que fui devidamente instruído sobre o uso e conservação da TORNOZELEIRA ELETRÔNICA, e observarei, principalmente, o seguinte: carregamento diário por, no mínimo, <b>3 (TRÊS) horas, não utilizando extensões, benjamins, adaptadores ou similares, não recarregar durante o sono </b>, não retirar, queimar, abrir, forçar, danificar ou inutilizar o equipamento e/ou o carregador que acompanha, não praticar esporte de contato, não mergulhar com o equipamento em piscina, mar ou rio. A pessoa monitorada deverá zelar pelo dispositivo sendo responsável onerosamente pelos danos causados, em todo ou em parte, dos equipamentos de monitoramento.", estilo_justificado))
+        f"Eu, <font name='Arial-Bold'>{detento.nome}</font> ({detento.IPEN}), declaro para os devidos fins, que fui devidamente instruído sobre o uso e conservação da TORNOZELEIRA ELETRÔNICA, e observarei, principalmente, o seguinte: carregamento diário por, no mínimo, <b>3 (TRÊS) horas, não utilizando extensões, benjamins, adaptadores ou similares, não recarregar durante o sono </b>, não retirar, queimar, abrir, forçar, danificar ou inutilizar o equipamento e/ou o carregador que acompanha, não praticar esporte de contato, não mergulhar com o equipamento em piscina, mar ou rio. A pessoa monitorada deverá zelar pelo dispositivo sendo responsável onerosamente pelos danos causados, em todo ou em parte, dos equipamentos de monitoramento.", estilo_justificado))
     elementos.append(Spacer(1, 0.2 * cm))
        
     elementos.append(Paragraph("Ainda, fui orientado(a) que, em casos de dúvidas, informações, acidente ou anomalia com o dispositivo, carregadores ou acessórios, devo entrar em contato com a Unidade de Monitoramento Eletrônico através dos números de telefones <b>(48) 3665-7322 / (48) 3665-7323 / (48) 3665- 7325 / (48) 3665-7327</b>, que funcionam 24 horas, como também informar à Unidade de Monitoramento Eletrônico qualquer necessidade de saída da área, ciente de que sem autorização judicial cometerei violação das regras de monitoramento, obedecendo <b>IMEDIATAMENTE AS ORIENTAÇÕES EMANADAS PELA UNIDADE DE MONITORAMENTO ELETRÔNICO – UME.</b>", estilo_justificado))
@@ -1408,7 +1411,7 @@ def termo_monitorado(request, detento_ipen):
     elementos.append(Spacer(1, 0.2 * cm))
 
     elementos.append(Paragraph(
-        "Nos termos do disposto no art. 5º da Resolução n. 5, de 10-11-2017, do Conselho Nacional de Política Criminal e Penitenciária do Ministério da Justiça e Cidadania, aceito a afixação, ao meu corpo, de dispositivo de monitoração eletrônica, sendo devidamente instalados a tornozeleira nº___________________, cinta, travas e me entregue o carregador, todos em perfeito funcionamento.", estilo_justificado))
+        f"Nos termos do disposto no art. 5º da Resolução n. 5, de 10-11-2017, do Conselho Nacional de Política Criminal e Penitenciária do Ministério da Justiça e Cidadania, aceito a afixação, ao meu corpo, de dispositivo de monitoração eletrônica, sendo devidamente instalados a tornozeleira nº<font name='Arial-Bold'> {numero_exibicao}</font>, cinta, travas e me entregue o carregador, todos em perfeito funcionamento.", estilo_justificado))
     elementos.append(Spacer(1, 1 * cm))
     # Data e local
     data_atual = timezone.now().strftime('%d de %B de %Y')
@@ -1730,7 +1733,6 @@ def gerar_memorandos_todos(request):
 
 
 @checked_debug_decorador
-@csrf_exempt
 def calculo_alimentacao(request):
     resultado = None
     registro = None

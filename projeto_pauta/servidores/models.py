@@ -210,3 +210,105 @@ class ServidoresExtra(models.Model):
         ordering = ('data_extra', 'servidor',)
         verbose_name = 'Plantonista extra'
         verbose_name_plural = 'Plantonistas extras'
+
+class UnidadeOficio(models.Model):
+    nome = models.CharField(
+        verbose_name='Nome da unidade',
+        max_length=100,
+        blank=False,
+        null=False
+    )
+    sigla = models.CharField(
+        verbose_name='Sigla da unidade',
+        max_length=6,
+        blank=False,
+        null=False
+    )
+    nome_oficio = models.CharField(
+        verbose_name='Nome para ofício',
+        max_length=10,
+        default='PPSC',
+        blank=False,
+        null=False
+    )
+
+    rua = models.CharField(
+        verbose_name='Rua da unidade',
+        max_length=150,
+        default='Rua dos Bobos, 0',
+        blank=False,
+        null=False
+    )
+    numero_rua = models.CharField(
+        verbose_name='Número da unidade',
+        max_length=10,
+        default='0',
+        blank=False,
+        null=False
+    )
+    bairro = models.CharField(
+        verbose_name='Bairro da unidade',
+        max_length=100,
+        default='Centro',
+        blank=False,
+        null=False
+    )
+    cidade = models.CharField(
+        verbose_name='Cidade da unidade',
+        max_length=100,
+        default='Maravilha',
+        blank=False,
+        null=False
+    )
+    sigla_uf = models.CharField(
+        verbose_name='Sigla do estado da unidade',
+        max_length=2,
+        default='SC',
+        blank=False,
+        null=False
+    )
+    cep_unidade = models.CharField(
+        verbose_name='CEP da unidade',
+        max_length=9,
+        default='00000-000',
+        blank=False,
+        null=False
+    )
+    telefone_unidade = models.CharField(
+        verbose_name='Telefone da unidade',
+        max_length=15,
+        default='(00) 0000-0000',
+        blank=False,
+        null=False
+    )
+    email_unidade = models.EmailField(
+        verbose_name='E-mail da unidade',
+        max_length=254,
+        default='unidade@pp.sc.gov.br',
+        blank=False,
+        null=False
+    )
+
+    # Comarca
+    nome_magistrado = models.CharField(
+        verbose_name='Nome do magistrado',
+        max_length=100,
+        default='Dr. Fulano de Tal',
+        blank=False,
+        null=False
+    )
+
+    nome_juizo = models.CharField(
+        verbose_name='Nome do juízo',
+        max_length=150,
+        default='Juiz da 2ª Vara da Comarca de Maravilha/SC',
+        blank=False,
+        null=False
+    )
+    def __str__(self):
+        return f'{self.nome} ({self.sigla})'
+
+    class Meta:
+        ordering = ('nome',)
+        verbose_name = 'unidade'
+        verbose_name_plural = 'Configurações para ofício'

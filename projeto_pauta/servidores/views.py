@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
 
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
@@ -17,7 +18,7 @@ from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 
 
-from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra, ServidoresPlantao
+from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra, ServidoresPlantao, UnidadeOficio
 from projeto_pauta.permission_group import grupos_permitidos
 
 import requests as http_requests
@@ -46,8 +47,8 @@ else:
     checked_debug_decorador = lambda x: x
     checked_debug_decorador_fun = lambda x: x
 
-ano_corrente = date.today().year
-mes_corrente = date.today().month
+ano_corrente = timezone.now().year
+mes_corrente = timezone.now().month
 
 # Registre Arial e Arial-Bold (se quiser usar negrito)
 # Registre Arial e Arial-Bold (se quiser usar negrito)
@@ -984,3 +985,42 @@ def frase_motivacional(request):
     except Exception:
         fallback = random.choice(FALLBACKS)
         return JsonResponse(fallback)
+
+
+#@login_required
+@checked_debug_decorador
+def gerador_oficios(request):
+    """View para exibir o formulário de geração de ofícios e processar os dados enviados."""
+
+    usuarios = (
+        Servidores.objects
+        .filter(status_ativo=True, setor="ADMINISTRATIVO")
+        .order_by("nome_exibir")
+        .only("id", "nome_exibir", "matricula")
+    )
+
+    contexto_base = {
+        "ano_corrente": timezone.now().year,
+        "usuarios": usuarios,
+        'nome_juiz' : UnidadeOficio.objects.filter(sigla="PR29").first().nome_magistrado if UnidadeOficio.objects.filter(sigla="PR29").exists() else "Juiz Não Cadastrado",
+        'nome_comarca' : UnidadeOficio.objects.filter(sigla="PR29").first().nome_juizo if UnidadeOficio.objects.filter(sigla="PR29").exists() else "Comarca Não Cadastrada",
+    }
+
+    if request.method == "POST":
+        numero_oficio = request.POST.get("numero_oficio", "").strip()
+        tipo_oficio = request.POST.get("tipo_oficio", "").strip()
+        servidor_id = request.POST.get("usuario_id", "").strip()
+
+        arquivos_pdf = request.FILES.getlist("arquivos_pdf")
+        nomes_arquivos = [arquivo.name for arquivo in arquivos_pdf]
+
+        contexto = {
+            **contexto_base,
+            "numero_oficio": numero_oficio,
+            "tipo_oficio": tipo_oficio,
+            "servidor_id": servidor_id,
+            "nomes_arquivos": nomes_arquivos,
+        }
+        return render(request, "gerador_oficios.html", contexto)
+
+    return render(request, "gerador_oficios.html", contexto_base)
