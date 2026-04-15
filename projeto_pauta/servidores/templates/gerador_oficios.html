@@ -3,7 +3,7 @@
 
 {% block titulo %}Gerador de Ofícios{% endblock %}
 {% block nav_wrapper %}{% endblock %}
-{% block body_class %}min-h-screen bg-gray-200 text-gray-800 font-sans{% endblock %}
+{% block body_class %}min-h-screen bg-gray-100 text-gray-800 font-sans{% endblock %}
 {% block main_class %}max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8{% endblock %}
 
 {% block head %}
@@ -11,20 +11,17 @@
 {% endblock %}
 
 {% block main_content %}
-<div class="mx-auto w-full max-w-3xl rounded-2xl border border-black/10 bg-green-100 shadow-sm">
+<div class="mx-auto w-full max-w-3xl rounded-2xl border border-black/10 bg-white shadow-sm">
     <div class="rounded-t-2xl bg-green-700 px-4 py-3 text-white">
         <div class="flex items-center gap-2">
             <i class="fas fa-file-upload"></i>
             <h2 class="text-sm font-semibold sm:text-base">Gerador de Ofícios</h2>
         </div>
-        <p class="mt-2 text-xs leading-relaxed text-green-100">
-            Gere ofícios a partir de arquivos PDF de entrada, com número do ofício, tipo e servidor selecionados.
-        </p>
     </div>
 
     <form id="gerarOficioForm"
           method="post"
-          action="#"
+          action=""
           enctype="multipart/form-data"
           class="space-y-4 p-5 sm:p-6">
         {% csrf_token %}
@@ -39,7 +36,7 @@
                    value="{{ numero_oficio|default:'' }}"
                    placeholder="Ex: 123"
                    required
-                   class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none">
+                   class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-green-600 focus:outline-none">
         </div>
 
         <div>
@@ -49,17 +46,17 @@
             <select id="tipo_oficio"
                     name="tipo_oficio"
                     required
-                    class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none">
+                    class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-green-600 focus:outline-none">
                 <option value="">Selecione o tipo</option>
-                <option value="oficio_1" {% if tipo_oficio == 'oficio_1' %}selected{% endif %}>Trabalho</option>
-                <option value="oficio_2" {% if tipo_oficio == 'oficio_2' %}selected{% endif %}>Estudo</option>
-                <option value="oficio_3" {% if tipo_oficio == 'oficio_3' %}selected{% endif %}>Resenha de Livros</option>
+                <option value="oficio_1" {% if tipo_oficio == "oficio_1" %}selected{% endif %}>Trabalho</option>
+                <option value="oficio_2" {% if tipo_oficio == "oficio_2" %}selected{% endif %}>Estudo</option>
+                <option value="oficio_3" {% if tipo_oficio == "oficio_3" %}selected{% endif %}>Resenha de Livros</option>
             </select>
         </div>
 
         <div>
             <label for="arquivos_pdf" class="mb-1 block text-sm font-medium text-gray-700">
-                PDFs de Entrada (múltiplos)
+                PDFs de Entrada
             </label>
             <input type="file"
                    id="arquivos_pdf"
@@ -68,31 +65,77 @@
                    multiple
                    required
                    class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium">
-            <p class="mt-1 text-xs text-gray-500">Você pode selecionar vários arquivos PDF.</p>
+            <p class="mt-1 text-xs text-gray-500">Selecione um ou mais arquivos PDF.</p>
+
+            <div id="lista-arquivos" class="mt-2 rounded border border-gray-200 bg-gray-50 p-3 {% if not nomes_arquivos %}hidden{% endif %}">
+                <p class="mb-2 text-xs font-semibold text-gray-700">Arquivos selecionados:</p>
+                <ul id="nomes-arquivos" class="space-y-1 text-xs text-gray-600">
+                    {% for nome in nomes_arquivos %}
+                    <li>{{ forloop.counter }}. {{ nome }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
 
         <div>
             <label for="usuario_id" class="mb-1 block text-sm font-medium text-gray-700">
-                servidor
+                Servidor
             </label>
             <select id="usuario_id"
                     name="usuario_id"
                     required
-                    class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none">
-                <option value="">Selecione o usuário</option>
+                    class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-green-600 focus:outline-none">
+                <option value="">Selecione o servidor</option>
                 {% for u in usuarios %}
-                    <option value="{{ u.id }}" {% if usuario_id == u.id|stringformat:'s' %}selected{% endif %}>
-                        {{ u.nome_exibir }} ({{ u.matricula }})
+                    <option value="{{ u.id }}" {% if servidor_id == u.id|stringformat:"s" %}selected{% endif %}>
+                        {{ u.nome_exibir }} {{ u.matricula }}
                     </option>
                 {% endfor %}
             </select>
         </div>
 
         <button type="submit"
-                class="inline-flex w-full items-center justify-center gap-2 rounded bg-fuchsia-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700">
+                class="inline-flex w-full items-center justify-center gap-2 rounded bg-green-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-400">
             <i class="fas fa-file-alt"></i>
             Gerar Ofício
         </button>
     </form>
+    <div class="bg-gray-50 px-5 py-3 text-sm text-gray-600 sm:px-6 gap-2 rounded-b-2xl">
+        <p> Nome do Juiz(a) para Ofício: <strong>{{ nome_juiz }}</strong> </p>
+        <p> Comarca para Ofício: <strong>{{ nome_comarca }}</strong> </p>
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("arquivos_pdf");
+        const caixa = document.getElementById("lista-arquivos");
+        const lista = document.getElementById("nomes-arquivos");
+
+        if (!input || !caixa || !lista) return;
+
+        function renderizarNomes() {
+            const arquivos = Array.from(input.files || []);
+            lista.innerHTML = "";
+
+            if (!arquivos.length) {
+                caixa.classList.add("hidden");
+                return;
+            }
+
+            arquivos.forEach((arquivo, i) => {
+                const li = document.createElement("li");
+                li.textContent = (i + 1) + ". " + arquivo.name;
+                lista.appendChild(li);
+            });
+
+            caixa.classList.remove("hidden");
+        }
+
+        input.addEventListener("change", renderizarNomes);
+        renderizarNomes();
+    });
+</script>
 {% endblock %}
