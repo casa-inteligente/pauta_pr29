@@ -1,5 +1,4 @@
 import pdfplumber
-
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT, TA_RIGHT
@@ -27,7 +26,6 @@ from django.templatetags.static import static
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.http import JsonResponse, FileResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from .forms.geradores import DescricaoKitHigieneForm, TermoRoupariaForm 
@@ -142,7 +140,7 @@ def relacao_list(request):
         'ano_corrente': timezone.now().year, #ano corrente para exibir no rodapé
     })
 
-@csrf_exempt
+
 def salvar_alteracoes(request):
     """
     Responsavél por salvar as informações alteradas na lista de detentos
@@ -311,10 +309,10 @@ def view_termo_rouparia(request):
 
     
     
-    ipen = request.GET.get('ipen')
-    numero_rouparia = request.GET.get('numero_rouparia')
-    escolha_tipo_regime = request.GET.get('escolha_tipo_regime')
-    com_higiene = request.GET.get('com_higiene')
+    ipen = request.POST.get('ipen')
+    numero_rouparia = request.POST.get('numero_rouparia')
+    escolha_tipo_regime = request.POST.get('escolha_tipo_regime')
+    com_higiene = request.POST.get('com_higiene')
 
     # Usar o form alternativo que funciona melhor
     initial_data = {}
@@ -1735,7 +1733,6 @@ def gerar_memorandos_todos(request):
 
 
 @checked_debug_decorador
-@csrf_exempt
 def calculo_alimentacao(request):
     resultado = None
     registro = None

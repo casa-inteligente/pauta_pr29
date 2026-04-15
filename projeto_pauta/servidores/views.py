@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
 
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
@@ -46,8 +47,8 @@ else:
     checked_debug_decorador = lambda x: x
     checked_debug_decorador_fun = lambda x: x
 
-ano_corrente = date.today().year
-mes_corrente = date.today().month
+ano_corrente = timezone.now().year
+mes_corrente = timezone.now().month
 
 # Registre Arial e Arial-Bold (se quiser usar negrito)
 # Registre Arial e Arial-Bold (se quiser usar negrito)
@@ -984,3 +985,38 @@ def frase_motivacional(request):
     except Exception:
         fallback = random.choice(FALLBACKS)
         return JsonResponse(fallback)
+
+
+@login_required
+@checked_debug_decorador
+def gerador_oficios(request):
+    usuarios = (
+        Servidores.objects
+        .filter(status_ativo=True)
+        .order_by("nome_exibir")
+        .only("id", "nome_exibir", "matricula")
+    )
+
+    if request.method == "POST":
+        numero_oficio = request.POST.get("numero_oficio", "").strip()
+        tipo_oficio = request.POST.get("tipo_oficio", "").strip()
+        servidor_id = request.POST.get("usuario_id", "").strip()
+        arquivos_pdf = request.FILES.getlist("arquivos_pdf")
+
+        # Aqui depois você conecta com sua lógica de geração.
+        # Por enquanto, só devolve a tela com os dados.
+        contexto = {
+            "ano_corrente": timezone.now().year,
+            "usuarios": usuarios,
+            "numero_oficio": numero_oficio,
+            "tipo_oficio": tipo_oficio,
+            "servidor_id": servidor_id,
+            "qtd_arquivos": len(arquivos_pdf),
+        }
+        return render(request, "gerador_oficios.html", contexto)
+
+    contexto = {
+        "ano_corrente": timezone.now().year,
+        "usuarios": usuarios,
+    }
+    return render(request, "gerador_oficios.html", contexto)
