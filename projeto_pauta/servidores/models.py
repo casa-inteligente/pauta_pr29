@@ -311,4 +311,4 @@ class UnidadeOficio(models.Model):
     class Meta:
         ordering = ('nome',)
         verbose_name = 'unidade'
-        verbose_name_plural = 'unidades'
+        verbose_name_plural = 'Configurações para ofício'

@@ -1002,8 +1002,8 @@ def gerador_oficios(request):
     contexto_base = {
         "ano_corrente": timezone.now().year,
         "usuarios": usuarios,
-        'nome_juiz' : "gufhj", #UnidadeOficio.objects.filter(nome_unidade="PR29").first().nome_juiz if UnidadeOficio.objects.filter(nome_unidade="PR29").exists() else "Juiz(a) Desconecido(a)",
-        'nome_comarca' : "gufhj", #UnidadeOficio.objects.filter(nome_unidade="PR29").first().nome_comarca if UnidadeOficio.objects.filter(nome_unidade="PR29").exists() else "Comarca Desconecida",
+        'nome_juiz' : UnidadeOficio.objects.filter(sigla="PR29").first().nome_magistrado if UnidadeOficio.objects.filter(sigla="PR29").exists() else "Juiz Não Cadastrado",
+        'nome_comarca' : UnidadeOficio.objects.filter(sigla="PR29").first().nome_juizo if UnidadeOficio.objects.filter(sigla="PR29").exists() else "Comarca Não Cadastrada",
     }
 
     if request.method == "POST":
