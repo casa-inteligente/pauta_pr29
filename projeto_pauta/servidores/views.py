@@ -5,7 +5,10 @@ from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 
-
+from io import BytesIO
+import re
+import pdfplumber
+from pypdf import PdfReader, PdfWriter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT, TA_RIGHT
@@ -987,10 +990,114 @@ def frase_motivacional(request):
         return JsonResponse(fallback)
 
 
-#@login_required
+def extrair_dados_primeira_pagina(arquivo_pdf):
+    arquivo_pdf.seek(0)
+    with pdfplumber.open(arquivo_pdf) as pdf:
+        texto = (pdf.pages[0].extract_text() or "").strip()
+
+    dados = {
+        "nome": "",
+        "matricula": "",
+        "processo": "",
+    }
+
+    m_nome = re.search(r"Nome:\s*(.+)", texto, re.IGNORECASE)
+    m_mat = re.search(r"Matr[ií]cula:\s*([\w.-]+)", texto, re.IGNORECASE)
+    m_proc = re.search(r"Processo:\s*([\w./-]+)", texto, re.IGNORECASE)
+
+    if m_nome: dados["nome"] = m_nome.group(1).strip()
+    if m_mat: dados["matricula"] = m_mat.group(1).strip()
+    if m_proc: dados["processo"] = m_proc.group(1).strip()
+
+    return dados
+
+def gerar_pdf_oficio_trabalho(dados, numero_oficio):
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    c.setFont("Arial-Bold", 14)
+    c.drawString(72, 750, "OFÍCIO DE ENCAMINHAMENTO - SETOR DE TRABALHO")
+    c.setFont("Arial", 10)
+    c.drawString(72, 720, f"Ofício nº {numero_oficio}")
+    c.drawString(72, 700, f"Para: {dados.get('nome', '-')}")
+    c.drawString(72, 680, f"Matrícula: {dados.get('matricula', '-')}")
+    c.drawString(72, 660, f"Processo: {dados.get('processo', '-')}")
+    c.drawString(72, 630, "Solicitamos a análise conforme requerido.")
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+def gerar_pdf_oficio_estudo(dados, numero_oficio):
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    c.setFont("Arial-Bold", 14)
+    c.drawString(72, 750, "OFÍCIO DE ENCAMINHAMENTO - SETOR DE ESTUDO")
+    c.setFont("Arial", 10)
+    c.drawString(72, 720, f"Ofício nº {numero_oficio}")
+    c.drawString(72, 700, f"Aluno(a): {dados.get('nome', '-')}")
+    c.drawString(72, 680, f"Matrícula: {dados.get('matricula', '-')}")
+    c.drawString(72, 660, f"Referência: {dados.get('processo', '-')}")
+    c.drawString(72, 630, "Encaminhamos para deliberação acadêmica.")
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+def gerar_pdf_oficio_resenha(dados, numero_oficio):
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    c.setFont("Arial-Bold", 14)
+    c.drawString(72, 750, "OFÍCIO DE ENCAMINHAMENTO - RESENHA DE LIVROS")
+    c.setFont("Arial", 10)
+    c.drawString(72, 720, f"Ofício nº {numero_oficio}")
+    c.drawString(72, 700, f"Autor(a): {dados.get('nome', '-')}")
+    c.drawString(72, 680, f"ID: {dados.get('matricula', '-')}")
+    c.drawString(72, 660, f"Obra: {dados.get('processo', '-')}")
+    c.drawString(72, 630, "Resenha anexada para análise.")
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+def extrair_texto_pdf_gera_oficio(files, numero_oficio, tipo_oficio):
+    writer_final = PdfWriter()
+
+    geradores = {
+        "oficio_1": gerar_pdf_oficio_trabalho,
+        "oficio_2": gerar_pdf_oficio_estudo,
+        "oficio_3": gerar_pdf_oficio_resenha,
+    }
+    gerador = geradores.get(tipo_oficio, gerar_pdf_oficio_trabalho)
+
+    try:
+        numero_inicial = int(numero_oficio)
+    except (TypeError, ValueError):
+        numero_inicial = 0
+
+    for indice, arquivo in enumerate(files):
+        numero_atual = str(numero_inicial + indice)
+        dados = extrair_dados_primeira_pagina(arquivo)
+
+        # Gera ofício com numeração sequencial
+        oficio_pdf = gerador(dados, numero_atual)
+        oficio_reader = PdfReader(oficio_pdf)
+        for p in oficio_reader.pages:
+            writer_final.add_page(p)
+
+        # Anexa PDF original
+        arquivo.seek(0)
+        original_reader = PdfReader(arquivo)
+        for p in original_reader.pages:
+            writer_final.add_page(p)
+
+    saida = BytesIO()
+    writer_final.write(saida)
+    saida.seek(0)
+    return saida
+
+
+
+# @login_required
 @checked_debug_decorador
 def gerador_oficios(request):
-    """View para exibir o formulário de geração de ofícios e processar os dados enviados."""
+    """Exibe o formulário de geração de ofícios e processa o envio."""
 
     usuarios = (
         Servidores.objects
@@ -999,28 +1106,43 @@ def gerador_oficios(request):
         .only("id", "nome_exibir", "matricula")
     )
 
+    unidade = UnidadeOficio.objects.filter(sigla="PR29").first()
+
     contexto_base = {
         "ano_corrente": timezone.now().year,
         "usuarios": usuarios,
-        'nome_juiz' : UnidadeOficio.objects.filter(sigla="PR29").first().nome_magistrado if UnidadeOficio.objects.filter(sigla="PR29").exists() else "Juiz Não Cadastrado",
-        'nome_comarca' : UnidadeOficio.objects.filter(sigla="PR29").first().nome_juizo if UnidadeOficio.objects.filter(sigla="PR29").exists() else "Comarca Não Cadastrada",
+        "nome_juiz": unidade.nome_magistrado if unidade else "Juiz Não Cadastrado",
+        "nome_comarca": unidade.nome_juizo if unidade else "Comarca Não Cadastrada",
     }
 
     if request.method == "POST":
         numero_oficio = request.POST.get("numero_oficio", "").strip()
         tipo_oficio = request.POST.get("tipo_oficio", "").strip()
         servidor_id = request.POST.get("usuario_id", "").strip()
-
         arquivos_pdf = request.FILES.getlist("arquivos_pdf")
         nomes_arquivos = [arquivo.name for arquivo in arquivos_pdf]
 
-        contexto = {
-            **contexto_base,
-            "numero_oficio": numero_oficio,
-            "tipo_oficio": tipo_oficio,
-            "servidor_id": servidor_id,
-            "nomes_arquivos": nomes_arquivos,
-        }
-        return render(request, "gerador_oficios.html", contexto)
+        if not arquivos_pdf:
+            contexto = {
+                **contexto_base,
+                "numero_oficio": numero_oficio,
+                "tipo_oficio": tipo_oficio,
+                "servidor_id": servidor_id,
+                "nomes_arquivos": nomes_arquivos,
+                "erro": "Selecione ao menos um PDF.",
+            }
+            return render(request, "gerador_oficios.html", contexto)
+
+        pdf_final = extrair_texto_pdf_gera_oficio(
+            arquivos_pdf,
+            numero_oficio,
+            tipo_oficio,
+        )
+
+        response = HttpResponse(pdf_final.getvalue(), content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'inline; filename="oficio_{tipo_oficio}_{numero_oficio}.pdf"'
+        )
+        return response
 
     return render(request, "gerador_oficios.html", contexto_base)

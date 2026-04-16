@@ -21,7 +21,8 @@
 
     <form id="gerarOficioForm"
           method="post"
-          action=""
+          action="{% url 'servidores:gerador_oficios' %}"
+          target="_blank"
           enctype="multipart/form-data"
           class="space-y-4 p-5 sm:p-6">
         {% csrf_token %}
