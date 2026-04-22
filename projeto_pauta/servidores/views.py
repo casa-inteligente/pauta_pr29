@@ -998,7 +998,7 @@ def extrair_dados_primeira_pagina(arquivo_pdf):
         texto = texto.replace("\n", " ")
         texto = re.sub(r"\s+", " ", texto).strip()
 
-    print(f"Texto extraído da primeira página:\n\n\n", texto)  # Debug: exibe o texto extraído
+    #print(f"Texto extraído da primeira página:\n\n\n", texto)  # Debug: exibe o texto extraído
     dados = {
         "nome": "",
         "matricula": "",
@@ -1021,9 +1021,38 @@ def extrair_dados_primeira_pagina(arquivo_pdf):
         dados["qtd_obras"] = m_qtd_obras.group(1).strip()
     return dados
 
+def _desenhar_cabecalho_rodape(c):
+    logo_path = os.path.join(
+        settings.BASE_DIR, 'servidores', 'static', 'servidores', 'img', 'logopp.png'
+    )
+
+    # --- Cabeçalho ---
+    c.drawImage(logo_path, 40, 792, width=52, height=52, preserveAspectRatio=True, mask='auto')
+
+    c.setFont("Arial-Bold", 9)
+    c.drawString(100, 833, "ESTADO DE SANTA CATARINA")
+    c.setFont("Arial", 8)
+    c.drawString(100, 820, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL")
+    c.drawString(100, 808, "PRESÍDIO REGIONAL DE MARAVILHA")
+    c.setFont("Arial-Bold", 8)
+    c.drawString(100, 796, "POLÍCIA PENAL")
+
+    c.setLineWidth(0.8)
+    c.line(40, 785, 555, 785)
+
+    # --- Rodapé ---
+    c.line(40, 72, 555, 72)
+    c.setFont("Arial-Bold", 11)
+    c.drawCentredString(298, 60, "POLÍCIA PENAL DE SANTA CATARINA")
+    c.setFont("Arial", 11)
+    c.drawCentredString(298, 46, "Presídio Regional de Maravilha")
+    c.drawCentredString(298, 32, "Avenida Sul Brasil, 1607, Madalozzo, CEP 89874-000, Maravilha/SC")
+    c.drawCentredString(298, 18, "Telefone: (49) 3664 6672 / e-mail: pr29@pp.sc.gov.br")
+
 def gerar_pdf_oficio_trabalho(dados, numero_oficio, nome_servidor, nome_juiz, nome_comarca):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
+    _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
     c.setFont("Arial-Bold", 14)
     c.drawString(72, 750, "OFÍCIO DE ENCAMINHAMENTO - SETOR DE TRABALHO")
     c.setFont("Arial", 10)
@@ -1041,6 +1070,7 @@ def gerar_pdf_oficio_trabalho(dados, numero_oficio, nome_servidor, nome_juiz, no
 def gerar_pdf_oficio_estudo(dados, numero_oficio, nome_servidor, nome_juiz, nome_comarca):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
+    _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
     c.setFont("Arial-Bold", 14)
     c.drawString(72, 750, "OFÍCIO DE ENCAMINHAMENTO - SETOR DE ESTUDO")
     c.setFont("Arial", 10)
@@ -1058,6 +1088,7 @@ def gerar_pdf_oficio_estudo(dados, numero_oficio, nome_servidor, nome_juiz, nome
 def gerar_pdf_oficio_resenha(dados, numero_oficio, nome_servidor, nome_juiz, nome_comarca):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
+    _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
     c.setFont("Arial-Bold", 14)
     c.drawString(72, 750, "OFÍCIO DE ENCAMINHAMENTO - RESENHA DE LIVROS")
     c.setFont("Arial", 10)
