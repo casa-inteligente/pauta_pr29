@@ -1022,47 +1022,60 @@ def extrair_dados_primeira_pagina(arquivo_pdf):
     return dados
 
 def _desenhar_cabecalho_rodape(c):
+    # Constantes ABNT
+    MARGEM_ESQ   = 3 * cm       # 85 pt
+    MARGEM_DIR   = 19 * cm      # borda direita (21 - 2 cm)
+    MARGEM_SUP   = 26.7 * cm    # início do conteúdo (29.7 - 3 cm)
+    MARGEM_INF   = 2 * cm       # rodapé mínimo
+    CENTRO_X     = 11 * cm      # centro da área útil (3 + 16/2)
+
     logo_path = os.path.join(
         settings.BASE_DIR, 'servidores', 'static', 'servidores', 'img', 'logopp.png'
     )
 
-    # --- Cabeçalho ---
-    c.drawImage(logo_path, 40, 792, width=52, height=52, preserveAspectRatio=True, mask='auto')
+    # --- Cabeçalho (dentro da margem superior) ---
+    # Logo: alinhado à margem esquerda, verticalmente centralizado no cabeçalho
+    c.drawImage(logo_path, MARGEM_ESQ, 27.1 * cm,
+                width=1.8 * cm, height=1.8 * cm,
+                preserveAspectRatio=True, mask='auto')
 
-    c.setFont("Arial-Bold", 9)
-    c.drawString(100, 833, "ESTADO DE SANTA CATARINA")
+    # Textos à direita do logo, alinhados à margem esquerda + deslocamento
+    TEXTO_X = MARGEM_ESQ + 2.2 * cm
+    c.setFont("Arial", 10)
+    c.drawString(TEXTO_X, 28.6 * cm, "ESTADO DE SANTA CATARINA")
+    c.drawString(TEXTO_X, 28.2 * cm, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL")
+    c.drawString(TEXTO_X, 27.8 * cm, "PRESÍDIO REGIONAL DE MARAVILHA")
+    c.drawString(TEXTO_X, 27.4 * cm, "POLÍCIA PENAL")
+
+
+
     c.setFont("Arial", 8)
-    c.drawString(100, 820, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL")
-    c.drawString(100, 808, "PRESÍDIO REGIONAL DE MARAVILHA")
-    c.setFont("Arial-Bold", 8)
-    c.drawString(100, 796, "POLÍCIA PENAL")
+    c.drawCentredString(CENTRO_X, MARGEM_INF + 0.9 * cm, "POLÍCIA PENAL DE SANTA CATARINA")
+    c.setFont("Arial", 8)
+    c.drawCentredString(CENTRO_X, MARGEM_INF + 0.6 * cm, "Presídio Regional de Maravilha")
+    c.drawCentredString(CENTRO_X, MARGEM_INF + 0.3 * cm, "Avenida Sul Brasil, 1607, Madalozzo, CEP 89874-000, Maravilha/SC")
+    c.drawCentredString(CENTRO_X, MARGEM_INF + 0.0 * cm, "Telefone: (49) 3664 6672 / e-mail: pr29@pp.sc.gov.br")
 
-    c.setLineWidth(0.8)
-    c.line(40, 785, 555, 785)
 
-    # --- Rodapé ---
-    c.line(40, 72, 555, 72)
-    c.setFont("Arial-Bold", 11)
-    c.drawCentredString(298, 60, "POLÍCIA PENAL DE SANTA CATARINA")
-    c.setFont("Arial", 11)
-    c.drawCentredString(298, 46, "Presídio Regional de Maravilha")
-    c.drawCentredString(298, 32, "Avenida Sul Brasil, 1607, Madalozzo, CEP 89874-000, Maravilha/SC")
-    c.drawCentredString(298, 18, "Telefone: (49) 3664 6672 / e-mail: pr29@pp.sc.gov.br")
 
 def gerar_pdf_oficio_trabalho(dados, numero_oficio, nome_servidor, nome_juiz, nome_comarca):
+    unidade = UnidadeOficio.objects.filter(sigla="PR29").values("nome_oficio", "sigla").first()
+    nome_oficio = unidade["nome_oficio"] if unidade else "PPSC"
+    sigla = unidade["sigla"] if unidade else "PR29"
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
-    c.setFont("Arial-Bold", 14)
-    c.drawString(72, 750, "OFÍCIO DE ENCAMINHAMENTO - SETOR DE TRABALHO")
-    c.setFont("Arial", 10)
-    c.drawString(72, 720, f"Ofício nº {numero_oficio}")
-    c.drawString(72, 700, f"Servidor selecionado: {nome_servidor}")
-    c.drawString(72, 680, f"Nome extraído: {dados.get('nome', '-')}")
-    c.drawString(72, 660, f"Matrícula: {dados.get('matricula', '-')}")
-    c.drawString(72, 640, f"Processo: {dados.get('processo', '-')}")
-    c.drawString(72, 620, f"Magistrado(a): {nome_juiz}")
-    c.drawString(72, 600, f"Comarca/Juízo: {nome_comarca}")
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 26 *cm, f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}")
+    c.setFont("Arial", 11)
+    c.drawRightString(18 * cm, 26 * cm, f"Maravilha, {timezone.now().strftime('%d de %B de %Y')}")
+    #c.drawString(3 * cm, 24 * cm, f"Ofício nº {numero_oficio}")
+    c.drawString(3 * cm, 23 * cm, f"Servidor selecionado: {nome_servidor}")
+    c.drawString(3 * cm, 22 * cm, f"Nome extraído: {dados.get('nome', '-')}")
+    c.drawString(3 * cm, 21 * cm, f"Matrícula: {dados.get('matricula', '-')}")
+    c.drawString(3 * cm, 20 * cm, f"Processo: {dados.get('processo', '-')}")
+    c.drawString(3 * cm, 19 * cm, f"Magistrado(a): {nome_juiz}")
+    c.drawString(3 * cm, 18 * cm, f"Comarca/Juízo: {nome_comarca}")
     c.save()
     buffer.seek(0)
     return buffer
@@ -1072,15 +1085,15 @@ def gerar_pdf_oficio_estudo(dados, numero_oficio, nome_servidor, nome_juiz, nome
     c = canvas.Canvas(buffer, pagesize=A4)
     _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
     c.setFont("Arial-Bold", 14)
-    c.drawString(72, 750, "OFÍCIO DE ENCAMINHAMENTO - SETOR DE ESTUDO")
+    c.drawString(3 * cm, 26 *cm, "OFÍCIO DE ENCAMINHAMENTO - SETOR DE ESTUDO")
     c.setFont("Arial", 10)
-    c.drawString(72, 720, f"Ofício nº {numero_oficio}")
-    c.drawString(72, 700, f"Aluno(a): {dados.get('nome', '-')}")
-    c.drawString(72, 680, f"Matrícula: {dados.get('matricula', '-')}")
-    c.drawString(72, 660, f"Referência: {dados.get('processo', '-')}")
-    c.drawString(72, 640, f"Magistrado(a): {nome_juiz}")
-    c.drawString(72, 620, f"Comarca/Juízo: {nome_comarca}")
-    c.drawString(72, 600, "Encaminhamos para deliberação.")
+    c.drawString(3 * cm, 24 * cm, f"Ofício nº {numero_oficio}")
+    c.drawString(3 * cm, 23 * cm, f"Aluno(a): {dados.get('nome', '-')}")
+    c.drawString(3 * cm, 22 * cm, f"Matrícula: {dados.get('matricula', '-')}")
+    c.drawString(3 * cm, 21 * cm, f"Referência: {dados.get('processo', '-')}")
+    c.drawString(3 * cm, 20 * cm, f"Magistrado(a): {nome_juiz}")
+    c.drawString(3 * cm, 19 * cm, f"Comarca/Juízo: {nome_comarca}")
+    c.drawString(3 * cm, 18 * cm, "Encaminhamos para deliberação.")
     c.save()
     buffer.seek(0)
     return buffer
@@ -1090,15 +1103,15 @@ def gerar_pdf_oficio_resenha(dados, numero_oficio, nome_servidor, nome_juiz, nom
     c = canvas.Canvas(buffer, pagesize=A4)
     _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
     c.setFont("Arial-Bold", 14)
-    c.drawString(72, 750, "OFÍCIO DE ENCAMINHAMENTO - RESENHA DE LIVROS")
+    c.drawString(3 * cm, 26 *cm, "OFÍCIO DE ENCAMINHAMENTO - RESENHA DE LIVROS")
     c.setFont("Arial", 10)
-    c.drawString(72, 720, f"Ofício nº {numero_oficio}")
-    c.drawString(72, 700, f"Interno(a): {dados.get('nome', '-')}")
-    c.drawString(72, 680, f"ID: {dados.get('matricula', '-')}")
-    c.drawString(72, 660, f"Quantidade de resenhas: {dados.get('qtd_obras', '-')}")
-    c.drawString(72, 630, "Resenha anexada para análise.")
-    c.drawString(72, 610, f"Magistrado(a): {nome_juiz}")
-    c.drawString(72, 590, f"Comarca/Juízo: {nome_comarca}")
+    c.drawString(3 * cm, 24 * cm, f"Ofício nº {numero_oficio}")
+    c.drawString(3 * cm, 23 * cm, f"Interno(a): {dados.get('nome', '-')}")
+    c.drawString(3 * cm, 22 * cm, f"ID: {dados.get('matricula', '-')}")
+    c.drawString(3 * cm, 21 * cm, f"Quantidade de resenhas: {dados.get('qtd_obras', '-')}")
+    c.drawString(3 * cm, 20 * cm, "Resenha anexada para análise.")
+    c.drawString(3 * cm, 19 * cm, f"Magistrado(a): {nome_juiz}")
+    c.drawString(3 * cm, 18 * cm, f"Comarca/Juízo: {nome_comarca}")
     c.save()
     buffer.seek(0)
     return buffer
