@@ -64,6 +64,15 @@ arial_bold_path = os.path.join(settings.BASE_DIR, 'staticfiles', 'fonts', 'arial
 pdfmetrics.registerFont(TTFont('Arial', arial_path))
 pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 
+estilo_paragrafo = ParagraphStyle(
+    'corpo',
+    fontName='Arial',
+    fontSize=11,
+    leading=14,
+    firstLineIndent=1*cm,
+    alignment=TA_JUSTIFY,
+)
+
 
 @checked_login_required
 @checked_debug_decorador_fun
@@ -1058,8 +1067,10 @@ def _desenhar_cabecalho_rodape(c):
 
 
 
-def gerar_pdf_oficio_trabalho(dados, numero_oficio, nome_servidor, nome_juiz, nome_comarca):
-    unidade = UnidadeOficio.objects.filter(sigla="PR29").values("nome_oficio", "sigla").first()
+def gerar_pdf_oficio_trabalho(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca):
+    nome_servidor = 'NONO'
+
+    unidade = UnidadeOficio.objects.filter(sigla="PR29").values("nome_oficio", "sigla", "nome").first()
     nome_oficio = unidade["nome_oficio"] if unidade else "PPSC"
     sigla = unidade["sigla"] if unidade else "PR29"
     buffer = BytesIO()
@@ -1069,7 +1080,7 @@ def gerar_pdf_oficio_trabalho(dados, numero_oficio, nome_servidor, nome_juiz, no
     c.drawString(3 * cm, 26 *cm, f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}")
     c.setFont("Arial", 11)
     c.drawRightString(18 * cm, 26 * cm, f"Maravilha, {timezone.now().strftime('%d de %B de %Y')}")
-    #c.drawString(3 * cm, 24 * cm, f"Ofício nº {numero_oficio}")
+    
     c.drawString(3 * cm, 23 * cm, f"Servidor selecionado: {nome_servidor}")
     c.drawString(3 * cm, 22 * cm, f"Nome extraído: {dados.get('nome', '-')}")
     c.drawString(3 * cm, 21 * cm, f"Matrícula: {dados.get('matricula', '-')}")
@@ -1080,10 +1091,18 @@ def gerar_pdf_oficio_trabalho(dados, numero_oficio, nome_servidor, nome_juiz, no
     buffer.seek(0)
     return buffer
 
-def gerar_pdf_oficio_estudo(dados, numero_oficio, nome_servidor, nome_juiz, nome_comarca):
+def gerar_pdf_oficio_estudo(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca):
+    unidade = UnidadeOficio.objects.filter(sigla="PR29").values("nome_oficio", "sigla", "nome").first()
+    nome_oficio = unidade["nome_oficio"] if unidade else "PPSC"
+    sigla = unidade["sigla"] if unidade else "PR29"
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 26 *cm, f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}")
+    c.setFont("Arial", 11)
+    c.drawRightString(18 * cm, 26 * cm, f"Maravilha, {timezone.now().strftime('%d de %B de %Y')}")
+    ##Verificar ABAIXO
     c.setFont("Arial-Bold", 14)
     c.drawString(3 * cm, 26 *cm, "OFÍCIO DE ENCAMINHAMENTO - SETOR DE ESTUDO")
     c.setFont("Arial", 10)
@@ -1098,20 +1117,54 @@ def gerar_pdf_oficio_estudo(dados, numero_oficio, nome_servidor, nome_juiz, nome
     buffer.seek(0)
     return buffer
 
-def gerar_pdf_oficio_resenha(dados, numero_oficio, nome_servidor, nome_juiz, nome_comarca):
+def gerar_pdf_oficio_resenha(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca):
+    servidor = Servidores.objects.filter(id=servidor_id).values('nome', 'cargo', 'sobrenome').first() or {}
+    nome_completo_servidor = f"{servidor.get('nome', 'Servidor não informado')} {servidor.get('sobrenome', '')}".strip()
+    cargo_servidor = servidor.get('cargo', 'Policial Penal')
+
+    unidade = UnidadeOficio.objects.filter(sigla="PR29").values("nome_oficio", "sigla", "nome").first()
+    nome_oficio = unidade["nome_oficio"] if unidade else "PPSC"
+    sigla = unidade["sigla"] if unidade else "PR29"
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
-    c.setFont("Arial-Bold", 14)
-    c.drawString(3 * cm, 26 *cm, "OFÍCIO DE ENCAMINHAMENTO - RESENHA DE LIVROS")
-    c.setFont("Arial", 10)
-    c.drawString(3 * cm, 24 * cm, f"Ofício nº {numero_oficio}")
-    c.drawString(3 * cm, 23 * cm, f"Interno(a): {dados.get('nome', '-')}")
-    c.drawString(3 * cm, 22 * cm, f"ID: {dados.get('matricula', '-')}")
-    c.drawString(3 * cm, 21 * cm, f"Quantidade de resenhas: {dados.get('qtd_obras', '-')}")
-    c.drawString(3 * cm, 20 * cm, "Resenha anexada para análise.")
-    c.drawString(3 * cm, 19 * cm, f"Magistrado(a): {nome_juiz}")
-    c.drawString(3 * cm, 18 * cm, f"Comarca/Juízo: {nome_comarca}")
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 26 *cm, f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}")
+    c.setFont("Arial", 11)
+    c.drawRightString(18 * cm, 26 * cm, f"Maravilha, {timezone.now().strftime('%d de %B de %Y')}")
+    #Verificar ABAIXO
+    
+    c.setFont("Arial-Bold", 11)
+    
+    c.drawString(3 * cm, 23 * cm, f"APENADO: {dados.get('nome', '-').upper()}")
+    c.drawString(3 * cm, 21 * cm, "Excelentíssimo Juiz,")
+    c.setFont("Arial", 11)
+    
+    #inclui Paragrafo
+    texto = (
+        f"Cumprimentando-o, encaminhamos declaração de participação do projeto despertar pela leitura e resenhas dos livros lidos pelo interno para análise e homologação de remições de {dados.get('qtd_obras', '(Vide anexo)')} dias da pena."
+    )
+    
+    p = Paragraph(texto, estilo_paragrafo)
+    largura = 16 * cm   # área útil (19cm - 3cm)
+    w, h = p.wrap(largura, 20 * cm)
+    p.drawOn(c, 3 * cm, 19 * cm - h)
+
+    c.drawString(11 * cm, 15 * cm, "Respeitosamente,")
+    c.setFont("Arial-Bold", 11)
+    c.drawString(11 * cm, 13 * cm, f"{nome_completo_servidor}")
+    c.setFont("Arial", 11)
+    c.drawString(11 * cm, 12.6 * cm, f"{cargo_servidor}")
+    c.drawString(11 * cm, 12.2 * cm, f"{unidade['nome']}")
+
+
+
+
+    c.drawString(3 * cm, 6 * cm, f"Meritíssimo Juiz")
+    c.setFont("Arial-Bold", 11)
+    c.drawString(3 * cm, 5.6 * cm, f"{nome_juiz}")
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 5.2 * cm, f"{nome_comarca}")
     c.save()
     buffer.seek(0)
     return buffer
@@ -1122,7 +1175,7 @@ TIPO_OFICIO_ARQUIVO = {
     "oficio_3": "resenha",
 }
 
-def extrair_texto_pdf_gera_oficio(files, numero_oficio, tipo_oficio, nome_servidor, nome_juiz, nome_comarca):
+def extrair_texto_pdf_gera_oficio(files, numero_oficio, tipo_oficio, servidor_id, nome_juiz, nome_comarca):
     geradores = {
         "oficio_1": gerar_pdf_oficio_trabalho,
         "oficio_2": gerar_pdf_oficio_estudo,
@@ -1144,7 +1197,7 @@ def extrair_texto_pdf_gera_oficio(files, numero_oficio, tipo_oficio, nome_servid
 
         writer = PdfWriter()
 
-        oficio_pdf = gerador(dados, numero_atual, nome_servidor, nome_juiz, nome_comarca)
+        oficio_pdf = gerador(dados, numero_atual, servidor_id, nome_juiz, nome_comarca)
         oficio_reader = PdfReader(oficio_pdf)
         for pagina in oficio_reader.pages:
             writer.add_page(pagina)
@@ -1205,13 +1258,13 @@ def gerador_oficios(request):
             return render(request, "gerador_oficios.html", contexto)
 
         servidor_obj = usuarios.filter(id=servidor_id).first()
-        nome_servidor = servidor_obj.nome_exibir if servidor_obj else "Servidor não informado"
+        
 
         pdf_final = extrair_texto_pdf_gera_oficio(
             arquivos_pdf,
             numero_oficio,
             tipo_oficio,
-            nome_servidor,
+            servidor_obj.id if servidor_obj else "Desconhecido",
             nome_juiz=contexto_base["nome_juiz"],
             nome_comarca=contexto_base["nome_comarca"],
         )

@@ -18,11 +18,11 @@
             <h2 class="text-sm font-semibold sm:text-base">Gerador de Ofícios</h2>
         </div>
     </div>
-
+    <!-- target="_blank" -->
     <form id="gerarOficioForm"
           method="post"
           action="{% url 'servidores:gerador_oficios' %}"
-          target="_blank"
+          target="_self"
           enctype="multipart/form-data"
           class="space-y-4 p-5 sm:p-6">
         {% csrf_token %}
@@ -93,6 +93,10 @@
                     </option>
                 {% endfor %}
             </select>
+        </div>
+
+        <div>
+            <!-- selecao da unidade -->
         </div>
 
         <button type="submit"
