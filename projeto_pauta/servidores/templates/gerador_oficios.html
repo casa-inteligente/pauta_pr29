@@ -8,6 +8,8 @@
 
 {% block head %}
 <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
+<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+
 {% endblock %}
 
 {% block main_content %}
@@ -96,7 +98,25 @@
         </div>
 
         <div>
-            <!-- selecao da unidade -->
+            <label for="unidade_id" class="mb-1 block text-sm font-medium text-gray-700">
+                Unidade
+            </label>
+            <select id="unidade_id"
+                name="unidade_id"
+                required
+                hx-get="{% url 'servidores:gerador_oficios' %}"
+                hx-trigger="change"
+                hx-target="#info-unidade"
+                hx-swap="outerHTML"
+                hx-include="[name='unidade_id']"
+                class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-green-600 focus:outline-none">
+            <option value="">Selecione a unidade</option>
+            {% for u in unidades %}
+                <option value="{{ u.id }}" {% if unidade_id == u.id|stringformat:"s" %}selected{% endif %}>
+                    {{ u.sigla }} — {{ u.nome }}
+                </option>
+            {% endfor %}
+        </select>
         </div>
 
         <button type="submit"
@@ -105,9 +125,7 @@
             Gerar Ofício
         </button>
     </form>
-    <div class="bg-gray-50 px-5 py-3 text-sm text-gray-600 sm:px-6 gap-2 rounded-b-2xl">
-        <p> Nome do Juiz(a) para Ofício: <strong>{{ nome_juiz }}</strong> </p>
-        <p> Comarca para Ofício: <strong>{{ nome_comarca }}</strong> </p>
+    <div id="info-unidade" class="hidden bg-gray-50 px-5 py-3 text-sm text-gray-600 sm:px-6 gap-2 rounded-b-2xl">
     </div>
 </div>
 {% endblock %}

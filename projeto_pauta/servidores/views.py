@@ -1175,7 +1175,15 @@ TIPO_OFICIO_ARQUIVO = {
     "oficio_3": "resenha",
 }
 
-def extrair_texto_pdf_gera_oficio(files, numero_oficio, tipo_oficio, servidor_id, nome_juiz, nome_comarca):
+def extrair_texto_pdf_gera_oficio(
+    files,
+    numero_oficio,
+    tipo_oficio,
+    servidor_id,
+    nome_juiz,
+    nome_comarca,
+    unidade_id=None,  # novo parâmetro opcional
+):
     geradores = {
         "oficio_1": gerar_pdf_oficio_trabalho,
         "oficio_2": gerar_pdf_oficio_estudo,
@@ -1197,7 +1205,14 @@ def extrair_texto_pdf_gera_oficio(files, numero_oficio, tipo_oficio, servidor_id
 
         writer = PdfWriter()
 
-        oficio_pdf = gerador(dados, numero_atual, servidor_id, nome_juiz, nome_comarca)
+        oficio_pdf = gerador(
+            dados,
+            numero_atual,
+            servidor_id,
+            nome_juiz,
+            nome_comarca,
+            # unidade_id=unidade_id  # deixe comentado por enquanto se os geradores ainda não aceitam
+        )
         oficio_reader = PdfReader(oficio_pdf)
         for pagina in oficio_reader.pages:
             writer.add_page(pagina)
@@ -1218,72 +1233,96 @@ def extrair_texto_pdf_gera_oficio(files, numero_oficio, tipo_oficio, servidor_id
     return documentos
 
 
-
 @checked_debug_decorador
 def gerador_oficios(request):
-    """Exibe o formulário de geração de ofícios e processa o envio."""
-
     usuarios = (
         Servidores.objects
         .filter(status_ativo=True, setor="ADMINISTRATIVO")
         .order_by("nome_exibir")
         .only("id", "nome_exibir", "matricula")
     )
+    unidades = UnidadeOficio.objects.all().order_by("sigla")
+    unidade_padrao = unidades.filter(sigla="PR29").first() or unidades.first()
 
-    unidade = UnidadeOficio.objects.filter(sigla="PR29").first()
+    # ── Requisição HTMX: retorna o div completo (outerHTML swap) ──
+    if request.method == "GET" and request.headers.get("HX-Request"):
+        unidade_id = request.GET.get("unidade_id", "").strip()
+        if not unidade_id:
+            # nenhuma unidade selecionada → div oculto vazio
+            return HttpResponse(
+                '<div id="info-unidade" '
+                'class="hidden bg-gray-50 px-5 py-3 text-sm text-gray-600 sm:px-6 gap-2 rounded-b-2xl">'
+                '</div>'
+            )
+        unidade_sel = UnidadeOficio.objects.filter(id=unidade_id).first()
+        nome_juiz    = unidade_sel.nome_magistrado if unidade_sel else "—"
+        nome_comarca = unidade_sel.nome_juizo     if unidade_sel else "—"
+        return HttpResponse(
+            f'<div id="info-unidade" '
+            f'class="bg-gray-50 px-5 py-3 text-sm text-gray-600 sm:px-6 gap-2 rounded-b-2xl">'
+            f'<p>Nome do Juiz(a) para Ofício: <strong>{nome_juiz}</strong></p>'
+            f'<p>Comarca para Ofício: <strong>{nome_comarca}</strong></p>'
+            f'</div>'
+        )
 
     contexto_base = {
         "ano_corrente": timezone.now().year,
         "usuarios": usuarios,
-        "nome_juiz": unidade.nome_magistrado if unidade else "Juiz Não Cadastrado",
-        "nome_comarca": unidade.nome_juizo if unidade else "Comarca Não Cadastrada",
+        "unidades": unidades,
+        "unidade_id": str(unidade_padrao.id) if unidade_padrao else "",
+        "nome_juiz": unidade_padrao.nome_magistrado if unidade_padrao else "Juiz Não Cadastrado",
+        "nome_comarca": unidade_padrao.nome_juizo if unidade_padrao else "Comarca Não Cadastrada",
     }
 
     if request.method == "POST":
-        numero_oficio = request.POST.get("numero_oficio", "").strip()
-        tipo_oficio = request.POST.get("tipo_oficio", "").strip()
-        servidor_id = request.POST.get("usuario_id", "").strip()
-        arquivos_pdf = request.FILES.getlist("arquivos_pdf")
-        nomes_arquivos = [arquivo.name for arquivo in arquivos_pdf]
+        numero_oficio  = request.POST.get("numero_oficio", "").strip()
+        tipo_oficio    = request.POST.get("tipo_oficio", "").strip()
+        servidor_id    = request.POST.get("usuario_id", "").strip()
+        unidade_id     = request.POST.get("unidade_id", "").strip()
+        arquivos_pdf   = request.FILES.getlist("arquivos_pdf")
+        nomes_arquivos = [a.name for a in arquivos_pdf]
+
+        unidade_sel  = UnidadeOficio.objects.filter(id=unidade_id).first()
+        nome_juiz    = unidade_sel.nome_magistrado if unidade_sel else contexto_base["nome_juiz"]
+        nome_comarca = unidade_sel.nome_juizo if unidade_sel else contexto_base["nome_comarca"]
 
         if not arquivos_pdf:
-            contexto = {
+            return render(request, "gerador_oficios.html", {
                 **contexto_base,
                 "numero_oficio": numero_oficio,
                 "tipo_oficio": tipo_oficio,
                 "servidor_id": servidor_id,
+                "unidade_id": unidade_id,
                 "nomes_arquivos": nomes_arquivos,
+                "nome_juiz": nome_juiz,
+                "nome_comarca": nome_comarca,
                 "erro": "Selecione ao menos um PDF.",
-            }
-            return render(request, "gerador_oficios.html", contexto)
+            })
 
         servidor_obj = usuarios.filter(id=servidor_id).first()
-        
 
         pdf_final = extrair_texto_pdf_gera_oficio(
             arquivos_pdf,
             numero_oficio,
             tipo_oficio,
-            servidor_obj.id if servidor_obj else "Desconhecido",
-            nome_juiz=contexto_base["nome_juiz"],
-            nome_comarca=contexto_base["nome_comarca"],
+            servidor_obj.id if servidor_obj else None,
+            nome_juiz=nome_juiz,
+            nome_comarca=nome_comarca,
+            unidade_id=unidade_id,
         )
 
         tipo_slug = TIPO_OFICIO_ARQUIVO.get(tipo_oficio, "trabalho")
 
-        # Se só tiver 1 documento final, baixa PDF direto
         if len(pdf_final) == 1:
             nome_arquivo, conteudo_pdf = pdf_final[0]
             response = HttpResponse(conteudo_pdf, content_type="application/pdf")
             response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
             return response
 
-        # Se tiver mais de 1, baixa ZIP
         zip_buffer = BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w", compression=zipfile.ZIP_DEFLATED) as zip_file:
+        with zipfile.ZipFile(zip_buffer, "w", compression=zipfile.ZIP_DEFLATED) as zf:
             for nome_arquivo, conteudo_pdf in pdf_final:
-                zip_file.writestr(nome_arquivo, conteudo_pdf)
-
+                zf.writestr(nome_arquivo, conteudo_pdf)
         zip_buffer.seek(0)
         response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
         response["Content-Disposition"] = f'attachment; filename="oficios_{tipo_slug}.zip"'
