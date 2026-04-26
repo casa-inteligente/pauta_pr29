@@ -124,7 +124,7 @@
 
                         <input type="number"
                             id="numero_tornozeleira"
-                            placeholder="Número da Tornozeleira"
+                            placeholder="N.º da Tornozeleira (Opcional)"
                             class="w-full rounded-xl border border-slate-300 mt-2 px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
 
                         <button type="button"
@@ -311,6 +311,8 @@
 {% endblock %}
 
 {% block scripts %}
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const formWrapper = document.querySelector('.form-pauta');
@@ -367,7 +369,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        // ... seu código atual ...
+        
         carregarFraseMotivacionalCompacta(); // carrega uma única vez
     });
 </script>
