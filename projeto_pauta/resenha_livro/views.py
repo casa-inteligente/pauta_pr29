@@ -630,7 +630,7 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
 
     hoje = timezone.now()
     dia = hoje.strftime('%d')
-    mes = hoje.strftime('%B').capitalize()
+    mes = hoje.strftime('%B')
     ano = hoje.strftime('%Y')
 
     story.append(
