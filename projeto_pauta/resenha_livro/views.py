@@ -8,6 +8,7 @@ from io import BytesIO
 from pathlib import Path
 import zipfile
 from datetime import datetime
+from difflib import SequenceMatcher # compara 'textos' e retorna um índice de similaridade
 
 import pypdfium2 as pdfium
 import pytesseract
@@ -939,6 +940,22 @@ def gerar_declaracoes_selecionadas(request):
 
 ### Organizacao de resenhas nas pastas por período de leitura ###
 
+def _normalizar_texto_comparacao(texto):
+    texto = slugify(texto or '')
+    texto = texto.replace('-', ' ')
+    texto = re.sub(r'\s+', ' ', texto)
+    return texto.strip()
+
+
+def _similaridade_texto(texto_a, texto_b):
+    texto_a = _normalizar_texto_comparacao(texto_a)
+    texto_b = _normalizar_texto_comparacao(texto_b)
+
+    if not texto_a or not texto_b:
+        return 0
+
+    return SequenceMatcher(None, texto_a, texto_b).ratio()
+
 
 def _extrair_texto_primeira_pagina_ocr(caminho_pdf):
     """Extrai o texto da primeira página do PDF usando OCR com pytesseract."""
@@ -1004,8 +1021,8 @@ def _extrair_livro_autor_ocr(linhas):
 def _extrair_dados_resenha_ocr(caminho_pdf):
     """Extrai aluno, data da resenha, período, obra e autor da primeira página."""
     texto = _extrair_texto_primeira_pagina_ocr(caminho_pdf)
-    print(40*'*')
-    print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\n")
+    #print(40*'*')
+    #print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\n")
 
     if not texto:
         return {
@@ -1086,56 +1103,46 @@ def _normalizar_nome_pasta(periodo_leitura):
 
 
 def _buscar_resenha_por_fallback(dados_extraidos, data_resenha):
-    """Busca a resenha com critérios progressivos quando o OCR variar entre arquivos."""
-    filtros_base = {
-        'aluno__nome__iexact': dados_extraidos['aluno'],
-        'periodoLeitura__data_resenha': data_resenha,
-    }
+    """Busca a resenha tolerando pequenas falhas do OCR no nome do aluno."""
+    queryset = (
+        ResenhaLivro.objects
+        .select_related('aluno', 'periodoLeitura')
+        .filter(periodoLeitura__data_resenha=data_resenha)
+        .order_by('id')
+    )
 
-    combinacoes = [
-        {
-            **filtros_base,
-            'periodoLeitura__intervalo_leitura__iexact': dados_extraidos.get('periodo_leitura'),
-            'nomelivro__iexact': dados_extraidos.get('nomelivro'),
-            'nomeAutor__iexact': dados_extraidos.get('nomeAutor'),
-        },
-        {
-            **filtros_base,
-            'periodoLeitura__intervalo_leitura__iexact': dados_extraidos.get('periodo_leitura'),
-            'nomelivro__iexact': dados_extraidos.get('nomelivro'),
-        },
-        {
-            **filtros_base,
-            'periodoLeitura__intervalo_leitura__iexact': dados_extraidos.get('periodo_leitura'),
-        },
-        {
-            **filtros_base,
-            'nomelivro__iexact': dados_extraidos.get('nomelivro'),
-        },
-        filtros_base,
-    ]
+    periodo_ocr = dados_extraidos.get('periodo_leitura')
+    if periodo_ocr:
+        queryset_periodo = queryset.filter(
+            periodoLeitura__intervalo_leitura__iexact=periodo_ocr
+        )
+        if queryset_periodo.exists():
+            queryset = queryset_periodo
 
-    for combinacao in combinacoes:
-        filtros = {
-            chave: valor for chave, valor in combinacao.items()
-            if valor not in (None, '')
-        }
+    candidatos = []
 
-        queryset = (
-            ResenhaLivro.objects
-            .select_related('aluno', 'periodoLeitura')
-            .filter(**filtros)
-            .order_by('id')
+    for resenha in queryset:
+        score_aluno = _similaridade_texto(
+            dados_extraidos.get('aluno'),
+            resenha.aluno.nome
+        )
+        score_livro = _similaridade_texto(
+            dados_extraidos.get('nomelivro'),
+            resenha.nomelivro
+        )
+        score_autor = _similaridade_texto(
+            dados_extraidos.get('nomeAutor'),
+            resenha.nomeAutor
         )
 
-        resenha = (
-            queryset
-            .filter(Q(path_resenha__isnull=True) | Q(path_resenha=''))
-            .first()
-            or queryset.first()
-        )
+        score_total = (score_aluno * 0.70) + (score_livro * 0.20) + (score_autor * 0.10)
 
-        if resenha:
+        candidatos.append((score_total, score_aluno, resenha))
+
+    candidatos.sort(key=lambda item: item[0], reverse=True)
+
+    for score_total, score_aluno, resenha in candidatos:
+        if score_aluno >= 0.84 and score_total >= 0.78:
             return resenha
 
     return None
@@ -1172,7 +1179,7 @@ def organizar_resenhas_por_periodo(request):
 
     arquivos_pdf = sorted(path_resenha_analise.glob('*.pdf'))
 
-    print(f"DEBUG - {len(arquivos_pdf)} arquivos PDF encontrados para análise em '{path_resenha_analise}'\n\n")
+    #print(f"DEBUG - {len(arquivos_pdf)} arquivos PDF encontrados para análise em '{path_resenha_analise}'\n\n")
     
     if not arquivos_pdf:
         return render(request, 'popup_resultado_organizacao_resenhas.html', {
@@ -1185,7 +1192,7 @@ def organizar_resenhas_por_periodo(request):
 
     for arquivo_pdf in arquivos_pdf:
         try:
-            print(f"DEBUG - Processando arquivo: {arquivo_pdf.name}")
+            #print(f"DEBUG - Processando arquivo: {arquivo_pdf.name}")
             dados_extraidos = _extrair_dados_resenha_ocr(arquivo_pdf)
         except Exception as exc:
             status.append({
