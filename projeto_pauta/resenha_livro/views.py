@@ -7,6 +7,7 @@ from collections import OrderedDict
 from io import BytesIO
 from pathlib import Path
 import zipfile
+from datetime import datetime
 
 import pypdfium2 as pdfium
 import pytesseract
@@ -945,7 +946,7 @@ def _extrair_texto_primeira_pagina_ocr(caminho_pdf):
     try:
         pagina = documento[0]
         imagem = pagina.render(scale=2.8).to_pil()
-        texto = pytesseract.image_to_string(imagem, lang='por')
+        texto = pytesseract.image_to_string(imagem, lang='por', timeout=60)
     finally:
         documento.close()
 
@@ -1003,6 +1004,8 @@ def _extrair_livro_autor_ocr(linhas):
 def _extrair_dados_resenha_ocr(caminho_pdf):
     """Extrai aluno, data da resenha, período, obra e autor da primeira página."""
     texto = _extrair_texto_primeira_pagina_ocr(caminho_pdf)
+    print(40*'*')
+    print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\n")
 
     if not texto:
         return {
@@ -1062,7 +1065,7 @@ def _extrair_dados_resenha_ocr(caminho_pdf):
 
     return {
         'sucesso': True,
-        'aluno': aluno_match.group(1).strip(),
+        'aluno': aluno_match.group(1).strip().rstrip(' .,-'),
         'data_resenha': data_resenha,
         'periodo_leitura': periodo_leitura,
         'nomelivro': nomelivro,
@@ -1148,6 +1151,8 @@ def organizar_resenhas_por_periodo(request):
     path_base = settings.VAR_DIR_BASE_RESENHA
     path_resenha_analise = path_base / 'scanner'
 
+    #print(f"\n\n Chamou a organizacao das resenhas - caminho base: {path_base} - caminho analise: {path_resenha_analise}\n\n")
+
     status = []
 
     if not path_resenha_analise.exists():
@@ -1167,6 +1172,8 @@ def organizar_resenhas_por_periodo(request):
 
     arquivos_pdf = sorted(path_resenha_analise.glob('*.pdf'))
 
+    print(f"DEBUG - {len(arquivos_pdf)} arquivos PDF encontrados para análise em '{path_resenha_analise}'\n\n")
+    
     if not arquivos_pdf:
         return render(request, 'popup_resultado_organizacao_resenhas.html', {
             'titulo': 'Atualizar resenhas nas pastas',
@@ -1178,6 +1185,7 @@ def organizar_resenhas_por_periodo(request):
 
     for arquivo_pdf in arquivos_pdf:
         try:
+            print(f"DEBUG - Processando arquivo: {arquivo_pdf.name}")
             dados_extraidos = _extrair_dados_resenha_ocr(arquivo_pdf)
         except Exception as exc:
             status.append({
@@ -1196,7 +1204,7 @@ def organizar_resenhas_por_periodo(request):
             continue
 
         try:
-            data_resenha = timezone.strptime(
+            data_resenha = datetime.strptime(
                 dados_extraidos['data_resenha'],
                 '%d/%m/%Y'
             ).date()
