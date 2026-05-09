@@ -64,6 +64,12 @@ class Servidores(models.Model):
         blank=False,
         null=False
     )
+    cargo = models.CharField(
+        verbose_name='Cargo do servidor',
+        max_length=100,
+        blank=False,
+        null=False
+    )
     
     status_ativo = models.BooleanField(
         verbose_name='Servidor ativo',

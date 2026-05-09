@@ -5,7 +5,11 @@ from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 
-
+from io import BytesIO
+import re
+import pdfplumber
+import zipfile
+from pypdf import PdfReader, PdfWriter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT, TA_RIGHT
@@ -59,6 +63,15 @@ arial_bold_path = os.path.join(settings.BASE_DIR, 'staticfiles', 'fonts', 'arial
 # Registra as fontes
 pdfmetrics.registerFont(TTFont('Arial', arial_path))
 pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
+
+estilo_paragrafo = ParagraphStyle(
+    'corpo',
+    fontName='Arial',
+    fontSize=11,
+    leading=14,
+    firstLineIndent=1*cm,
+    alignment=TA_JUSTIFY,
+)
 
 
 @checked_login_required
@@ -987,40 +1000,332 @@ def frase_motivacional(request):
         return JsonResponse(fallback)
 
 
-#@login_required
+def extrair_dados_primeira_pagina(arquivo_pdf):
+    arquivo_pdf.seek(0)
+    with pdfplumber.open(arquivo_pdf) as pdf:
+        texto = (pdf.pages[0].extract_text() or "").strip()
+        texto = texto.replace("\n", " ")
+        texto = re.sub(r"\s+", " ", texto).strip()
+
+    #print(f"Texto extraído da primeira página:\n\n\n", texto)  # Debug: exibe o texto extraído
+    dados = {
+        "nome": "",
+        "matricula": "",
+        "processo": "",
+        "qtd_obras": "",
+    }
+
+    m_nome = re.search(r"aluno\s*:?\s*(.+?)(?=,\sregularmente|\s,)", texto,re.IGNORECASE | re.DOTALL,)
+    m_mat =  re.search(r"n[uú]mero\s+de\s+inscri[cç][aã]o\s*([0-9.-]+)", texto,re.IGNORECASE,)
+    m_proc = re.search(r"Processo:\s*([\w./-]+)", texto, re.IGNORECASE)
+    m_qtd_obras = re.search(r"leitura\s+de\s+(\d+)\s+obra(s)", texto,re.IGNORECASE,)
+
+    if m_nome:
+        dados["nome"] = " ".join(m_nome.group(1).split()).strip()
+    if m_mat: 
+        dados["matricula"] = m_mat.group(1).strip()
+    if m_proc: 
+        dados["processo"] = m_proc.group(1).strip()
+    if m_qtd_obras:
+        dados["qtd_obras"] = m_qtd_obras.group(1).strip()
+    return dados
+
+def _desenhar_cabecalho_rodape(c):
+    # Constantes ABNT
+    MARGEM_ESQ   = 3 * cm       # 85 pt
+    MARGEM_DIR   = 19 * cm      # borda direita (21 - 2 cm)
+    MARGEM_SUP   = 26.7 * cm    # início do conteúdo (29.7 - 3 cm)
+    MARGEM_INF   = 2 * cm       # rodapé mínimo
+    CENTRO_X     = 11 * cm      # centro da área útil (3 + 16/2)
+
+    logo_path = os.path.join(
+        settings.BASE_DIR, 'servidores', 'static', 'servidores', 'img', 'logopp.png'
+    )
+
+    # --- Cabeçalho (dentro da margem superior) ---
+    # Logo: alinhado à margem esquerda, verticalmente centralizado no cabeçalho
+    c.drawImage(logo_path, MARGEM_ESQ, 27.1 * cm,
+                width=1.8 * cm, height=1.8 * cm,
+                preserveAspectRatio=True, mask='auto')
+
+    # Textos à direita do logo, alinhados à margem esquerda + deslocamento
+    TEXTO_X = MARGEM_ESQ + 2.2 * cm
+    c.setFont("Arial", 10)
+    c.drawString(TEXTO_X, 28.6 * cm, "ESTADO DE SANTA CATARINA")
+    c.drawString(TEXTO_X, 28.2 * cm, "SECRETARIA DE ESTADO DE JUSTIÇA E REINTEGRAÇÃO SOCIAL")
+    c.drawString(TEXTO_X, 27.8 * cm, "PRESÍDIO REGIONAL DE MARAVILHA")
+    c.drawString(TEXTO_X, 27.4 * cm, "POLÍCIA PENAL")
+
+
+
+    c.setFont("Arial", 8)
+    c.drawCentredString(CENTRO_X, MARGEM_INF + 0.9 * cm, "POLÍCIA PENAL DE SANTA CATARINA")
+    c.setFont("Arial", 8)
+    c.drawCentredString(CENTRO_X, MARGEM_INF + 0.6 * cm, "Presídio Regional de Maravilha")
+    c.drawCentredString(CENTRO_X, MARGEM_INF + 0.3 * cm, "Avenida Sul Brasil, 1607, Madalozzo, CEP 89874-000, Maravilha/SC")
+    c.drawCentredString(CENTRO_X, MARGEM_INF + 0.0 * cm, "Telefone: (49) 3664 6672 / e-mail: pr29@pp.sc.gov.br")
+
+
+
+def gerar_pdf_oficio_trabalho(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca):
+    nome_servidor = 'NONO'
+
+    unidade = UnidadeOficio.objects.filter(sigla="PR29").values("nome_oficio", "sigla", "nome").first()
+    nome_oficio = unidade["nome_oficio"] if unidade else "PPSC"
+    sigla = unidade["sigla"] if unidade else "PR29"
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 26 *cm, f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}")
+    c.setFont("Arial", 11)
+    c.drawRightString(18 * cm, 26 * cm, f"Maravilha, {timezone.now().strftime('%d de %B de %Y')}")
+    
+    c.drawString(3 * cm, 23 * cm, f"Servidor selecionado: {nome_servidor}")
+    c.drawString(3 * cm, 22 * cm, f"Nome extraído: {dados.get('nome', '-')}")
+    c.drawString(3 * cm, 21 * cm, f"Matrícula: {dados.get('matricula', '-')}")
+    c.drawString(3 * cm, 20 * cm, f"Processo: {dados.get('processo', '-')}")
+    c.drawString(3 * cm, 19 * cm, f"Magistrado(a): {nome_juiz}")
+    c.drawString(3 * cm, 18 * cm, f"Comarca/Juízo: {nome_comarca}")
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+def gerar_pdf_oficio_estudo(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca):
+    unidade = UnidadeOficio.objects.filter(sigla="PR29").values("nome_oficio", "sigla", "nome").first()
+    nome_oficio = unidade["nome_oficio"] if unidade else "PPSC"
+    sigla = unidade["sigla"] if unidade else "PR29"
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 26 *cm, f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}")
+    c.setFont("Arial", 11)
+    c.drawRightString(18 * cm, 26 * cm, f"Maravilha, {timezone.now().strftime('%d de %B de %Y')}")
+    ##Verificar ABAIXO
+    c.setFont("Arial-Bold", 14)
+    c.drawString(3 * cm, 26 *cm, "OFÍCIO DE ENCAMINHAMENTO - SETOR DE ESTUDO")
+    c.setFont("Arial", 10)
+    c.drawString(3 * cm, 24 * cm, f"Ofício nº {numero_oficio}")
+    c.drawString(3 * cm, 23 * cm, f"Aluno(a): {dados.get('nome', '-')}")
+    c.drawString(3 * cm, 22 * cm, f"Matrícula: {dados.get('matricula', '-')}")
+    c.drawString(3 * cm, 21 * cm, f"Referência: {dados.get('processo', '-')}")
+    c.drawString(3 * cm, 20 * cm, f"Magistrado(a): {nome_juiz}")
+    c.drawString(3 * cm, 19 * cm, f"Comarca/Juízo: {nome_comarca}")
+    c.drawString(3 * cm, 18 * cm, "Encaminhamos para deliberação.")
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+def gerar_pdf_oficio_resenha(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca):
+    servidor = Servidores.objects.filter(id=servidor_id).values('nome', 'cargo', 'sobrenome').first() or {}
+    nome_completo_servidor = f"{servidor.get('nome', 'Servidor não informado')} {servidor.get('sobrenome', '')}".strip()
+    cargo_servidor = servidor.get('cargo', 'Policial Penal')
+
+    unidade = UnidadeOficio.objects.filter(sigla="PR29").values("nome_oficio", "sigla", "nome").first()
+    nome_oficio = unidade["nome_oficio"] if unidade else "PPSC"
+    sigla = unidade["sigla"] if unidade else "PR29"
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 26 *cm, f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}")
+    c.setFont("Arial", 11)
+    c.drawRightString(18 * cm, 26 * cm, f"Maravilha, {timezone.now().strftime('%d de %B de %Y')}")
+    #Verificar ABAIXO
+    
+    c.setFont("Arial-Bold", 11)
+    
+    c.drawString(3 * cm, 23 * cm, f"APENADO: {dados.get('nome', '-').upper()}")
+    c.drawString(3 * cm, 21 * cm, "Excelentíssimo Juiz,")
+    c.setFont("Arial", 11)
+    
+    #inclui Paragrafo
+    texto = (
+        f"Cumprimentando-o, encaminhamos declaração de participação do projeto despertar pela leitura e resenhas dos livros lidos pelo interno para análise e homologação de remições de {dados.get('qtd_obras', '(Vide anexo)')} dias da pena."
+    )
+    
+    p = Paragraph(texto, estilo_paragrafo)
+    largura = 16 * cm   # área útil (19cm - 3cm)
+    w, h = p.wrap(largura, 20 * cm)
+    p.drawOn(c, 3 * cm, 19 * cm - h)
+
+    c.drawString(11 * cm, 15 * cm, "Respeitosamente,")
+    c.setFont("Arial-Bold", 11)
+    c.drawString(11 * cm, 13 * cm, f"{nome_completo_servidor}")
+    c.setFont("Arial", 11)
+    c.drawString(11 * cm, 12.6 * cm, f"{cargo_servidor}")
+    c.drawString(11 * cm, 12.2 * cm, f"{unidade['nome']}")
+
+
+
+
+    c.drawString(3 * cm, 6 * cm, f"Meritíssimo Juiz")
+    c.setFont("Arial-Bold", 11)
+    c.drawString(3 * cm, 5.6 * cm, f"{nome_juiz}")
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 5.2 * cm, f"{nome_comarca}")
+    c.save()
+    buffer.seek(0)
+    return buffer
+
+TIPO_OFICIO_ARQUIVO = {
+    "oficio_1": "trabalho",
+    "oficio_2": "estudo",
+    "oficio_3": "resenha",
+}
+
+def extrair_texto_pdf_gera_oficio(
+    files,
+    numero_oficio,
+    tipo_oficio,
+    servidor_id,
+    nome_juiz,
+    nome_comarca,
+    unidade_id=None,  # novo parâmetro opcional
+):
+    geradores = {
+        "oficio_1": gerar_pdf_oficio_trabalho,
+        "oficio_2": gerar_pdf_oficio_estudo,
+        "oficio_3": gerar_pdf_oficio_resenha,
+    }
+    gerador = geradores.get(tipo_oficio, gerar_pdf_oficio_trabalho)
+    tipo_slug = TIPO_OFICIO_ARQUIVO.get(tipo_oficio, "trabalho")
+
+    try:
+        numero_inicial = int(numero_oficio)
+    except (TypeError, ValueError):
+        numero_inicial = 0
+
+    documentos = []
+
+    for indice, arquivo in enumerate(files):
+        numero_atual = str(numero_inicial + indice)
+        dados = extrair_dados_primeira_pagina(arquivo)
+
+        writer = PdfWriter()
+
+        oficio_pdf = gerador(
+            dados,
+            numero_atual,
+            servidor_id,
+            nome_juiz,
+            nome_comarca,
+            # unidade_id=unidade_id  # deixe comentado por enquanto se os geradores ainda não aceitam
+        )
+        oficio_reader = PdfReader(oficio_pdf)
+        for pagina in oficio_reader.pages:
+            writer.add_page(pagina)
+
+        arquivo.seek(0)
+        original_reader = PdfReader(arquivo)
+        for pagina in original_reader.pages:
+            writer.add_page(pagina)
+
+        saida = BytesIO()
+        writer.write(saida)
+        saida.seek(0)
+
+        nome_base = os.path.splitext(arquivo.name)[0]
+        nome_doc = f"oficio_{tipo_slug}_{numero_atual}_{nome_base}.pdf"
+        documentos.append((nome_doc, saida.getvalue()))
+
+    return documentos
+
+
 @checked_debug_decorador
 def gerador_oficios(request):
-    """View para exibir o formulário de geração de ofícios e processar os dados enviados."""
-
     usuarios = (
         Servidores.objects
         .filter(status_ativo=True, setor="ADMINISTRATIVO")
         .order_by("nome_exibir")
         .only("id", "nome_exibir", "matricula")
     )
+    unidades = UnidadeOficio.objects.all().order_by("sigla")
+    unidade_padrao = unidades.filter(sigla="PR29").first() or unidades.first()
+
+    # ── Requisição HTMX: retorna o div completo (outerHTML swap) ──
+    if request.method == "GET" and request.headers.get("HX-Request"):
+        unidade_id = request.GET.get("unidade_id", "").strip()
+        if not unidade_id:
+            # nenhuma unidade selecionada → div oculto vazio
+            return HttpResponse(
+                '<div id="info-unidade" '
+                'class="hidden bg-gray-50 px-5 py-3 text-sm text-gray-600 sm:px-6 gap-2 rounded-b-2xl">'
+                '</div>'
+            )
+        unidade_sel = UnidadeOficio.objects.filter(id=unidade_id).first()
+        nome_juiz    = unidade_sel.nome_magistrado if unidade_sel else "—"
+        nome_comarca = unidade_sel.nome_juizo     if unidade_sel else "—"
+        return HttpResponse(
+            f'<div id="info-unidade" '
+            f'class="bg-gray-50 px-5 py-3 text-sm text-gray-600 sm:px-6 gap-2 rounded-b-2xl">'
+            f'<p>Nome do Juiz(a) para Ofício: <strong>{nome_juiz}</strong></p>'
+            f'<p>Comarca para Ofício: <strong>{nome_comarca}</strong></p>'
+            f'</div>'
+        )
 
     contexto_base = {
         "ano_corrente": timezone.now().year,
         "usuarios": usuarios,
-        'nome_juiz' : UnidadeOficio.objects.filter(sigla="PR29").first().nome_magistrado if UnidadeOficio.objects.filter(sigla="PR29").exists() else "Juiz Não Cadastrado",
-        'nome_comarca' : UnidadeOficio.objects.filter(sigla="PR29").first().nome_juizo if UnidadeOficio.objects.filter(sigla="PR29").exists() else "Comarca Não Cadastrada",
+        "unidades": unidades,
+        "unidade_id": str(unidade_padrao.id) if unidade_padrao else "",
+        "nome_juiz": unidade_padrao.nome_magistrado if unidade_padrao else "Juiz Não Cadastrado",
+        "nome_comarca": unidade_padrao.nome_juizo if unidade_padrao else "Comarca Não Cadastrada",
     }
 
     if request.method == "POST":
-        numero_oficio = request.POST.get("numero_oficio", "").strip()
-        tipo_oficio = request.POST.get("tipo_oficio", "").strip()
-        servidor_id = request.POST.get("usuario_id", "").strip()
+        numero_oficio  = request.POST.get("numero_oficio", "").strip()
+        tipo_oficio    = request.POST.get("tipo_oficio", "").strip()
+        servidor_id    = request.POST.get("usuario_id", "").strip()
+        unidade_id     = request.POST.get("unidade_id", "").strip()
+        arquivos_pdf   = request.FILES.getlist("arquivos_pdf")
+        nomes_arquivos = [a.name for a in arquivos_pdf]
 
-        arquivos_pdf = request.FILES.getlist("arquivos_pdf")
-        nomes_arquivos = [arquivo.name for arquivo in arquivos_pdf]
+        unidade_sel  = UnidadeOficio.objects.filter(id=unidade_id).first()
+        nome_juiz    = unidade_sel.nome_magistrado if unidade_sel else contexto_base["nome_juiz"]
+        nome_comarca = unidade_sel.nome_juizo if unidade_sel else contexto_base["nome_comarca"]
 
-        contexto = {
-            **contexto_base,
-            "numero_oficio": numero_oficio,
-            "tipo_oficio": tipo_oficio,
-            "servidor_id": servidor_id,
-            "nomes_arquivos": nomes_arquivos,
-        }
-        return render(request, "gerador_oficios.html", contexto)
+        if not arquivos_pdf:
+            return render(request, "gerador_oficios.html", {
+                **contexto_base,
+                "numero_oficio": numero_oficio,
+                "tipo_oficio": tipo_oficio,
+                "servidor_id": servidor_id,
+                "unidade_id": unidade_id,
+                "nomes_arquivos": nomes_arquivos,
+                "nome_juiz": nome_juiz,
+                "nome_comarca": nome_comarca,
+                "erro": "Selecione ao menos um PDF.",
+            })
+
+        servidor_obj = usuarios.filter(id=servidor_id).first()
+
+        pdf_final = extrair_texto_pdf_gera_oficio(
+            arquivos_pdf,
+            numero_oficio,
+            tipo_oficio,
+            servidor_obj.id if servidor_obj else None,
+            nome_juiz=nome_juiz,
+            nome_comarca=nome_comarca,
+            unidade_id=unidade_id,
+        )
+
+        tipo_slug = TIPO_OFICIO_ARQUIVO.get(tipo_oficio, "trabalho")
+
+        if len(pdf_final) == 1:
+            nome_arquivo, conteudo_pdf = pdf_final[0]
+            response = HttpResponse(conteudo_pdf, content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
+            return response
+
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            for nome_arquivo, conteudo_pdf in pdf_final:
+                zf.writestr(nome_arquivo, conteudo_pdf)
+        zip_buffer.seek(0)
+        response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
+        response["Content-Disposition"] = f'attachment; filename="oficios_{tipo_slug}.zip"'
+        return response
 
     return render(request, "gerador_oficios.html", contexto_base)

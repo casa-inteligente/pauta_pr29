@@ -1,18 +1,19 @@
 # /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/views.py
 
-# /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/views.py
-
-import datetime
 import os
 import re
 import shutil
 from collections import OrderedDict
 from io import BytesIO
 from pathlib import Path
+import zipfile
+from datetime import datetime
+from difflib import SequenceMatcher # compara 'textos' e retorna um índice de similaridade
 
 import pypdfium2 as pdfium
 import pytesseract
 from django.conf import settings
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch, Q
 from django.http import HttpResponse, JsonResponse
@@ -34,8 +35,7 @@ from .forms import AlunoForm, PeriodoLeituraForm, ResenhaLivroForm
 from .models import Aluno, PeriodoLeitura, ResenhaLivro, Turma
 
 
-# Registre Arial e Arial-Bold (se quiser usar negrito)
-# Registre Arial e Arial-Bold (se quiser usar negrito)
+
 # Caminhos relativos à pasta base do projeto
 arial_path = os.path.join(settings.BASE_DIR, 'projeto_pauta', 'static', 'fonts', 'arial.ttf')
 arial_bold_path = os.path.join(settings.BASE_DIR, 'projeto_pauta', 'static', 'fonts', 'arialbd.ttf')
@@ -49,7 +49,8 @@ pdfmetrics.registerFont(TTFont('Arial-Bold', arial_bold_path))
 def listar_alunos(request):
     """Listar todos os alunos e suas resenhas por período de leitura."""
 
-    ano_atual = datetime.datetime.now().year
+    
+    ano_atual = timezone.now().year
     total_periodos = PeriodoLeitura.objects.filter(
             data_resenha__year=ano_atual
         ).count()
@@ -137,7 +138,7 @@ def editar_resenha(request, resenha_id):
     return render(request, 'editar_resenha.html', {
         'form': form,
         'titulo': 'Editar Resenha',
-        'ano_corrente': datetime.datetime.now().year,
+        'ano_corrente': timezone.now().year,
     })
 
 
@@ -343,7 +344,7 @@ def adicionar_aluno_popup(request):
 @login_required
 def configuracao_resenhas(request):
     """Tela de configurações das resenhas."""
-    ano_atual = datetime.datetime.now().year
+    ano_atual = timezone.now().year
 
 
     total_periodos = PeriodoLeitura.objects.filter(
@@ -386,7 +387,7 @@ def adicionar_periodo_leitura(request):
     return render(request, 'adicionar_periodo_leitura.html', {
         'form': form,
         'titulo': 'Adicionar Período de Leitura',
-        'ano_corrente': datetime.datetime.now().year,
+        'ano_corrente': timezone.now().year,
     })
 
 
@@ -609,11 +610,11 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
     tabela_resenhas = Table(
         dados_tabela,
         colWidths=[30, 305, 80, 80],
-        repeatRows=1,
+        repeatRows=1, # caso a tabela quebre repita o cabeçalho em cada página
     )
 
     tabela_resenhas.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.black),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#5b5b58')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('FONTNAME', (0, 0), (-1, 0), 'Arial-Bold'),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
@@ -622,16 +623,16 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')]),
         ('LEFTPADDING', (0, 0), (-1, -1), 6),
         ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
     ]))
 
     story.append(tabela_resenhas)
     story.append(Spacer(1, 18))
 
-    hoje = datetime.datetime.now()
+    hoje = timezone.now()
     dia = hoje.strftime('%d')
-    mes = hoje.strftime('%B').capitalize()
+    mes = hoje.strftime('%B')
     ano = hoje.strftime('%Y')
 
     story.append(
@@ -641,9 +642,15 @@ def _gerar_declaracao_pdf_bytes(aluno, resenhas):
         )
     )
 
+  
 
     # Caracteristicas da gestora do CEJA
-    story.append(Spacer(1, 18))
+    if numero_obras <= 6:
+        story.append(Spacer(1, 38)) #Espaca os elementos
+    elif numero_obras <= 9:
+        story.append(Spacer(1, 28))
+    else:
+        story.append(Spacer(1, 18))
 
     quadro_coluna_1 = Paragraph(
         (
@@ -803,7 +810,7 @@ def gerar_declaracao(request):
 
     context = {
         'titulo': 'Gerar Declaração',
-        'ano_corrente': datetime.datetime.now().year,
+        'ano_corrente': timezone.now().year,
         'anos_organizados': anos_organizados,
     }
     return render(request, 'gerar_declaracao.html', context)
@@ -847,7 +854,10 @@ def popup_confirmar_geracao_declaracao(request):
 @login_required
 @require_POST
 def gerar_declaracoes_selecionadas(request):
-    """Gera um PDF único com 1 declaração por aluno + anexos das resenhas em sequência."""
+    """Gera PDFs individuais (declaração + resenhas) por aluno. Se múltiplos, compacta em ZIP."""
+    data_hoje = timezone.now().strftime('%Y%m%d_%H%M')
+
+
     ids = request.POST.getlist('resenhas_ids')
 
     resenhas = list(
@@ -871,16 +881,16 @@ def gerar_declaracoes_selecionadas(request):
             }
         grupos_alunos[resenha.aluno_id]['resenhas'].append(resenha)
 
-    writer = PdfWriter()
+    pdfs_gerados = []  # lista de (nome_arquivo, bytes)
 
     for grupo in grupos_alunos.values():
         aluno = grupo['aluno']
         resenhas_aluno = grupo['resenhas']
 
-        declaracao_buffer = _gerar_declaracao_pdf_bytes(aluno, resenhas_aluno)
-        declaracao_reader = PdfReader(declaracao_buffer)
+        writer = PdfWriter()  # um writer por aluno
 
-        for page in declaracao_reader.pages:
+        declaracao_buffer = _gerar_declaracao_pdf_bytes(aluno, resenhas_aluno)
+        for page in PdfReader(declaracao_buffer).pages:
             writer.add_page(page)
 
         for resenha in resenhas_aluno:
@@ -888,16 +898,19 @@ def gerar_declaracoes_selecionadas(request):
 
             if caminho_pdf and caminho_pdf.suffix.lower() == '.pdf':
                 with open(caminho_pdf, 'rb') as arquivo_pdf:
-                    anexo_reader = PdfReader(arquivo_pdf)
-                    for page in anexo_reader.pages:
+                    for page in PdfReader(arquivo_pdf).pages:
                         writer.add_page(page)
             else:
                 aviso_buffer = _gerar_pagina_aviso_sem_pdf(resenha)
-                aviso_reader = PdfReader(aviso_buffer)
-                for page in aviso_reader.pages:
+                for page in PdfReader(aviso_buffer).pages:
                     writer.add_page(page)
 
             resenha.gerado_declaracao = True
+
+        output = BytesIO()
+        writer.write(output)
+        output.seek(0)
+        pdfs_gerados.append((f'{data_hoje}_declaracao_{slugify(aluno.nome)}.pdf', output.getvalue()))
 
     if resenhas:
         ResenhaLivro.objects.bulk_update(
@@ -905,15 +918,43 @@ def gerar_declaracoes_selecionadas(request):
             ['gerado_declaracao', 'atualizado_em']
         )
 
-    output = BytesIO()
-    writer.write(output)
-    output.seek(0)
+    
+    # Um único aluno → PDF direto
+    if len(pdfs_gerados) == 1:
+        nome, conteudo = pdfs_gerados[0]
+        response = HttpResponse(conteudo, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="{data_hoje}_{nome}"'
+        return response
 
-    response = HttpResponse(output.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="declaracoes_resenhas_por_aluno.pdf"'
+    # Múltiplos alunos → ZIP
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for nome, conteudo in pdfs_gerados:
+            zf.writestr(nome, conteudo)
+    zip_buffer.seek(0)
+
+    
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{data_hoje}_declaracoes_resenhas.zip"'
     return response
 
 ### Organizacao de resenhas nas pastas por período de leitura ###
+
+def _normalizar_texto_comparacao(texto):
+    texto = slugify(texto or '')
+    texto = texto.replace('-', ' ')
+    texto = re.sub(r'\s+', ' ', texto)
+    return texto.strip()
+
+
+def _similaridade_texto(texto_a, texto_b):
+    texto_a = _normalizar_texto_comparacao(texto_a)
+    texto_b = _normalizar_texto_comparacao(texto_b)
+
+    if not texto_a or not texto_b:
+        return 0
+
+    return SequenceMatcher(None, texto_a, texto_b).ratio()
 
 
 def _extrair_texto_primeira_pagina_ocr(caminho_pdf):
@@ -922,7 +963,7 @@ def _extrair_texto_primeira_pagina_ocr(caminho_pdf):
     try:
         pagina = documento[0]
         imagem = pagina.render(scale=2.8).to_pil()
-        texto = pytesseract.image_to_string(imagem, lang='por')
+        texto = pytesseract.image_to_string(imagem, lang='por', timeout=60)
     finally:
         documento.close()
 
@@ -980,6 +1021,8 @@ def _extrair_livro_autor_ocr(linhas):
 def _extrair_dados_resenha_ocr(caminho_pdf):
     """Extrai aluno, data da resenha, período, obra e autor da primeira página."""
     texto = _extrair_texto_primeira_pagina_ocr(caminho_pdf)
+    #print(40*'*')
+    #print(f"DEBUG - Texto extraído do OCR para '{caminho_pdf.name}':\n{texto}\n")
 
     if not texto:
         return {
@@ -1039,7 +1082,7 @@ def _extrair_dados_resenha_ocr(caminho_pdf):
 
     return {
         'sucesso': True,
-        'aluno': aluno_match.group(1).strip(),
+        'aluno': aluno_match.group(1).strip().rstrip(' .,-'),
         'data_resenha': data_resenha,
         'periodo_leitura': periodo_leitura,
         'nomelivro': nomelivro,
@@ -1060,56 +1103,46 @@ def _normalizar_nome_pasta(periodo_leitura):
 
 
 def _buscar_resenha_por_fallback(dados_extraidos, data_resenha):
-    """Busca a resenha com critérios progressivos quando o OCR variar entre arquivos."""
-    filtros_base = {
-        'aluno__nome__iexact': dados_extraidos['aluno'],
-        'periodoLeitura__data_resenha': data_resenha,
-    }
+    """Busca a resenha tolerando pequenas falhas do OCR no nome do aluno."""
+    queryset = (
+        ResenhaLivro.objects
+        .select_related('aluno', 'periodoLeitura')
+        .filter(periodoLeitura__data_resenha=data_resenha)
+        .order_by('id')
+    )
 
-    combinacoes = [
-        {
-            **filtros_base,
-            'periodoLeitura__intervalo_leitura__iexact': dados_extraidos.get('periodo_leitura'),
-            'nomelivro__iexact': dados_extraidos.get('nomelivro'),
-            'nomeAutor__iexact': dados_extraidos.get('nomeAutor'),
-        },
-        {
-            **filtros_base,
-            'periodoLeitura__intervalo_leitura__iexact': dados_extraidos.get('periodo_leitura'),
-            'nomelivro__iexact': dados_extraidos.get('nomelivro'),
-        },
-        {
-            **filtros_base,
-            'periodoLeitura__intervalo_leitura__iexact': dados_extraidos.get('periodo_leitura'),
-        },
-        {
-            **filtros_base,
-            'nomelivro__iexact': dados_extraidos.get('nomelivro'),
-        },
-        filtros_base,
-    ]
+    periodo_ocr = dados_extraidos.get('periodo_leitura')
+    if periodo_ocr:
+        queryset_periodo = queryset.filter(
+            periodoLeitura__intervalo_leitura__iexact=periodo_ocr
+        )
+        if queryset_periodo.exists():
+            queryset = queryset_periodo
 
-    for combinacao in combinacoes:
-        filtros = {
-            chave: valor for chave, valor in combinacao.items()
-            if valor not in (None, '')
-        }
+    candidatos = []
 
-        queryset = (
-            ResenhaLivro.objects
-            .select_related('aluno', 'periodoLeitura')
-            .filter(**filtros)
-            .order_by('id')
+    for resenha in queryset:
+        score_aluno = _similaridade_texto(
+            dados_extraidos.get('aluno'),
+            resenha.aluno.nome
+        )
+        score_livro = _similaridade_texto(
+            dados_extraidos.get('nomelivro'),
+            resenha.nomelivro
+        )
+        score_autor = _similaridade_texto(
+            dados_extraidos.get('nomeAutor'),
+            resenha.nomeAutor
         )
 
-        resenha = (
-            queryset
-            .filter(Q(path_resenha__isnull=True) | Q(path_resenha=''))
-            .first()
-            or queryset.first()
-        )
+        score_total = (score_aluno * 0.70) + (score_livro * 0.20) + (score_autor * 0.10)
 
-        if resenha:
+        candidatos.append((score_total, score_aluno, resenha))
+
+    candidatos.sort(key=lambda item: item[0], reverse=True)
+
+    for score_total, score_aluno, resenha in candidatos:
+        if score_aluno >= 0.84 and score_total >= 0.78:
             return resenha
 
     return None
@@ -1124,6 +1157,8 @@ def organizar_resenhas_por_periodo(request):
     #path_base = Path('/home/ogliari/Área de trabalho/RESENHAS-BOOT')
     path_base = settings.VAR_DIR_BASE_RESENHA
     path_resenha_analise = path_base / 'scanner'
+
+    #print(f"\n\n Chamou a organizacao das resenhas - caminho base: {path_base} - caminho analise: {path_resenha_analise}\n\n")
 
     status = []
 
@@ -1144,6 +1179,8 @@ def organizar_resenhas_por_periodo(request):
 
     arquivos_pdf = sorted(path_resenha_analise.glob('*.pdf'))
 
+    #print(f"DEBUG - {len(arquivos_pdf)} arquivos PDF encontrados para análise em '{path_resenha_analise}'\n\n")
+    
     if not arquivos_pdf:
         return render(request, 'popup_resultado_organizacao_resenhas.html', {
             'titulo': 'Atualizar resenhas nas pastas',
@@ -1155,6 +1192,7 @@ def organizar_resenhas_por_periodo(request):
 
     for arquivo_pdf in arquivos_pdf:
         try:
+            #print(f"DEBUG - Processando arquivo: {arquivo_pdf.name}")
             dados_extraidos = _extrair_dados_resenha_ocr(arquivo_pdf)
         except Exception as exc:
             status.append({
@@ -1173,7 +1211,7 @@ def organizar_resenhas_por_periodo(request):
             continue
 
         try:
-            data_resenha = datetime.datetime.strptime(
+            data_resenha = datetime.strptime(
                 dados_extraidos['data_resenha'],
                 '%d/%m/%Y'
             ).date()
@@ -1241,5 +1279,5 @@ def organizar_resenhas_por_periodo(request):
         'total_processados': total_processados,
         'total_sucesso': total_sucesso,
         'total_erros': total_erros,
-        'ano_corrente': datetime.datetime.now().year,
+        'ano_corrente': timezone.now().year,
     })

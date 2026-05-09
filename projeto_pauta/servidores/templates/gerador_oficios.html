@@ -8,6 +8,8 @@
 
 {% block head %}
 <link rel="icon" href="https://www.sap.sc.gov.br/wp-content/uploads/2014/03/PP-COLORIDO-PNG.png">
+<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+
 {% endblock %}
 
 {% block main_content %}
@@ -18,10 +20,11 @@
             <h2 class="text-sm font-semibold sm:text-base">Gerador de Ofícios</h2>
         </div>
     </div>
-
+    <!-- target="_blank" -->
     <form id="gerarOficioForm"
           method="post"
-          action=""
+          action="{% url 'servidores:gerador_oficios' %}"
+          target="_self"
           enctype="multipart/form-data"
           class="space-y-4 p-5 sm:p-6">
         {% csrf_token %}
@@ -94,15 +97,35 @@
             </select>
         </div>
 
+        <div>
+            <label for="unidade_id" class="mb-1 block text-sm font-medium text-gray-700">
+                Unidade
+            </label>
+            <select id="unidade_id"
+                name="unidade_id"
+                required
+                hx-get="{% url 'servidores:gerador_oficios' %}"
+                hx-trigger="change"
+                hx-target="#info-unidade"
+                hx-swap="outerHTML"
+                hx-include="[name='unidade_id']"
+                class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-green-600 focus:outline-none">
+            <option value="">Selecione a unidade</option>
+            {% for u in unidades %}
+                <option value="{{ u.id }}" {% if unidade_id == u.id|stringformat:"s" %}selected{% endif %}>
+                    {{ u.sigla }} — {{ u.nome }}
+                </option>
+            {% endfor %}
+        </select>
+        </div>
+
         <button type="submit"
                 class="inline-flex w-full items-center justify-center gap-2 rounded bg-green-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-400">
             <i class="fas fa-file-alt"></i>
             Gerar Ofício
         </button>
     </form>
-    <div class="bg-gray-50 px-5 py-3 text-sm text-gray-600 sm:px-6 gap-2 rounded-b-2xl">
-        <p> Nome do Juiz(a) para Ofício: <strong>{{ nome_juiz }}</strong> </p>
-        <p> Comarca para Ofício: <strong>{{ nome_comarca }}</strong> </p>
+    <div id="info-unidade" class="hidden bg-gray-50 px-5 py-3 text-sm text-gray-600 sm:px-6 gap-2 rounded-b-2xl">
     </div>
 </div>
 {% endblock %}
