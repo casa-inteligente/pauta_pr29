@@ -1000,34 +1000,151 @@ def frase_motivacional(request):
         return JsonResponse(fallback)
 
 
-def extrair_dados_primeira_pagina(arquivo_pdf):
-    arquivo_pdf.seek(0)
-    with pdfplumber.open(arquivo_pdf) as pdf:
-        texto = (pdf.pages[0].extract_text() or "").strip()
-        texto = texto.replace("\n", " ")
-        texto = re.sub(r"\s+", " ", texto).strip()
+def extrair_dados_primeira_pagina(arquivo_pdf, tipo_oficio):
+    """Extrai dados específicos de um PDF, dependendo do tipo de ofício.
 
-    #print(f"Texto extraído da primeira página:\n\n\n", texto)  # Debug: exibe o texto extraído
-    dados = {
-        "nome": "",
-        "matricula": "",
-        "processo": "",
-        "qtd_obras": "",
-    }
+    Parâmetros:
+- arquivo_pdf: Um objeto de arquivo PDF (deve ser um arquivo aberto em modo binário).
+- tipo_oficio: Uma string que indica o tipo de ofício (e.g., "oficio_1", "oficio_2", "oficio_3").
+    - oficio_1: Ofício de Trabalho
+    - oficio_2: Ofício de Estudo
+    - oficio_3: Ofício de Resenha
+    Retorna um dicionário com os dados extraídos.
+    """
 
-    m_nome = re.search(r"aluno\s*:?\s*(.+?)(?=,\sregularmente|\s,)", texto,re.IGNORECASE | re.DOTALL,)
-    m_mat =  re.search(r"n[uú]mero\s+de\s+inscri[cç][aã]o\s*([0-9.-]+)", texto,re.IGNORECASE,)
-    m_proc = re.search(r"Processo:\s*([\w./-]+)", texto, re.IGNORECASE)
-    m_qtd_obras = re.search(r"leitura\s+de\s+(\d+)\s+obra(s)", texto,re.IGNORECASE,)
+    
+    if tipo_oficio == "oficio_3":
+        arquivo_pdf.seek(0)
+        with pdfplumber.open(arquivo_pdf) as pdf:
+            texto = (pdf.pages[0].extract_text() or "").strip()
+            texto = texto.replace("\n", " ")
+            texto = re.sub(r"\s+", " ", texto).strip()
+        #print(f"Texto extraído da primeira página:\n\n\n", texto)  # Debug: exibe o texto extraído
 
-    if m_nome:
-        dados["nome"] = " ".join(m_nome.group(1).split()).strip()
-    if m_mat: 
-        dados["matricula"] = m_mat.group(1).strip()
-    if m_proc: 
-        dados["processo"] = m_proc.group(1).strip()
-    if m_qtd_obras:
-        dados["qtd_obras"] = m_qtd_obras.group(1).strip()
+        dados = {
+            "nome": "",
+            "matricula": "",
+            "processo": "",
+            "qtd_obras": "",
+            "qtd_satisfatorias": 0,
+            "qtd_insatisfatorias": 0,
+            "conferencia_obras": False,
+        }
+
+        m_nome = re.search(r"aluno\s*:?\s*(.+?)(?=,\sregularmente|\s,)", texto,re.IGNORECASE | re.DOTALL,)
+        m_mat =  re.search(r"n[uú]mero\s+de\s+inscri[cç][aã]o\s*([0-9.-]+)", texto,re.IGNORECASE,)
+        m_proc = re.search(r"Processo:\s*([\w./-]+)", texto, re.IGNORECASE)
+        m_qtd_obras = re.search(    r"leitura\s+de\s+(\d+)\s+obra(?:\(s\)|s)?",    texto,    re.IGNORECASE,)
+        satisfatorias = re.findall(r"\bSatisfat[oó]ria\b", texto, re.IGNORECASE)
+        insatisfatorias = re.findall(r"\bInsatisfat[oó]ria\b", texto, re.IGNORECASE)
+        
+        dados["qtd_satisfatorias"] = len(satisfatorias)
+        dados["qtd_insatisfatorias"] = len(insatisfatorias)
+
+        if m_nome:
+            dados["nome"] = " ".join(m_nome.group(1).split()).strip()
+        if m_mat: 
+            dados["matricula"] = m_mat.group(1).strip()
+        if m_proc: 
+            dados["processo"] = m_proc.group(1).strip()
+        if m_qtd_obras:
+            dados["qtd_obras"] = m_qtd_obras.group(1).strip()
+
+        try:
+            total_obras = int(dados["qtd_obras"])
+            total_resultados = dados["qtd_satisfatorias"] + dados["qtd_insatisfatorias"]
+            dados["conferencia_obras"] = total_obras == total_resultados
+        except (TypeError, ValueError):
+            dados["conferencia_obras"] = False
+    
+    elif tipo_oficio == "oficio_1":
+        arquivo_pdf.seek(0)
+        with pdfplumber.open(arquivo_pdf) as pdf:
+            textos_paginas = []
+
+            for pagina in pdf.pages:
+                texto_pagina = (pagina.extract_text() or "").strip()
+                if texto_pagina:
+                    textos_paginas.append(texto_pagina)
+
+            texto = " ".join(textos_paginas)
+            texto = texto.replace("\n", " ")
+            texto = re.sub(r"\s+", " ", texto).strip()
+
+        dados = {
+            "nome": "",
+            "periodo_trabalhado": "",
+            "dias_trabalhados": "",
+            "dias_remidos": "",
+            "dias_sobrando": "",
+            "estabelecimento": "(VIDE ANEXO)",
+        }
+
+        m_nome = re.search(
+            r"Nome:\s*(.+?)\s+Situa[cç][aã]o penal:",
+            texto,
+            re.IGNORECASE | re.DOTALL,
+        )
+   
+        estabelecimentos = re.findall(
+            r"Estabelecimento\s*\(Local de trabalho\):\s*Dias da semana em que trabalhou:\s*(.+?)\s+DOM\s+SEG\s+TER\s+QUA\s+QUI\s+SEX\s+SAB",
+            texto,
+            re.IGNORECASE | re.DOTALL,
+        )
+
+        m_totais = re.search(
+            r"Totais do período de\s*(\d{2}/\d{2}/\d{4})\s*até\s*(\d{2}/\d{2}/\d{4})\s+"
+            r"Total de Dia\(s\) trabalhados\s+Total de dias de remição\s+Sobras\s+"
+            r"(\d+)\s+(\d+)\s+(\d+)",
+            texto,
+            re.IGNORECASE,
+        )
+
+        if m_nome:
+            dados["nome"] = " ".join(m_nome.group(1).split()).strip()
+
+        if estabelecimentos:
+            empresas_unicas = []
+            for empresa in estabelecimentos:
+                empresa_limpa = " ".join(empresa.split()).strip()
+                if empresa_limpa and empresa_limpa not in empresas_unicas:
+                    empresas_unicas.append(empresa_limpa)
+
+            dados["estabelecimento"] = ", ".join(empresas_unicas)
+
+        if m_totais:
+            data_inicio = m_totais.group(1)
+            data_fim = m_totais.group(2)
+
+            dados["periodo_trabalhado"] = f"{data_inicio} até {data_fim}"
+            dados["dias_trabalhados"] = m_totais.group(3)
+            dados["dias_remidos"] = m_totais.group(4)
+            dados["dias_sobrando"] = m_totais.group(5)
+
+    elif tipo_oficio == "oficio_2":
+        dados = {
+            "nome": "",
+            "matricula": "",
+            "processo": "",
+        }
+        m_nome = re.search(r"Servidor\s*:\s*(.+?)(?=,\sregularmente|\s,)", texto,re.IGNORECASE | re.DOTALL,)
+        m_mat =  re.search(r"Mat[rí]cula\s*:\s*([0-9.-]+)", texto,re.IGNORECASE,)
+        m_proc = re.search(r"Processo\s*:\s*([\w./-]+)", texto, re.IGNORECASE)
+
+        if m_nome:
+            dados["nome"] = " ".join(m_nome.group(1).split()).strip()
+        if m_mat: 
+            dados["matricula"] = m_mat.group(1).strip()
+        if m_proc: 
+            dados["processo"] = m_proc.group(1).strip()
+    
+    else:        
+        dados = {
+            "nome": "",
+            "matricula": "",
+            "processo": "",
+        }
+
     return dados
 
 def _desenhar_cabecalho_rodape(c):
@@ -1068,25 +1185,51 @@ def _desenhar_cabecalho_rodape(c):
 
 
 def gerar_pdf_oficio_trabalho(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca):
-    nome_servidor = 'NONO'
+    servidor = Servidores.objects.filter(id=servidor_id).values('nome', 'cargo', 'sobrenome').first() or {}
+    nome_completo_servidor = f"{servidor.get('nome', 'Servidor não informado')} {servidor.get('sobrenome', '')}".strip()
+    cargo_servidor = servidor.get('cargo', 'Policial Penal')
 
     unidade = UnidadeOficio.objects.filter(sigla="PR29").values("nome_oficio", "sigla", "nome").first()
     nome_oficio = unidade["nome_oficio"] if unidade else "PPSC"
     sigla = unidade["sigla"] if unidade else "PR29"
+    nome_unidade = unidade["nome"] if unidade else "Presídio Regional de Maravilha"
+
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
-    _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
+    _desenhar_cabecalho_rodape(c)
+
     c.setFont("Arial", 11)
-    c.drawString(3 * cm, 26 *cm, f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}")
-    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 26 * cm, f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}")
     c.drawRightString(18 * cm, 26 * cm, f"Maravilha, {timezone.now().strftime('%d de %B de %Y')}")
-    
-    c.drawString(3 * cm, 23 * cm, f"Servidor selecionado: {nome_servidor}")
-    c.drawString(3 * cm, 22 * cm, f"Nome extraído: {dados.get('nome', '-')}")
-    c.drawString(3 * cm, 21 * cm, f"Matrícula: {dados.get('matricula', '-')}")
-    c.drawString(3 * cm, 20 * cm, f"Processo: {dados.get('processo', '-')}")
-    c.drawString(3 * cm, 19 * cm, f"Magistrado(a): {nome_juiz}")
-    c.drawString(3 * cm, 18 * cm, f"Comarca/Juízo: {nome_comarca}")
+
+    c.setFont("Arial-Bold", 11)
+    c.drawString(3 * cm, 23 * cm, f"APENADO: {dados.get('nome', '-').upper()}")
+
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 21 * cm, "Excelentíssimo Juiz,")
+
+    texto = (
+        f"Cumprimentando-o, encaminhamos relatório de remição por trabalho, referente ao período de {dados.get('periodo_trabalhado', '(Vide anexo)')}, com atividade laboral no(s) estabelecimento(s) {dados.get('estabelecimento', '(Vide anexo)')}, totalizando {dados.get('dias_trabalhados', '(Vide anexo)')} dia(s) trabalhado(s), <font name=\"Arial-Bold\"> {dados.get('dias_remidos', '(Vide anexo)')} dia(s) de remição </font> e {dados.get('dias_sobrando', '(Vide anexo)')} dia(s) de sobra, para análise e homologação."
+    )
+
+    p = Paragraph(texto, estilo_paragrafo)
+    largura = 16 * cm
+    w, h = p.wrap(largura, 20 * cm)
+    p.drawOn(c, 3 * cm, 19 * cm - h)
+
+    c.drawString(11 * cm, 15 * cm, "Respeitosamente,")
+    c.setFont("Arial-Bold", 11)
+    c.drawString(11 * cm, 13 * cm, f"{nome_completo_servidor}")
+    c.setFont("Arial", 11)
+    c.drawString(11 * cm, 12.6 * cm, f"{cargo_servidor}")
+    c.drawString(11 * cm, 12.2 * cm, f"{nome_unidade}")
+
+    c.drawString(3 * cm, 6 * cm, "Meritíssimo Juiz")
+    c.setFont("Arial-Bold", 11)
+    c.drawString(3 * cm, 5.6 * cm, f"{nome_juiz}")
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 5.2 * cm, f"{nome_comarca}")
+
     c.save()
     buffer.seek(0)
     return buffer
@@ -1140,9 +1283,18 @@ def gerar_pdf_oficio_resenha(dados, numero_oficio, servidor_id, nome_juiz, nome_
     c.drawString(3 * cm, 21 * cm, "Excelentíssimo Juiz,")
     c.setFont("Arial", 11)
     
+    # Ajuste dos dias remidos
+
+    if dados.get("conferencia_obras"):
+        dias_remicao = dados.get("qtd_satisfatorias", 0) * 4
+    else:
+        dias_remicao = "(Vide anexo)"
+
+  
+
     #inclui Paragrafo
     texto = (
-        f"Cumprimentando-o, encaminhamos declaração de participação do projeto despertar pela leitura e resenhas dos livros lidos pelo interno para análise e homologação de remições de {dados.get('qtd_obras', '(Vide anexo)')} dias da pena."
+        f"Cumprimentando-o, encaminhamos declaração de participação do projeto despertar pela leitura e resenhas dos livros lidos pelo interno para análise e homologação de remições de {dias_remicao} dias da pena."
     )
     
     p = Paragraph(texto, estilo_paragrafo)
@@ -1201,7 +1353,7 @@ def extrair_texto_pdf_gera_oficio(
 
     for indice, arquivo in enumerate(files):
         numero_atual = str(numero_inicial + indice)
-        dados = extrair_dados_primeira_pagina(arquivo)
+        dados = extrair_dados_primeira_pagina(arquivo, tipo_oficio)
 
         writer = PdfWriter()
 
@@ -1269,7 +1421,7 @@ def gerador_oficios(request):
         "ano_corrente": timezone.now().year,
         "usuarios": usuarios,
         "unidades": unidades,
-        "unidade_id": str(unidade_padrao.id) if unidade_padrao else "",
+        "unidade_id": "",
         "nome_juiz": unidade_padrao.nome_magistrado if unidade_padrao else "Juiz Não Cadastrado",
         "nome_comarca": unidade_padrao.nome_juizo if unidade_padrao else "Comarca Não Cadastrada",
     }

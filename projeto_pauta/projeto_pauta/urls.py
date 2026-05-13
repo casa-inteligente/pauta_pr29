@@ -21,6 +21,9 @@ urlpatterns = [
     path('estatisticas/', include('estatisticas.urls')), #Adiciona estatísticas
     path('servidores/', include('servidores.urls')), #Adiciona servidores
 
+    path("configuracoes/", views.config_user, name="config_user"),
+    path("configuracoes/dados/", views.config_user_dados, name="config_user_dados"),
+    path("configuracoes/senha/", views.config_user_senha, name="config_user_senha"),
 
     #Interfaces administrativas
     path('summernote/', include('django_summernote.urls')), #Editor de texto
