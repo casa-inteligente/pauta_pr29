@@ -295,6 +295,11 @@ class UnidadeOficio(models.Model):
         null=False
     )
 
+    resenha_aprovada = models.BooleanField(
+        verbose_name='Resenha aprovada',
+        default=True
+    )
+
     # Comarca
     nome_magistrado = models.CharField(
         verbose_name='Nome do magistrado',

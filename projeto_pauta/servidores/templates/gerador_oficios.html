@@ -49,6 +49,11 @@
             <select id="tipo_oficio"
                     name="tipo_oficio"
                     required
+                    hx-get="{% url 'servidores:gerador_oficios' %}"
+                    hx-trigger="change"
+                    hx-target="#opcoes-resenha"
+                    hx-swap="outerHTML"
+                    hx-include="[name='tipo_oficio']"
                     class="block w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-green-600 focus:outline-none">
                 <option value="">Selecione o tipo</option>
                 <option value="oficio_1" {% if tipo_oficio == "oficio_1" %}selected{% endif %}>Trabalho</option>
@@ -56,6 +61,9 @@
                 <option value="oficio_3" {% if tipo_oficio == "oficio_3" %}selected{% endif %}>Resenha de Livros</option>
             </select>
         </div>
+
+        <div id="opcoes-resenha"> </div>
+
 
         <div>
             <label for="arquivos_pdf" class="mb-1 block text-sm font-medium text-gray-700">

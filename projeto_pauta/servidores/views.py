@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
+from .forms import ResenhaRemicaoForm
 
 from io import BytesIO
 import re
@@ -1122,30 +1123,100 @@ def extrair_dados_primeira_pagina(arquivo_pdf, tipo_oficio):
             dados["dias_sobrando"] = m_totais.group(5)
 
     elif tipo_oficio == "oficio_2":
+        arquivo_pdf.seek(0)
+        with pdfplumber.open(arquivo_pdf) as pdf:
+            textos_paginas = []
+
+            for pagina in pdf.pages:
+                texto_pagina = (pagina.extract_text() or "").strip()
+                if texto_pagina:
+                    textos_paginas.append(texto_pagina)
+
+            texto = " ".join(textos_paginas)
+            texto = texto.replace("\n", " ")
+            texto = re.sub(r"\s+", " ", texto).strip()
+        #print(f"Extração para analise:\n\n\n {texto}")
+
+
         dados = {
             "nome": "",
-            "matricula": "",
-            "processo": "",
+            "periodo_estudado": "",
+            "horas_estudadas": "",
+            "dias_remidos": "",
+            "horas_sobrando": "",
+            "estabelecimento": "(VIDE ANEXO)",
         }
-        m_nome = re.search(r"Servidor\s*:\s*(.+?)(?=,\sregularmente|\s,)", texto,re.IGNORECASE | re.DOTALL,)
-        m_mat =  re.search(r"Mat[rí]cula\s*:\s*([0-9.-]+)", texto,re.IGNORECASE,)
-        m_proc = re.search(r"Processo\s*:\s*([\w./-]+)", texto, re.IGNORECASE)
+
+        m_nome = re.search(
+            r"Nome:\s*(.+?)\s+Situa[cç][aã]o penal:",
+            texto,
+            re.IGNORECASE | re.DOTALL,
+        )
+
+        estabelecimentos = re.findall(
+            r"Estabelecimento\s*\(Local de trabalho\):\s*Dias da semana em que estudou:\s*(.+?)\s+DOM\s+SEG\s+TER\s+QUA\s+QUI\s+SEX\s+SAB",
+            texto,
+            re.IGNORECASE | re.DOTALL,
+        )
+
+        m_totais = re.search(
+            r"Totais do período de\s*(\d{2}/\d{2}/\d{4})\s*até\s*(\d{2}/\d{2}/\d{4})\s+"
+            r"Total de Hora\(s\) estudadas\s+Total de dias de remição\s+Sobras\s+"
+            r"(\d+)\s+(\d+)\s+(\d+)",
+            texto,
+            re.IGNORECASE,
+        )
 
         if m_nome:
             dados["nome"] = " ".join(m_nome.group(1).split()).strip()
-        if m_mat: 
-            dados["matricula"] = m_mat.group(1).strip()
-        if m_proc: 
-            dados["processo"] = m_proc.group(1).strip()
-    
-    else:        
-        dados = {
-            "nome": "",
-            "matricula": "",
-            "processo": "",
-        }
 
+        if estabelecimentos:
+            locais_unicos = []
+
+            for local in estabelecimentos:
+                local_limpo = " ".join(local.split()).strip()
+                if local_limpo and local_limpo not in locais_unicos:
+                    locais_unicos.append(local_limpo)
+
+            dados["estabelecimento"] = ", ".join(locais_unicos)
+
+        if m_totais:
+            data_inicio = m_totais.group(1)
+            data_fim = m_totais.group(2)
+
+            dados["periodo_estudado"] = f"{data_inicio} até {data_fim}"
+            dados["horas_estudadas"] = m_totais.group(3)
+            dados["dias_remidos"] = m_totais.group(4)
+            dados["horas_sobrando"] = m_totais.group(5)
+
+        return dados
+    else:
+        dados = {
+            "nome": "(VIDE ANEXO)",
+            "matricula": "(VIDE ANEXO)",
+            "processo": "(VIDE ANEXO)",
+
+            # Campos do ofício de trabalho
+            "periodo_trabalhado": "(VIDE ANEXO)",
+            "dias_trabalhados": "(VIDE ANEXO)",
+            "dias_remidos": "(VIDE ANEXO)",
+            "dias_sobrando": "(VIDE ANEXO)",
+
+            # Campos do ofício de estudo
+            "periodo_estudado": "(VIDE ANEXO)",
+            "horas_estudadas": "(VIDE ANEXO)",
+            "horas_sobrando": "(VIDE ANEXO)",
+
+            # Campos do ofício de resenha
+            "qtd_obras": "(VIDE ANEXO)",
+            "qtd_satisfatorias": 0,
+            "qtd_insatisfatorias": 0,
+            "conferencia_obras": False,
+
+            "estabelecimento": "(VIDE ANEXO)",
+        }
     return dados
+            
 
 def _desenhar_cabecalho_rodape(c):
     # Constantes ABNT
@@ -1184,7 +1255,7 @@ def _desenhar_cabecalho_rodape(c):
 
 
 
-def gerar_pdf_oficio_trabalho(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca):
+def gerar_pdf_oficio_trabalho(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca, **kwargs):
     servidor = Servidores.objects.filter(id=servidor_id).values('nome', 'cargo', 'sobrenome').first() or {}
     nome_completo_servidor = f"{servidor.get('nome', 'Servidor não informado')} {servidor.get('sobrenome', '')}".strip()
     cargo_servidor = servidor.get('cargo', 'Policial Penal')
@@ -1234,33 +1305,81 @@ def gerar_pdf_oficio_trabalho(dados, numero_oficio, servidor_id, nome_juiz, nome
     buffer.seek(0)
     return buffer
 
-def gerar_pdf_oficio_estudo(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca):
-    unidade = UnidadeOficio.objects.filter(sigla="PR29").values("nome_oficio", "sigla", "nome").first()
+def gerar_pdf_oficio_estudo(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca, **kwargs):
+    servidor = (
+        Servidores.objects
+        .filter(id=servidor_id)
+        .values("nome", "cargo", "sobrenome")
+        .first()
+        or {}
+    )
+
+    nome_completo_servidor = (
+        f"{servidor.get('nome', 'Servidor não informado')} "
+        f"{servidor.get('sobrenome', '')}"
+    ).strip()
+    cargo_servidor = servidor.get("cargo", "Policial Penal")
+
+    unidade = (
+        UnidadeOficio.objects
+        .filter(sigla="PR29")
+        .values("nome_oficio", "sigla", "nome")
+        .first()
+    )
+
     nome_oficio = unidade["nome_oficio"] if unidade else "PPSC"
     sigla = unidade["sigla"] if unidade else "PR29"
+    nome_unidade = unidade["nome"] if unidade else "Presídio Regional de Maravilha"
+
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
-    _desenhar_cabecalho_rodape(c) # Função para desenhar o cabeçalho e rodapé
+    _desenhar_cabecalho_rodape(c)
+
     c.setFont("Arial", 11)
-    c.drawString(3 * cm, 26 *cm, f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}")
+    c.drawString(
+        3 * cm,
+        26 * cm,
+        f"Ofício n. {numero_oficio}/{timezone.now().year}/{nome_oficio}/{sigla}",
+    )
+    c.drawRightString(
+        18 * cm,
+        26 * cm,
+        f"Maravilha, {timezone.now().strftime('%d de %B de %Y')}",
+    )
+
+    c.setFont("Arial-Bold", 11)
+    c.drawString(3 * cm, 23 * cm, f"APENADO: {dados.get('nome', '-').upper()}")
+
     c.setFont("Arial", 11)
-    c.drawRightString(18 * cm, 26 * cm, f"Maravilha, {timezone.now().strftime('%d de %B de %Y')}")
-    ##Verificar ABAIXO
-    c.setFont("Arial-Bold", 14)
-    c.drawString(3 * cm, 26 *cm, "OFÍCIO DE ENCAMINHAMENTO - SETOR DE ESTUDO")
-    c.setFont("Arial", 10)
-    c.drawString(3 * cm, 24 * cm, f"Ofício nº {numero_oficio}")
-    c.drawString(3 * cm, 23 * cm, f"Aluno(a): {dados.get('nome', '-')}")
-    c.drawString(3 * cm, 22 * cm, f"Matrícula: {dados.get('matricula', '-')}")
-    c.drawString(3 * cm, 21 * cm, f"Referência: {dados.get('processo', '-')}")
-    c.drawString(3 * cm, 20 * cm, f"Magistrado(a): {nome_juiz}")
-    c.drawString(3 * cm, 19 * cm, f"Comarca/Juízo: {nome_comarca}")
-    c.drawString(3 * cm, 18 * cm, "Encaminhamos para deliberação.")
+    c.drawString(3 * cm, 21 * cm, "Excelentíssimo Juiz,")
+
+    texto = (
+        f"Cumprimentando-o, encaminhamos relatório de remição por estudo, referente ao período de {dados.get('periodo_estudado', '(Vide anexo)')}, com atividades educacionais no(s) estabelecimento(s) {dados.get('estabelecimento', '(Vide anexo)')}, totalizando {dados.get('horas_estudadas', '(Vide anexo)')} hora(s) estudada(s), <font name=\"Arial-Bold\">{dados.get('dias_remidos', '(Vide anexo)')} dia(s) de remição </font> e {dados.get('horas_sobrando', '(Vide anexo)')} hora(s) de sobra, para análise e homologação."
+    )
+
+    p = Paragraph(texto, estilo_paragrafo)
+    largura = 16 * cm
+    w, h = p.wrap(largura, 20 * cm)
+    p.drawOn(c, 3 * cm, 19 * cm - h)
+
+    c.drawString(11 * cm, 15 * cm, "Respeitosamente,")
+    c.setFont("Arial-Bold", 11)
+    c.drawString(11 * cm, 13 * cm, f"{nome_completo_servidor}")
+    c.setFont("Arial", 11)
+    c.drawString(11 * cm, 12.6 * cm, f"{cargo_servidor}")
+    c.drawString(11 * cm, 12.2 * cm, f"{nome_unidade}")
+
+    c.drawString(3 * cm, 6 * cm, "Meritíssimo Juiz")
+    c.setFont("Arial-Bold", 11)
+    c.drawString(3 * cm, 5.6 * cm, f"{nome_juiz}")
+    c.setFont("Arial", 11)
+    c.drawString(3 * cm, 5.2 * cm, f"{nome_comarca}")
+
     c.save()
     buffer.seek(0)
     return buffer
 
-def gerar_pdf_oficio_resenha(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca):
+def gerar_pdf_oficio_resenha(dados, numero_oficio, servidor_id, nome_juiz, nome_comarca, **kwargs):
     servidor = Servidores.objects.filter(id=servidor_id).values('nome', 'cargo', 'sobrenome').first() or {}
     nome_completo_servidor = f"{servidor.get('nome', 'Servidor não informado')} {servidor.get('sobrenome', '')}".strip()
     cargo_servidor = servidor.get('cargo', 'Policial Penal')
@@ -1285,8 +1404,16 @@ def gerar_pdf_oficio_resenha(dados, numero_oficio, servidor_id, nome_juiz, nome_
     
     # Ajuste dos dias remidos
 
+    resenha_satisfatoria = kwargs.get("resenha_satisfatoria", True)
+
     if dados.get("conferencia_obras"):
-        dias_remicao = dados.get("qtd_satisfatorias", 0) * 4
+        if resenha_satisfatoria:
+            dias_remicao = dados.get("qtd_satisfatorias", 0) * 4
+        else:
+            try:
+                dias_remicao = int(dados.get("qtd_obras", 0)) * 4
+            except (TypeError, ValueError):
+                dias_remicao = "(Vide anexo)"
     else:
         dias_remicao = "(Vide anexo)"
 
@@ -1294,7 +1421,7 @@ def gerar_pdf_oficio_resenha(dados, numero_oficio, servidor_id, nome_juiz, nome_
 
     #inclui Paragrafo
     texto = (
-        f"Cumprimentando-o, encaminhamos declaração de participação do projeto despertar pela leitura e resenhas dos livros lidos pelo interno para análise e homologação de remições de {dias_remicao} dias da pena."
+        f"Cumprimentando-o, encaminhamos declaração de participação do projeto despertar pela leitura e resenhas dos livros lidos pelo interno para análise e homologação de remições de <font name=\"Arial-Bold\">{dias_remicao} dias</font> da pena."
     )
     
     p = Paragraph(texto, estilo_paragrafo)
@@ -1335,6 +1462,7 @@ def extrair_texto_pdf_gera_oficio(
     nome_juiz,
     nome_comarca,
     unidade_id=None,  # novo parâmetro opcional
+    resenha_satisfatoria=True, 
 ):
     geradores = {
         "oficio_1": gerar_pdf_oficio_trabalho,
@@ -1363,7 +1491,8 @@ def extrair_texto_pdf_gera_oficio(
             servidor_id,
             nome_juiz,
             nome_comarca,
-            # unidade_id=unidade_id  # deixe comentado por enquanto se os geradores ainda não aceitam
+            unidade_id= unidade_id,  # deixe comentado por enquanto se os geradores ainda não aceitam
+            resenha_satisfatoria=resenha_satisfatoria,  
         )
         oficio_reader = PdfReader(oficio_pdf)
         for pagina in oficio_reader.pages:
@@ -1398,6 +1527,35 @@ def gerador_oficios(request):
 
     # ── Requisição HTMX: retorna o div completo (outerHTML swap) ──
     if request.method == "GET" and request.headers.get("HX-Request"):
+        tipo_oficio = request.GET.get("tipo_oficio", "").strip()
+
+        if "tipo_oficio" in request.GET:
+            form_resenha = ResenhaRemicaoForm(
+                initial={"resenha_satisfatoria": True}
+            )
+
+            classe = "" if tipo_oficio == "oficio_3" else "hidden"
+
+            return HttpResponse(
+                f'''
+                <div id="opcoes-resenha"
+                    class="{classe} rounded border border-gray-200 bg-gray-50 p-4">
+                    <label class="mb-2 block text-sm font-medium text-gray-700">
+                        Cálculo da remição das resenhas
+                    </label>
+
+                    <div class="flex min-h-[42px] items-center rounded border border-gray-300 bg-white px-3 py-2">
+                        {form_resenha["resenha_satisfatoria"]}
+                    </div>
+
+                    <p class="mt-2 text-xs text-gray-500">
+                        Satisfatória: usa apenas as resenhas satisfatórias.
+                        Insatisfatória: usa todas as resenhas informadas.
+                    </p>
+                </div>
+                '''
+            )
+
         unidade_id = request.GET.get("unidade_id", "").strip()
         if not unidade_id:
             # nenhuma unidade selecionada → div oculto vazio
@@ -1421,7 +1579,8 @@ def gerador_oficios(request):
         "ano_corrente": timezone.now().year,
         "usuarios": usuarios,
         "unidades": unidades,
-        "unidade_id": "",
+        "form_resenha": ResenhaRemicaoForm( initial={"resenha_satisfatoria": True}),
+        #"unidade_id": "",
         "nome_juiz": unidade_padrao.nome_magistrado if unidade_padrao else "Juiz Não Cadastrado",
         "nome_comarca": unidade_padrao.nome_juizo if unidade_padrao else "Comarca Não Cadastrada",
     }
@@ -1432,6 +1591,7 @@ def gerador_oficios(request):
         servidor_id    = request.POST.get("usuario_id", "").strip()
         unidade_id     = request.POST.get("unidade_id", "").strip()
         arquivos_pdf   = request.FILES.getlist("arquivos_pdf")
+        resenha_satisfatoria = request.POST.get("resenha_satisfatoria") == "on"
         nomes_arquivos = [a.name for a in arquivos_pdf]
 
         unidade_sel  = UnidadeOficio.objects.filter(id=unidade_id).first()
@@ -1461,6 +1621,7 @@ def gerador_oficios(request):
             nome_juiz=nome_juiz,
             nome_comarca=nome_comarca,
             unidade_id=unidade_id,
+            resenha_satisfatoria=resenha_satisfatoria,
         )
 
         tipo_slug = TIPO_OFICIO_ARQUIVO.get(tipo_oficio, "trabalho")
