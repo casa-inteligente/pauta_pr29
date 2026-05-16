@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 from datetime import date
+import secrets
 
 # Create your models here.
 class ServidoresPlantao(models.TextChoices):
@@ -323,3 +324,26 @@ class UnidadeOficio(models.Model):
         ordering = ('nome',)
         verbose_name = 'unidade'
         verbose_name_plural = 'Configurações para ofício'
+
+
+
+def gerar_token_gerador_oficio():
+    return secrets.token_urlsafe(32)
+
+
+class LinkGeradorOficio(models.Model):
+    token = models.CharField(
+        max_length=128,
+        unique=True,
+        default=gerar_token_gerador_oficio,
+        editable=False,
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Link do gerador de ofício"
+        verbose_name_plural = "Links do gerador de ofícios"
+
+    def __str__(self):
+        return self.token

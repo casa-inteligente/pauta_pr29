@@ -23,7 +23,7 @@
     <!-- target="_blank" -->
     <form id="gerarOficioForm"
           method="post"
-          action="{% url 'servidores:gerador_oficios' %}"
+          action=""
           target="_self"
           enctype="multipart/form-data"
           class="space-y-4 p-5 sm:p-6">
@@ -49,7 +49,7 @@
             <select id="tipo_oficio"
                     name="tipo_oficio"
                     required
-                    hx-get="{% url 'servidores:gerador_oficios' %}"
+                    hx-get="{{ request.path }}"
                     hx-trigger="change"
                     hx-target="#opcoes-resenha"
                     hx-swap="outerHTML"
@@ -112,7 +112,7 @@
             <select id="unidade_id"
                 name="unidade_id"
                 required
-                hx-get="{% url 'servidores:gerador_oficios' %}"
+                hx-get="{{ request.path }}"
                 hx-trigger="change"
                 hx-target="#info-unidade"
                 hx-swap="outerHTML"

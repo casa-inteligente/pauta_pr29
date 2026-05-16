@@ -23,7 +23,7 @@ from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 
 
-from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra, ServidoresPlantao, UnidadeOficio
+from .models import Servidores, ServidorFerias, ServidorAtestadoMedico, ServidorFolgaCompensatoria, ServidoresExtra, ServidoresPlantao, UnidadeOficio, LinkGeradorOficio
 from projeto_pauta.permission_group import grupos_permitidos
 
 import requests as http_requests
@@ -1515,7 +1515,25 @@ def extrair_texto_pdf_gera_oficio(
 
 
 @checked_debug_decorador
-def gerador_oficios(request):
+def criar_link_aleatorio_gerador_oficios(request):
+    LinkGeradorOficio.objects.filter(ativo=True).update(ativo=False)
+
+    link = LinkGeradorOficio.objects.create()
+    return redirect("servidores:gerador_oficios_token", token=link.token)
+
+
+@checked_debug_decorador
+def gerador_oficios(request, token=None):
+
+    link_gerador = None
+
+    if token:
+        link_gerador = get_object_or_404(
+            LinkGeradorOficio, 
+            token=token,
+            ativo=True,
+    )
+
     usuarios = (
         Servidores.objects
         .filter(status_ativo=True, setor="ADMINISTRATIVO")
@@ -1629,7 +1647,13 @@ def gerador_oficios(request):
         if len(pdf_final) == 1:
             nome_arquivo, conteudo_pdf = pdf_final[0]
             response = HttpResponse(conteudo_pdf, content_type="application/pdf")
-            response["Content-Disposition"] = f'attachment; filename="{nome_arquivo}"'
+            response["Content-Disposition"] = f'inline; filename="{nome_arquivo}"'
+
+            # # desativar o link  
+            # if link_gerador:
+            #     link_gerador.ativo = False
+            #     link_gerador.save(update_fields=["ativo"])
+
             return response
 
         zip_buffer = BytesIO()
@@ -1639,6 +1663,12 @@ def gerador_oficios(request):
         zip_buffer.seek(0)
         response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
         response["Content-Disposition"] = f'attachment; filename="oficios_{tipo_slug}.zip"'
+
+        # # desativa o link de acesso após uso
+        # if link_gerador:
+        #     link_gerador.ativo = False
+        #     link_gerador.save(update_fields=["ativo"])
+
         return response
 
     return render(request, "gerador_oficios.html", contexto_base)
