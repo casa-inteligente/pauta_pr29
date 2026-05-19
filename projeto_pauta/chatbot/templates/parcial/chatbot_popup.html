@@ -1,0 +1,203 @@
+<!-- chatbot/templates/parcial/chatbot_popup.html -->
+
+<div id="chatbot-unidade">
+    <button type="button"
+        id="abrir-chatbot"
+        class="fixed bottom-6 left-6 z-50 inline-flex items-center gap-2 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-indigo-800">
+        <i class="fas fa-comments"></i>
+        <span>Procedimentos</span>
+    </button>
+
+    <div id="chatbot-overlay"
+        class="fixed inset-0 z-[80] hidden bg-slate-900/50">
+    </div>
+
+    <div id="chatbot-modal"
+        class="fixed bottom-6 left-6 z-[90] hidden w-[calc(100vw-3rem)] max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-800">Procedimentos da unidade</h3>
+                <p class="text-xs text-slate-500">Consulta local baseada nos documentos cadastrados.</p>
+            </div>
+
+            <button type="button"
+                id="fechar-chatbot"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-200 hover:text-slate-800"
+                title="Fechar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="max-h-[55vh] overflow-y-auto px-4 py-3">
+            <div id="chatbot-mensagens" class="space-y-3 text-sm">
+                <div class="rounded-xl bg-indigo-50 px-3 py-2 text-slate-700">
+                    Informe uma dúvida sobre os procedimentos cadastrados da unidade.
+                </div>
+            </div>
+        </div>
+
+        <form id="chatbot-form" class="space-y-3 border-t border-slate-200 bg-white px-4 py-3">
+            {% csrf_token %}
+
+            <div class="grid gap-2 sm:grid-cols-[1fr_auto]">
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-slate-600">Modo de resposta</span>
+                    <select name="modo_contexto"
+                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+                        <option value="rapida">Rápida</option>
+                        <option value="equilibrada" selected>Equilibrada</option>
+                        <option value="detalhada">Detalhada</option>
+                    </select>
+                </label>
+
+                <button type="button"
+                    id="limpar-chatbot"
+                    class="self-end rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100">
+                    Limpar
+                </button>
+            </div>
+
+            <label class="block">
+                <span class="mb-1 block text-xs font-medium text-slate-600">Contexto adicional opcional</span>
+                <textarea name="contexto_adicional"
+                    rows="2"
+                    class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                    placeholder="Ex.: situação específica, setor envolvido, horário, observação..."></textarea>
+            </label>
+
+            <label class="block">
+                <span class="mb-1 block text-xs font-medium text-slate-600">Pergunta</span>
+                <textarea name="pergunta"
+                    rows="3"
+                    required
+                    class="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                    placeholder="Digite sua pergunta sobre os procedimentos..."></textarea>
+            </label>
+
+            <button type="submit"
+                id="enviar-chatbot"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-800">
+                <i class="fas fa-paper-plane"></i>
+                <span>Consultar procedimento</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        function configurarChatbotUnidade() {
+            const raiz = document.getElementById('area-chatbot-unidade');
+            if (!raiz) return;
+
+            const abrir = raiz.querySelector('#abrir-chatbot');
+            const fechar = raiz.querySelector('#fechar-chatbot');
+            const overlay = raiz.querySelector('#chatbot-overlay');
+            const modal = raiz.querySelector('#chatbot-modal');
+            const form = raiz.querySelector('#chatbot-form');
+            const mensagens = raiz.querySelector('#chatbot-mensagens');
+            const limpar = raiz.querySelector('#limpar-chatbot');
+            const botaoEnviar = raiz.querySelector('#enviar-chatbot');
+
+            if (!abrir || !fechar || !overlay || !modal || !form || !mensagens) return;
+
+            function abrirModal() {
+                overlay.classList.remove('hidden');
+                modal.classList.remove('hidden');
+            }
+
+            function fecharModal() {
+                overlay.classList.add('hidden');
+                modal.classList.add('hidden');
+            }
+
+            function adicionarMensagem(texto, tipo) {
+                const div = document.createElement('div');
+
+                div.className = tipo === 'usuario'
+                    ? 'ml-auto max-w-[85%] rounded-xl bg-indigo-700 px-3 py-2 text-sm text-white'
+                    : 'max-w-[90%] whitespace-pre-wrap rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-700';
+
+                div.textContent = texto;
+                mensagens.appendChild(div);
+                mensagens.parentElement.scrollTop = mensagens.parentElement.scrollHeight;
+
+                return div;
+            }
+
+            abrir.addEventListener('click', abrirModal);
+            fechar.addEventListener('click', fecharModal);
+            overlay.addEventListener('click', fecharModal);
+
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    fecharModal();
+                }
+            });
+
+            if (limpar) {
+                limpar.addEventListener('click', function () {
+                    mensagens.innerHTML = '';
+                    adicionarMensagem(
+                        'Informe uma dúvida sobre os procedimentos cadastrados da unidade.',
+                        'assistente'
+                    );
+                });
+            }
+
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const pergunta = (formData.get('pergunta') || '').trim();
+
+                if (!pergunta) return;
+
+                adicionarMensagem(pergunta, 'usuario');
+                const respostaEl = adicionarMensagem('', 'assistente');
+
+                botaoEnviar.disabled = true;
+                botaoEnviar.classList.add('opacity-70', 'cursor-wait');
+
+                try {
+                    const response = await fetch("{% url 'chatbot:responder' %}", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": formData.get('csrfmiddlewaretoken'),
+                        },
+                        body: formData,
+                    });
+
+                    if (!response.ok || !response.body) {
+                        respostaEl.textContent = 'Não foi possível consultar o chatbot agora.';
+                        return;
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+
+                        respostaEl.textContent += decoder.decode(value, { stream: true });
+                        mensagens.parentElement.scrollTop = mensagens.parentElement.scrollHeight;
+                    }
+
+                    form.querySelector('[name="pergunta"]').value = '';
+                } catch (error) {
+                    respostaEl.textContent = 'Erro ao consultar os procedimentos cadastrados.';
+                } finally {
+                    botaoEnviar.disabled = false;
+                    botaoEnviar.classList.remove('opacity-70', 'cursor-wait');
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', configurarChatbotUnidade);
+        } else {
+            configurarChatbotUnidade();
+        }
+    })();
+</script>
