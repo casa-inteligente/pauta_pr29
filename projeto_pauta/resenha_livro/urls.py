@@ -8,7 +8,7 @@ from .views import (
     excluir_resenha, configuracao_resenhas,
     adicionar_periodo_leitura, alternar_gerado_declaracao, gerar_declaracao,
     popup_confirmar_geracao_declaracao, gerar_declaracoes_selecionadas,
-    organizar_resenhas_por_periodo,
+    organizar_resenhas_por_periodo, popup_estatisticas_livros
 )
 
 app_name = 'resenha_livro'
@@ -23,6 +23,7 @@ urlpatterns = [
     path('adicionar_aluno_popup/', adicionar_aluno_popup, name='adicionar_aluno_popup'),
     path('excluir_resenha/<int:resenha_id>/', excluir_resenha, name='excluir_resenha'),
     path('configuracao_resenhas/', configuracao_resenhas, name='configuracao_resenhas'),
+    path('popup-estatisticas-livros/', popup_estatisticas_livros, name='popup_estatisticas_livros'),
     path('adicionar_periodo_leitura/', adicionar_periodo_leitura, name='adicionar_periodo_leitura'),
 
     # Declaração

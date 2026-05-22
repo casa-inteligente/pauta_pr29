@@ -20,6 +20,7 @@ urlpatterns = [
     path('resenha_livro/', include('resenha_livro.urls')), #Adiciona relação de livros
     path('estatisticas/', include('estatisticas.urls')), #Adiciona estatísticas
     path('servidores/', include('servidores.urls')), #Adiciona servidores
+    path('chatbot/', include('chatbot.urls')), #Adiciona chatbot
 
     path("configuracoes/", views.config_user, name="config_user"),
     path("configuracoes/dados/", views.config_user_dados, name="config_user_dados"),

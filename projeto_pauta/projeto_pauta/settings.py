@@ -94,6 +94,7 @@ INSTALLED_APPS = [
     'resenha_livro', #para o controle de resenhas
     'estatisticas', #para o controle de estatisticas
     'servidores', #para o controle de servidores
+    'chatbot', #para o controle do chatbot
 ]
 
 MIDDLEWARE = [
@@ -164,6 +165,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'relação_detentos/templates'),
             os.path.join(BASE_DIR,  'resenha_livro/templates'),
             os.path.join(BASE_DIR, 'estatisticas/templates'),
+            os.path.join(BASE_DIR, 'chatbot/templates'),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -296,7 +298,35 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'relação_detentos/static'),
     os.path.join(BASE_DIR, 'resenha_livro/static'),
     os.path.join(BASE_DIR, 'estatisticas/static'),
+    os.path.join(BASE_DIR, 'chatbot/static'),
 ]
+
+# Configurações do chatbot da unidade
+CHATBOT_OLLAMA_URL = "http://localhost:11434"
+CHATBOT_MODELO_PADRAO = "qwen2.5:14b" # deepseek-r1:14b ; qwen2.5:7B; qwen2.5:14b
+CHATBOT_MODELO_EMBEDDING = "nomic-embed-text:latest"
+CHATBOT_DOCUMENTOS_DIR = BASE_DIR / "chatbot" / "documentos"
+CHATBOT_INDICE_DIR = BASE_DIR / "chatbot" / "indices"
+
+CHATBOT_MODOS_CONTEXTO = {
+    "rapida": {
+        "num_ctx": 2048,
+        "top_k": 2,
+        "num_predict": 250,
+    },
+    "equilibrada": {
+        "num_ctx": 4096,
+        "top_k": 4,
+        "num_predict": 500,
+    },
+    "detalhada": {
+        "num_ctx": 8192,
+        "top_k": 6,
+        "num_predict": 900,
+    },
+}
+
+
 
 
 # Default primary key field type

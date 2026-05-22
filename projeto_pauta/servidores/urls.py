@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from .views import (
     lista_escala_servidores, 
     escala_proximo_mes, 
@@ -8,6 +8,7 @@ from .views import (
     folha_ponto_servidor, 
     frase_motivacional,
     gerador_oficios,
+    criar_link_aleatorio_gerador_oficios,
 )
 
 app_name = 'servidores'
@@ -34,5 +35,15 @@ urlpatterns = [
 
     
     path('frase-motivacional/', frase_motivacional, name='frase_motivacional'),
-    path('gerador-oficios/', gerador_oficios, name='gerador_oficios'),
+    
+    
+    path('novo-link-gerador/', criar_link_aleatorio_gerador_oficios, name='criar_link_aleatorio_gerador_oficios',),
+
+    #path('gerador-oficios/', gerador_oficios, name='gerador_oficios',),
+
+    re_path(
+        r'^(?P<token>[A-Za-z0-9_-]{32,128})/$',
+        gerador_oficios,
+        name='gerador_oficios_token',
+    ),
 ]

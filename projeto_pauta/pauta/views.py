@@ -3,6 +3,8 @@ from .models import Pauta
 from django.utils import timezone
 from datetime import timedelta
 from .forms import PautaForm
+from django.db.models import Q, Max, Min
+from relação_detentos.models import Relacao
 import datetime
 
 
@@ -30,6 +32,15 @@ def pauta_all(request):
 
     today = timezone.now().date()
     pauta_alls = Pauta.objects.filter(data__gte=today).order_by('data', 'hora')
+
+    ultima_data_atualizado = (
+        Relacao.objects.exclude(
+            atualizado__isnull=True
+        ).aggregate(
+            Max('atualizado')
+        ).get('atualizado__max')
+    )
+
     
     if request.method == 'POST':
         form = PautaForm(request.POST)
@@ -45,6 +56,7 @@ def pauta_all(request):
         'nome_unidade': 'Presídio Regional de Maravilha',
         'pauta_all': pauta_alls,
         'form': form,
+        'ultima_data_atualizado' : ultima_data_atualizado,
     })
 
 
@@ -126,3 +138,6 @@ def pauta_api_viewer(request):
         'titulo': 'Visualizador de Pauta - API',
         'nome_unidade': 'Presídio Regional de Maravilha',
     })
+
+
+# Chabot local para instrucoes da unidade
