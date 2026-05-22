@@ -326,7 +326,9 @@ CHATBOT_MODOS_CONTEXTO = {
     },
 }
 
-
+CHATBOT_OLLAMA_GPU_OPTIONS = {
+    "num_gpu": 999,
+}
 
 
 # Default primary key field type

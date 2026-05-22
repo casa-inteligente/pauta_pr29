@@ -1,14 +1,23 @@
 # chatbot/services/ollama.py
 
 import json
+
 import requests
 from django.conf import settings
 
 
+def _opcoes_gpu_ollama():
+    """Retorna opções extras para tentar usar GPU no Ollama."""
+    return getattr(settings, "CHATBOT_OLLAMA_GPU_OPTIONS", {})
+
+
 def gerar_embedding(texto):
+    opcoes_gpu = _opcoes_gpu_ollama()
+
     payload_novo = {
         "model": settings.CHATBOT_MODELO_EMBEDDING,
         "input": texto,
+        "options": opcoes_gpu,
     }
 
     resposta = requests.post(
@@ -29,6 +38,7 @@ def gerar_embedding(texto):
     payload_antigo = {
         "model": settings.CHATBOT_MODELO_EMBEDDING,
         "prompt": texto,
+        "options": opcoes_gpu,
     }
 
     resposta_antiga = requests.post(
@@ -52,19 +62,24 @@ def gerar_embedding(texto):
         f"/api/embeddings: {resposta_antiga.status_code} - {resposta_antiga.text}"
     )
 
+
 def stream_resposta(prompt, config):
+    options = {
+        "temperature": 0.1,
+        "num_ctx": config["num_ctx"],
+        "num_predict": config["num_predict"],
+    }
+
+    options.update(_opcoes_gpu_ollama())
+
     resposta = requests.post(
         f"{settings.CHATBOT_OLLAMA_URL}/api/generate",
         json={
             "model": settings.CHATBOT_MODELO_PADRAO,
             "prompt": prompt,
             "stream": True,
-            "keep_alive": "30m",
-            "options": {
-                "temperature": 0.1,
-                "num_ctx": config["num_ctx"],
-                "num_predict": config["num_predict"],
-            },
+            "keep_alive": "4h",
+            "options": options,
         },
         stream=True,
         timeout=180,

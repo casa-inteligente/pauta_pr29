@@ -1,32 +1,39 @@
 # Comarcas para Recebimento de Presos
 
-## Comarcas Autorizadas
+## Comarcas e suas respectivas cidades autorizadas
 
-As seguintes comarcas estão **autorizadas** para recebimento de presos:
+As seguintes comarcas com as respectivas cidades estão **autorizadas** para recebimento de presos:
 
 ### Maravilha
-- Maravilha
-- Flor do Sertão
-- Iraceminha
+- Maravilha;
+- Iraceminha;
+- São Miguel da Boa Vista;
+- Santa Terezinha do Progresso
+- Flor do Sertão;
+- Tigrinhos;
 
 ### Pinhalzinho
-- Pinhalzinho
-- Nova Erechim
-- Saudades
+- Pinhalzinho;
+- Nova Erechim;
+- Saudades;
+- Águas Frias;
+- Nova Itaberaba;
 
-### Cunha Pará
-- Cunha Pará
+### Cunha Porã
+- Cunha Porã;
 
 ### Modelo
-- Modelo
-- Sul Brasil
-- Serra Alta
-- Bom Jesus do Oeste
+- Modelo;
+- Sul Brasil;
+- Serra Alta;
+- Bom Jesus do Oeste;
 
 ## Restrições
 
-Todas as demais comarcas estão **proibidas** do recebimento de presos.
+Todas as demais comarcas/cidades estão **proibidas** do recebimento de presos.
 
 ## Procedimento
 
-Deverá comunicar o plantão do judiciário.
+Receber no I-PEN, na unidade de **custódia**
+Deverá comunicar o plantão do judiciário, através de um ofício com a documentação anexa. Pelo aplicativo Whatsapp no grupo (plantão regional smo)
+
