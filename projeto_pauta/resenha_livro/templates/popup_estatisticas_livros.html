@@ -5,7 +5,7 @@
      onclick="if (event.target === this) fecharModalEstatisticasLivros()">
 
     <section class="w-full max-w-6xl rounded-2xl bg-white shadow-2xl">
-        <header class="sticky top-0 z-10 flex items-center justify-between gap-4 rounded-t-2xl border-b border-slate-200 bg-white px-6 py-4">
+        <header class="flex items-center justify-between gap-4 rounded-t-2xl border-b border-slate-200 bg-white px-6 py-4">
             <div>
                 <h2 class="text-xl font-bold text-slate-800">Estatísticas dos livros lidos</h2>
                 <p class="mt-1 text-sm text-slate-500">
@@ -204,18 +204,15 @@
 
             <section class="rounded-xl border border-slate-200">
                 <div class="border-b border-slate-200 px-4 py-3">
-                    <h3 class="font-semibold text-slate-800">Alunos por ano e leituras</h3>
+                    <h3 class="font-semibold text-slate-800">Alunos por leituras</h3>
                 </div>
 
                 <div class="max-h-[420px] overflow-y-auto">
                     <table class="min-w-full text-sm">
                         <thead class="sticky top-0 bg-slate-100 text-left text-slate-600">
                             <tr>
-                                <th class="px-4 py-3">Ano</th>
                                 <th class="px-4 py-3">Aluno</th>
-                                <th class="px-4 py-3">Turma</th>
                                 <th class="px-4 py-3">Resenhas</th>
-                                <th class="px-4 py-3">Badge</th>
                                 <th class="px-4 py-3">Geradas</th>
                                 <th class="px-4 py-3">Pendentes</th>
                             </tr>
@@ -223,18 +220,12 @@
                         <tbody class="divide-y divide-slate-200">
                             {% for aluno in alunos_por_ano %}
                             <tr class="hover:bg-slate-50">
-                                <td class="px-4 py-3 font-semibold text-slate-800">{{ aluno.periodoLeitura__data_resenha__year }}</td>
                                 <td class="px-4 py-3">
                                     <p class="font-medium text-slate-800">{{ aluno.aluno__nome }}</p>
                                     <p class="text-xs text-slate-500">Matrícula: {{ aluno.aluno__matricula|default:"Não informada" }}</p>
                                 </td>
-                                <td class="px-4 py-3 text-slate-600">{{ aluno.aluno__turma__nome }}</td>
                                 <td class="px-4 py-3 font-semibold text-slate-800">{{ aluno.total_resenhas }}</td>
-                                <td class="px-4 py-3">
-                                    <span class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold {{ aluno.badge_classe }}">
-                                        {{ aluno.badge_texto }}
-                                    </span>
-                                </td>
+                                
                                 <td class="px-4 py-3 text-green-700">{{ aluno.geradas }}</td>
                                 <td class="px-4 py-3 text-amber-700">{{ aluno.pendentes }}</td>
                             </tr>

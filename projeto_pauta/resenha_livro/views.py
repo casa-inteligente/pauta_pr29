@@ -1285,7 +1285,6 @@ def organizar_resenhas_por_periodo(request):
 
 # estatisticas das resenhas dos livros
 
-@login_required
 def popup_estatisticas_livros(request):
     """Exibe estatísticas dos livros lidos em popup HTMX."""
     resumo_geral = ResenhaLivro.objects.aggregate(
@@ -1338,11 +1337,10 @@ def popup_estatisticas_livros(request):
     alunos_por_ano = list(
         ResenhaLivro.objects
         .values(
-            'periodoLeitura__data_resenha__year',
             'aluno_id',
             'aluno__nome',
             'aluno__matricula',
-            'aluno__turma__nome',
+         
         )
         .annotate(
             total_resenhas=Count('id'),
@@ -1350,26 +1348,11 @@ def popup_estatisticas_livros(request):
             insatisfatorias=Count('id', filter=Q(aprovada=False)),
             geradas=Count('id', filter=Q(gerado_declaracao=True)),
             pendentes=Count('id', filter=Q(gerado_declaracao=False)),
+            primeiro_ano=Min('periodoLeitura__data_resenha__year'),
+            ultimo_ano=Max('periodoLeitura__data_resenha__year'),
         )
-        .order_by(
-            '-periodoLeitura__data_resenha__year',
-            '-total_resenhas',
-            'aluno__nome',
-        )
+        .order_by('-total_resenhas', 'aluno__nome')
     )
-
-    for aluno in alunos_por_ano:
-        total_resenhas = aluno['total_resenhas']
-
-        if total_resenhas >= 5:
-            aluno['badge_classe'] = 'bg-emerald-50 text-emerald-700 border-emerald-200'
-            aluno['badge_texto'] = '5+ leituras'
-        elif total_resenhas >= 2:
-            aluno['badge_classe'] = 'bg-sky-50 text-sky-700 border-sky-200'
-            aluno['badge_texto'] = '2 a 4 leituras'
-        else:
-            aluno['badge_classe'] = 'bg-slate-50 text-slate-700 border-slate-200'
-            aluno['badge_texto'] = '1 leitura'
 
     context = {
         'resumo_geral': resumo_geral,
