@@ -41,7 +41,7 @@
             <div class="space-y-3">
                 {% for item in status %}
                 <div class="rounded-xl border px-4 py-3 {% if item.sucesso %}border-green-200 bg-green-50{% else %}border-red-200 bg-red-50{% endif %}">
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div class="min-w-0">
                             <p class="font-medium {% if item.sucesso %}text-green-900{% else %}text-red-900{% endif %}">
                                 {{ item.arquivo }}
@@ -56,18 +56,26 @@
                             {% endif %}
                         </div>
 
-                        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {% if item.sucesso %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
-                            <i class="fas {% if item.sucesso %}fa-circle-check{% else %}fa-circle-xmark{% endif %}"></i>
-                            <span>{% if item.sucesso %}Processado{% else %}Falhou{% endif %}</span>
-                        </span>
+                        <div class="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+                            <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {% if item.sucesso %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                                <i class="fas {% if item.sucesso %}fa-circle-check{% else %}fa-circle-xmark{% endif %}"></i>
+                                <span>{% if item.sucesso %}Processado{% else %}Falhou{% endif %}</span>
+                            </span>
+
+                            {% if not item.sucesso %}
+                            <button type="button"
+                                    class="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-medium text-red-700 shadow-sm transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500/30">
+                                <i class="fas fa-sliders"></i>
+                                <span>Ajuste manual</span>
+                            </button>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
             {% else %}
-            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                Nenhum PDF foi localizado na pasta de análise.
-            </div>
+            <p class="text-center text-sm text-slate-500">Nenhum PDF foi localizado na pasta de análise.</p>
             {% endif %}
         </div>
 
