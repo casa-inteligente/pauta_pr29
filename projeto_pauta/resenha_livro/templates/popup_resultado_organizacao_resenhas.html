@@ -1,5 +1,28 @@
-<!-- /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/templates/partial/popup_resultado_organizacao_resenhas.html -->
+<!-- /media/ogliari/backup_ssd/projetos-da-cadeia/pauta_pr29/projeto_pauta/resenha_livro/templates/popup_resultado_organizacao_resenhas.html -->
 
+{% if modo_item_oob %}
+<div id="status-resenha-{{ item.status_id }}"
+     hx-swap-oob="outerHTML"
+     class="rounded-xl border border-green-200 bg-green-50 px-4 py-3">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div class="min-w-0">
+            <p class="font-medium text-green-900">{{ item.arquivo }}</p>
+            <p class="mt-1 text-sm text-green-800">{{ item.mensagem }}</p>
+            {% if item.destino %}
+            <p class="mt-1 break-all text-xs text-slate-600">
+                Destino: {{ item.destino }}
+            </p>
+            {% endif %}
+        </div>
+
+        <span class="inline-flex shrink-0 items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+            <i class="fas fa-circle-check"></i>
+            <span>Processado</span>
+        </span>
+    </div>
+</div>
+
+{% else %}
 <div id="modal-organizacao-resenhas-overlay"
      data-modal-overlay="true"
      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
@@ -16,6 +39,7 @@
 
             <button type="button"
                     onclick="fecharModal('modal-organizacao-resenhas-overlay')"
+                    aria-label="Fechar"
                     class="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
                 <i class="fas fa-xmark"></i>
             </button>
@@ -26,13 +50,15 @@
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Processados</p>
                 <p class="mt-1 text-2xl font-bold text-slate-800">{{ total_processados }}</p>
             </div>
+
             <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-3">
                 <p class="text-xs font-semibold uppercase tracking-wide text-green-700">Sucesso</p>
-                <p class="mt-1 text-2xl font-bold text-green-800">{{ total_sucesso }}</p>
+                <p id="total-sucesso" class="mt-1 text-2xl font-bold text-green-800">{{ total_sucesso }}</p>
             </div>
+
             <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
                 <p class="text-xs font-semibold uppercase tracking-wide text-red-700">Erros</p>
-                <p class="mt-1 text-2xl font-bold text-red-800">{{ total_erros }}</p>
+                <p id="total-erros" class="mt-1 text-2xl font-bold text-red-800">{{ total_erros }}</p>
             </div>
         </div>
 
@@ -40,15 +66,18 @@
             {% if status %}
             <div class="space-y-3">
                 {% for item in status %}
-                <div class="rounded-xl border px-4 py-3 {% if item.sucesso %}border-green-200 bg-green-50{% else %}border-red-200 bg-red-50{% endif %}">
+                <div id="status-resenha-{{ forloop.counter0 }}"
+                     class="rounded-xl border px-4 py-3 {% if item.sucesso %}border-green-200 bg-green-50{% else %}border-red-200 bg-red-50{% endif %}">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div class="min-w-0">
                             <p class="font-medium {% if item.sucesso %}text-green-900{% else %}text-red-900{% endif %}">
                                 {{ item.arquivo }}
                             </p>
+
                             <p class="mt-1 text-sm {% if item.sucesso %}text-green-800{% else %}text-red-800{% endif %}">
                                 {{ item.mensagem }}
                             </p>
+
                             {% if item.destino %}
                             <p class="mt-1 break-all text-xs text-slate-600">
                                 Destino: {{ item.destino }}
@@ -62,8 +91,11 @@
                                 <span>{% if item.sucesso %}Processado{% else %}Falhou{% endif %}</span>
                             </span>
 
-                            {% if not item.sucesso %}
+                            {% if item.manual_disponivel %}
                             <button type="button"
+                                    hx-get="{% url 'resenha_livro:popup_ajuste_manual_resenha' %}?arquivo={{ item.arquivo|urlencode }}&status_id={{ forloop.counter0 }}"
+                                    hx-target="#modal-manual-container"
+                                    hx-swap="innerHTML"
                                     class="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-medium text-red-700 shadow-sm transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500/30">
                                 <i class="fas fa-sliders"></i>
                                 <span>Ajuste manual</span>
@@ -75,7 +107,9 @@
                 {% endfor %}
             </div>
             {% else %}
-            <p class="text-center text-sm text-slate-500">Nenhum PDF foi localizado na pasta de análise.</p>
+            <p class="text-center text-sm text-slate-500">
+                Nenhum PDF foi localizado na pasta de análise.
+            </p>
             {% endif %}
         </div>
 
@@ -88,4 +122,7 @@
             </button>
         </div>
     </div>
+
+    <div id="modal-manual-container"></div>
 </div>
+{% endif %}
