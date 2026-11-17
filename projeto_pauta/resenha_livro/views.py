@@ -1483,7 +1483,7 @@ def salvar_ajuste_manual_resenha(request):
             destino = pasta_destino / f'{nome_base}-{contador}.pdf'
             contador += 1
 
-        shutil.copy2(caminho_pdf, destino)
+        shutil.move(str(caminho_pdf), str(destino))
     except OSError as exc:
         return render(
             request,
@@ -1491,7 +1491,7 @@ def salvar_ajuste_manual_resenha(request):
             _contexto_ajuste_manual(
                 caminho_pdf,
                 status_id,
-                erro=f'Não foi possível copiar o PDF: {exc}',
+                erro=f'Não foi possível mover o PDF: {exc}',
                 aluno_id=aluno_id,
                 resenha_id=resenha_id,
             ),
@@ -1508,7 +1508,7 @@ def salvar_ajuste_manual_resenha(request):
             'item': {
                 'status_id': status_id,
                 'arquivo': caminho_pdf.name,
-                'mensagem': 'PDF copiado e vinculado à resenha com sucesso.',
+                'mensagem': 'PDF movido e vinculado à resenha com sucesso.',
                 'destino': str(destino),
             },
         },

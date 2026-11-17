@@ -93,8 +93,7 @@
                 {% endif %}
 
                 <div class="mt-auto rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-                    O PDF será copiado para a pasta correspondente ao período da resenha.
-                    O arquivo original permanecerá na pasta <strong>scanner</strong>.
+                    O PDF será movido da pasta <strong>scanner</strong> para a pasta do período selecionado.
                 </div>
 
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
@@ -107,8 +106,8 @@
 
                     <button type="submit"
                             class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
-                        <i class="fas fa-copy"></i>
-                        <span>Copiar e marcar como sucesso</span>
+                        <i class="fas fa-file-export"></i>
+                        <span>Mover e marcar como sucesso</span>
                     </button>
                 </div>
             </form>
