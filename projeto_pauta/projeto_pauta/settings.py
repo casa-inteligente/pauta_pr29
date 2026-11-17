@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 #DEBUG = False
 DEBUG = True
 
-VAR_DIR_BASE_RESENHA = Path('/home/ogliari/Área de trabalho/RESENHAS-BOOT')
+VAR_DIR_BASE_RESENHA = Path('/home/saude-2/Documentos/pauta_pr29/boot')
 
 
 if DEBUG:
