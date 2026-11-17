@@ -18,4 +18,5 @@ class NovoBancoRouter:
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         if app_label == 'resenha_livro':
             return db == 'resenha_livro'
-        return None
+        return db == 'default'
+        #return None
