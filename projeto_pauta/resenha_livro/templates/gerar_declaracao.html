@@ -222,5 +222,19 @@
             fecharModal();
         }
     });
+
+    //Para ajuste manual caso falhe a resenha
+    document.body.addEventListener('fecharAjusteManual', function () {
+        const modal = document.getElementById('modal-ajuste-manual-overlay');
+        if (modal) modal.remove();
+
+        const sucessos = document.getElementById('total-sucesso');
+        const erros = document.getElementById('total-erros');
+
+        if (sucessos && erros) {
+            sucessos.textContent = Number(sucessos.textContent) + 1;
+            erros.textContent = Math.max(0, Number(erros.textContent) - 1);
+        }
+    });
 </script>
 {% endblock %}

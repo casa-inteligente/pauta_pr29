@@ -8,7 +8,9 @@ from .views import (
     excluir_resenha, configuracao_resenhas,
     adicionar_periodo_leitura, alternar_gerado_declaracao, gerar_declaracao,
     popup_confirmar_geracao_declaracao, gerar_declaracoes_selecionadas,
-    organizar_resenhas_por_periodo, popup_estatisticas_livros
+    organizar_resenhas_por_periodo, popup_estatisticas_livros,
+    popup_ajuste_manual_resenha, pdf_resenha_manual,
+    salvar_ajuste_manual_resenha,
 )
 
 app_name = 'resenha_livro'
@@ -32,4 +34,9 @@ urlpatterns = [
     path('popup_confirmar_geracao_declaracao/', popup_confirmar_geracao_declaracao, name='popup_confirmar_geracao_declaracao'),
     path('gerar_declaracoes_selecionadas/', gerar_declaracoes_selecionadas, name='gerar_declaracoes_selecionadas'),
     path('organizar-resenhas-por-periodo/', organizar_resenhas_por_periodo, name='organizar_resenhas_por_periodo'),
+
+    #ajuste manual
+    path('organizar-resenha/manual/', popup_ajuste_manual_resenha, name='popup_ajuste_manual_resenha',),
+    path('organizar-resenha/manual/pdf/', pdf_resenha_manual, name='pdf_resenha_manual',),
+    path('organizar-resenha/manual/salvar/', salvar_ajuste_manual_resenha,  name='salvar_ajuste_manual_resenha',),
 ]

@@ -1,0 +1,116 @@
+<!-- arq: path../projeto_pauta/resenha_livro/templates/popup_resultado_organizacao_resenhas_manual.html -->
+<div id="modal-ajuste-manual-overlay"
+     data-modal-overlay="true"
+     class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/70 p-4"
+     onclick="if (event.target === this) this.remove()">
+
+    <section class="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <header class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+            <div class="min-w-0">
+                <h2 class="text-lg font-semibold text-slate-800">
+                    Ajuste manual da resenha
+                </h2>
+                <p class="mt-1 truncate text-sm text-slate-500">{{ arquivo }}</p>
+            </div>
+
+            <button type="button"
+                    onclick="document.getElementById('modal-ajuste-manual-overlay').remove()"
+                    aria-label="Fechar ajuste manual"
+                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </header>
+
+        <div class="grid min-h-0 flex-1 gap-5 overflow-y-auto p-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]">
+            <div class="min-h-[22rem] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 lg:min-h-0">
+                <iframe title="Prévia do PDF {{ arquivo }}"
+                        src="{% url 'resenha_livro:pdf_resenha_manual' %}?arquivo={{ arquivo|urlencode }}"
+                        class="h-full min-h-[28rem] w-full lg:min-h-full">
+                </iframe>
+            </div>
+
+            <form method="post"
+                  hx-post="{% url 'resenha_livro:salvar_ajuste_manual_resenha' %}"
+                  hx-target="#modal-manual-container"
+                  hx-swap="innerHTML"
+                  hx-disabled-elt="button"
+                  class="flex flex-col gap-5">
+                {% csrf_token %}
+                <input type="hidden" name="arquivo" value="{{ arquivo }}">
+                <input type="hidden" name="status_id" value="{{ status_id }}">
+
+                <div>
+                    <label for="aluno-manual"
+                           class="mb-2 block text-sm font-medium text-slate-700">
+                        Aluno
+                    </label>
+
+                    <select id="aluno-manual"
+                            name="aluno_id"
+                            required
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <option value="">Selecione um aluno</option>
+                        {% for aluno in alunos %}
+                        <option value="{{ aluno.id }}"
+                                {% if aluno_id == aluno.id|stringformat:"s" %}selected{% endif %}>
+                            {{ aluno.nome }} — {{ aluno.turma.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="resenha-manual"
+                           class="mb-2 block text-sm font-medium text-slate-700">
+                        Resenha
+                    </label>
+
+                    <select id="resenha-manual"
+                            name="resenha_id"
+                            required
+                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <option value="">Selecione uma resenha</option>
+                        {% for resenha in resenhas %}
+                        <option value="{{ resenha.id }}"
+                                {% if resenha_id == resenha.id|stringformat:"s" %}selected{% endif %}>
+                            {{ resenha.aluno.nome }} — {{ resenha.nomelivro }} —
+                            {{ resenha.periodoLeitura.intervalo_leitura }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <p class="mt-2 text-xs text-slate-500">
+                        Escolha uma resenha pertencente ao aluno selecionado.
+                    </p>
+                </div>
+
+                {% if erro %}
+                <div role="alert"
+                     class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <i class="fas fa-circle-exclamation mr-1"></i>
+                    {{ erro }}
+                </div>
+                {% endif %}
+
+                <div class="mt-auto rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                    O PDF será movido da pasta <strong>scanner</strong> para a pasta do período selecionado.
+                </div>
+
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
+                    <button type="button"
+                            onclick="document.getElementById('modal-ajuste-manual-overlay').remove()"
+                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                        <i class="fas fa-times"></i>
+                        <span>Cancelar</span>
+                    </button>
+
+                    <button type="submit"
+                            class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
+                        <i class="fas fa-file-export"></i>
+                        <span>Mover e marcar como sucesso</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>

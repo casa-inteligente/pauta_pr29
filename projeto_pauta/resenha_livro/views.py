@@ -16,7 +16,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch, Q, Count, Max, Min
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.templatetags.static import static
 from django.utils.text import slugify
@@ -1168,7 +1168,6 @@ def organizar_resenhas_por_periodo(request):
             'sucesso': False,
             'mensagem': 'A pasta de análise não foi encontrada.',
         })
-
         return render(request, 'popup_resultado_organizacao_resenhas.html', {
             'titulo': 'Atualizar resenhas nas pastas',
             'status': status,
@@ -1269,6 +1268,12 @@ def organizar_resenhas_por_periodo(request):
             'destino': str(destino),
         })
 
+    for item in status:
+        item['manual_disponivel'] = (
+            not item['sucesso']
+            and Path(item['arquivo']).suffix.lower() == '.pdf'
+        )
+
     total_processados = len(status)
     total_sucesso = len([item for item in status if item['sucesso']])
     total_erros = total_processados - total_sucesso
@@ -1364,3 +1369,149 @@ def popup_estatisticas_livros(request):
     }
 
     return render(request, 'popup_estatisticas_livros.html', context)
+
+def _pdf_na_pasta_scanner(nome_arquivo):
+    if (
+        not nome_arquivo
+        or Path(nome_arquivo).name != nome_arquivo
+        or Path(nome_arquivo).suffix.lower() != '.pdf'
+    ):
+        raise Http404('PDF inválido.')
+
+    try:
+        pasta_scanner = (
+            Path(settings.VAR_DIR_BASE_RESENHA) / 'scanner'
+        ).resolve(strict=True)
+        caminho_pdf = (pasta_scanner / nome_arquivo).resolve(strict=True)
+    except FileNotFoundError:
+        raise Http404('PDF não encontrado na pasta scanner.')
+
+    if caminho_pdf.parent != pasta_scanner or not caminho_pdf.is_file():
+        raise Http404('PDF não encontrado na pasta scanner.')
+
+    return caminho_pdf
+
+
+def _contexto_ajuste_manual(caminho_pdf, status_id, erro=None, aluno_id='', resenha_id=''):
+    return {
+        'arquivo': caminho_pdf.name,
+        'status_id': status_id,
+        'erro': erro,
+        'aluno_id': str(aluno_id),
+        'resenha_id': str(resenha_id),
+        'alunos': Aluno.objects.select_related('turma').order_by('nome'),
+        'resenhas': (
+            ResenhaLivro.objects
+            .select_related('aluno', 'periodoLeitura')
+            .order_by('aluno__nome', 'nomelivro')
+        ),
+    }
+
+
+@login_required
+def popup_ajuste_manual_resenha(request):
+    caminho_pdf = _pdf_na_pasta_scanner(request.GET.get('arquivo'))
+
+    try:
+        status_id = int(request.GET['status_id'])
+    except (KeyError, ValueError):
+        raise Http404('Resultado da organização inválido.')
+
+    return render(
+        request,
+        'popup_resultado_organizacao_resenhas_manual.html',
+        _contexto_ajuste_manual(caminho_pdf, status_id),
+    )
+
+
+@login_required
+def pdf_resenha_manual(request):
+    caminho_pdf = _pdf_na_pasta_scanner(request.GET.get('arquivo'))
+    return FileResponse(
+        caminho_pdf.open('rb'),
+        content_type='application/pdf',
+        filename=caminho_pdf.name,
+    )
+
+
+@login_required
+@require_POST
+def salvar_ajuste_manual_resenha(request):
+    caminho_pdf = _pdf_na_pasta_scanner(request.POST.get('arquivo'))
+
+    try:
+        status_id = int(request.POST['status_id'])
+    except (KeyError, ValueError):
+        raise Http404('Resultado da organização inválido.')
+
+    aluno_id = request.POST.get('aluno_id', '')
+    resenha_id = request.POST.get('resenha_id', '')
+
+    resenha = (
+        ResenhaLivro.objects
+        .select_related('aluno', 'periodoLeitura')
+        .filter(pk=resenha_id, aluno_id=aluno_id)
+        .first()
+    )
+
+    if not resenha:
+        return render(
+            request,
+            'popup_resultado_organizacao_resenhas_manual.html',
+            _contexto_ajuste_manual(
+                caminho_pdf,
+                status_id,
+                erro='Selecione uma resenha pertencente ao aluno escolhido.',
+                aluno_id=aluno_id,
+                resenha_id=resenha_id,
+            ),
+        )
+
+    pasta_destino = (
+        Path(settings.VAR_DIR_BASE_RESENHA)
+        / str(resenha.periodoLeitura.data_resenha.year)
+        / _normalizar_nome_pasta(resenha.periodoLeitura.intervalo_leitura)
+    )
+    nome_base = f'{_normalizar_nome_arquivo(resenha.aluno.nome)}-{resenha.id}'
+
+    try:
+        pasta_destino.mkdir(parents=True, exist_ok=True)
+
+        destino = pasta_destino / f'{nome_base}.pdf'
+        contador = 1
+        while destino.exists():
+            destino = pasta_destino / f'{nome_base}-{contador}.pdf'
+            contador += 1
+
+        shutil.move(str(caminho_pdf), str(destino))
+    except OSError as exc:
+        return render(
+            request,
+            'popup_resultado_organizacao_resenhas_manual.html',
+            _contexto_ajuste_manual(
+                caminho_pdf,
+                status_id,
+                erro=f'Não foi possível mover o PDF: {exc}',
+                aluno_id=aluno_id,
+                resenha_id=resenha_id,
+            ),
+        )
+
+    resenha.path_resenha = str(destino)
+    resenha.save(update_fields=['path_resenha', 'atualizado_em'])
+
+    resposta = render(
+        request,
+        'popup_resultado_organizacao_resenhas.html',
+        {
+            'modo_item_oob': True,
+            'item': {
+                'status_id': status_id,
+                'arquivo': caminho_pdf.name,
+                'mensagem': 'PDF movido e vinculado à resenha com sucesso.',
+                'destino': str(destino),
+            },
+        },
+    )
+    resposta['HX-Trigger'] = '{"fecharAjusteManual": null}'
+    return resposta
